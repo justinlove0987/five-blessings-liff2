@@ -296,7 +296,11 @@
       border-radius: 36px 36px 0 0;
       background: #fcfdff;
       box-shadow: 0 -18px 48px rgba(38, 45, 70, 0.18);
-      transition: bottom 0.18s ease, max-height 0.22s ease;
+      transform: translate3d(0, calc(-1 * var(--sheet-keyboard-offset, 0px)), 0);
+      transition:
+        transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        max-height 0.24s ease;
+      will-change: transform;
     }
 
     .bottom-sheet.is-keyboard-open {
@@ -656,6 +660,7 @@
     };
 
     let activeSheetKey = null;
+    let keyboardUpdateFrame = null;
 
     function focusSheetInput(input) {
       input.focus({ preventScroll: true });
@@ -689,7 +694,7 @@
 
       config.overlay.hidden = true;
       config.sheet.classList.remove('is-keyboard-open');
-      config.sheet.style.bottom = '';
+      config.sheet.style.removeProperty('--sheet-keyboard-offset');
       config.input.blur();
 
       if (activeSheetKey === key) {
@@ -715,11 +720,33 @@
       const viewport = window.visualViewport;
       const keyboardOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
       const isKeyboardOpen = keyboardOffset > 80;
-      const sheetKeyboardGap = 6;
-      const sheetOffset = Math.max(0, keyboardOffset - sheetKeyboardGap);
+      const inputAccessoryGap = 12;
+      const sheetOffset = Math.max(0, keyboardOffset + inputAccessoryGap);
+      const wasKeyboardOpen = config.sheet.classList.contains('is-keyboard-open');
 
       config.sheet.classList.toggle('is-keyboard-open', isKeyboardOpen);
-      config.sheet.style.bottom = isKeyboardOpen ? `${sheetOffset}px` : '';
+      if (isKeyboardOpen) {
+        config.sheet.style.setProperty('--sheet-keyboard-offset', `${sheetOffset}px`);
+        return;
+      }
+
+      if (wasKeyboardOpen) {
+        closeTeamSheet(activeSheetKey);
+        return;
+      }
+
+      config.sheet.style.removeProperty('--sheet-keyboard-offset');
+    }
+
+    function scheduleSheetKeyboardOffsetUpdate() {
+      if (keyboardUpdateFrame) {
+        cancelAnimationFrame(keyboardUpdateFrame);
+      }
+
+      keyboardUpdateFrame = requestAnimationFrame(() => {
+        keyboardUpdateFrame = null;
+        updateSheetKeyboardOffset();
+      });
     }
 
     sheetConfigs.create.openButton.addEventListener('click', () => openTeamSheet('create'));
@@ -732,9 +759,17 @@
     });
 
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', updateSheetKeyboardOffset);
-      window.visualViewport.addEventListener('scroll', updateSheetKeyboardOffset);
+      window.visualViewport.addEventListener('resize', scheduleSheetKeyboardOffsetUpdate);
+      window.visualViewport.addEventListener('scroll', scheduleSheetKeyboardOffsetUpdate);
     }
+
+    Object.values(sheetConfigs).forEach(config => {
+      config.input.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+          closeTeamSheet(activeSheetKey);
+        }
+      });
+    });
   </script>
 </body>
 </html>
