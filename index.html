@@ -1,447 +1,749 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <title>五重祝福打卡</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
   <style>
+    :root {
+      --page-bg: #f5f7ff;
+      --card: #ffffff;
+      --ink: #1f2433;
+      --muted: #7b849b;
+      --line: #e8ecf8;
+      --primary: #6a7df8;
+      --primary-strong: #5067ee;
+      --success: #22c58f;
+      --success-soft: #f0fbf5;
+      --shadow: 0 10px 28px rgba(83, 95, 143, 0.12);
+    }
+
     * {
       box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--page-bg);
     }
 
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f6f7f9;
-      color: #1f2937;
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background:
+        radial-gradient(circle at 10% 14%, rgba(214, 207, 255, 0.55), transparent 34%),
+        radial-gradient(circle at 90% 5%, rgba(202, 232, 255, 0.42), transparent 30%),
+        linear-gradient(180deg, #f7f4ff 0%, #f4f8ff 42%, #fbfcff 100%);
     }
 
-    .page {
-      max-width: 480px;
+    button {
+      font: inherit;
+    }
+
+    .app-shell {
+      width: min(100%, 480px);
+      min-height: 100vh;
       margin: 0 auto;
-      padding: 24px 16px 40px;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
     }
 
-    .header {
-      margin-bottom: 20px;
-    }
-
-    .eyebrow {
-      font-size: 14px;
-      color: #6b7280;
-      margin-bottom: 6px;
-    }
-
-    h1 {
-      font-size: 28px;
-      line-height: 1.25;
-      margin: 0;
-      color: #111827;
-    }
-
-    .card {
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-    }
-
-    .user-row {
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
+      justify-content: space-between;
+      min-height: 64px;
+      padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
+      background: rgba(255, 255, 255, 0.72);
+      border-bottom: 1px solid rgba(232, 236, 248, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
 
-    .avatar {
-      width: 44px;
-      height: 44px;
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      font-size: 20px;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+
+    .brand-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .avatar-button {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border: 1px solid rgba(106, 125, 248, 0.14);
       border-radius: 50%;
-      background: #e5e7eb;
+      background: linear-gradient(135deg, #dde5ff, #f3e6ff);
+      box-shadow: 0 6px 16px rgba(82, 95, 160, 0.13);
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .avatar-button:disabled {
+      cursor: default;
+    }
+
+    .avatar-button img {
+      width: 100%;
+      height: 100%;
+      display: block;
       object-fit: cover;
-      flex-shrink: 0;
     }
 
-    .user-name {
-      font-size: 18px;
+    .content {
+      padding: 18px 20px 0;
+    }
+
+    .month-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 2px 0 16px;
+      font-size: 20px;
+      font-weight: 750;
+    }
+
+    .chevron {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      color: var(--muted);
+    }
+
+    .week-selector {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 2px;
+      margin-bottom: 26px;
+    }
+
+    .day {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .weekday {
+      font-size: 12px;
+      font-weight: 650;
+      color: var(--muted);
+      line-height: 1;
+    }
+
+    .date {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      color: #4b5568;
+      font-size: 15px;
       font-weight: 700;
-      color: #111827;
+      line-height: 1;
     }
 
-    .status {
-      font-size: 14px;
-      color: #6b7280;
-      margin-top: 2px;
+    .day.outline .date {
+      border: 1.5px solid rgba(106, 125, 248, 0.72);
+      color: #4856bf;
+      background: rgba(255, 255, 255, 0.62);
     }
 
-    .button-list {
+    .day.selected .weekday {
+      color: var(--primary-strong);
+    }
+
+    .day.selected .date {
+      color: #fff;
+      background: linear-gradient(135deg, #7f91ff, #9b84ee);
+      box-shadow: 0 8px 16px rgba(106, 125, 248, 0.27);
+    }
+
+    .task-section {
       display: grid;
       gap: 12px;
-      margin-top: 18px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2px 2px;
+    }
+
+    .section-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      font-size: 18px;
+      font-weight: 760;
+    }
+
+    .section-icon {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      color: #fff;
+      background: linear-gradient(135deg, #5f78f4, #738aff);
+      box-shadow: 0 8px 16px rgba(95, 120, 244, 0.22);
+    }
+
+    .view-all {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      min-height: 36px;
+      padding: 0;
+      border: 0;
+      color: #8a93aa;
+      background: transparent;
+      font-size: 14px;
+      font-weight: 650;
+      cursor: default;
+      opacity: 0.74;
+    }
+
+    .task-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .task-card {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+      min-height: 108px;
+      padding: 16px;
+      border: 1px solid rgba(232, 236, 248, 0.82);
+      border-radius: 18px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .task-card.is-done {
+      border-color: rgba(34, 197, 143, 0.12);
+      background: linear-gradient(135deg, var(--success-soft), #ffffff 76%);
+    }
+
+    .icon-tile {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      flex: 0 0 auto;
+    }
+
+    .icon-tile svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .icon-tile.mint {
+      color: #22b98b;
+      background: linear-gradient(135deg, #e3f8ec, #f2fbf5);
+    }
+
+    .icon-tile.lavender {
+      color: #8172f6;
+      background: linear-gradient(135deg, #ebe8ff, #f5f1ff);
+    }
+
+    .icon-tile.sun {
+      color: #ee9d27;
+      background: linear-gradient(135deg, #fff0c8, #fff7e7);
+    }
+
+    .icon-tile.blue {
+      color: #3aa8ec;
+      background: linear-gradient(135deg, #ddf2ff, #edf8ff);
+    }
+
+    .task-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .task-copy {
+      min-width: 0;
+    }
+
+    .task-date {
+      margin-bottom: 5px;
+      color: #7180a6;
+      font-size: 13.5px;
+      font-weight: 650;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    .task-name {
+      margin-bottom: 5px;
+      color: #171b28;
+      font-size: 19px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .task-note {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 560;
+      line-height: 1.35;
     }
 
     .checkin-button {
-      width: 100%;
-      border: none;
-      border-radius: 16px;
-      padding: 16px;
-      background: #06c755;
-      color: white;
-      font-size: 17px;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: left;
-      display: flex;
-      justify-content: space-between;
+      display: inline-flex;
       align-items: center;
-      transition: transform 0.12s ease, opacity 0.12s ease, background 0.12s ease;
+      justify-content: center;
+      gap: 6px;
+      min-width: 86px;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 999px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #20c98e, #24b978);
+      box-shadow: 0 9px 18px rgba(31, 191, 132, 0.26);
+      font-size: 16px;
+      font-weight: 760;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: transform 0.14s ease, opacity 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    .button-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
     }
 
     .checkin-button:active {
-      transform: scale(0.98);
+      transform: scale(0.97);
     }
 
     .checkin-button:disabled {
-      opacity: 0.55;
       cursor: not-allowed;
+      opacity: 0.62;
       transform: none;
+      box-shadow: none;
     }
 
-    .checkin-button.done {
-      background: #d1d5db;
-      color: #374151;
-    }
-
-    .button-title {
-      display: block;
-    }
-
-    .button-subtitle {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      opacity: 0.9;
-      margin-top: 2px;
-    }
-
-    .button-state {
+    .done-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 44px;
+      min-width: 90px;
+      padding: 0 12px;
+      border: 1px solid rgba(34, 197, 143, 0.18);
+      border-radius: 999px;
+      color: #19b980;
+      background: rgba(255, 255, 255, 0.7);
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 760;
       white-space: nowrap;
-      margin-left: 12px;
     }
 
-    .message {
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: 12px;
-      background: #f3f4f6;
-      color: #374151;
+    .done-pill svg,
+    .checkin-button svg,
+    .section-icon svg {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 auto;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      z-index: 20;
+      width: min(calc(100% - 40px), 420px);
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      border-radius: 16px;
+      color: #ffffff;
+      background: rgba(38, 45, 70, 0.92);
+      box-shadow: 0 16px 36px rgba(38, 45, 70, 0.24);
       font-size: 14px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .message.success {
-      background: #ecfdf5;
-      color: #047857;
-    }
-
-    .message.error {
-      background: #fef2f2;
-      color: #b91c1c;
-    }
-
-    .footer {
-      margin-top: 16px;
-      font-size: 12px;
-      color: #9ca3af;
+      font-weight: 650;
       text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 18px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .toast.error {
+      background: rgba(190, 67, 83, 0.94);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 374px) {
+      .content,
+      .app-header {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .task-card {
+        grid-template-columns: 44px minmax(0, 1fr);
+        gap: 12px;
+        padding: 14px;
+      }
+
+      .icon-tile {
+        width: 44px;
+        height: 44px;
+      }
+
+      .task-main {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .checkin-button,
+      .done-pill {
+        width: 100%;
+      }
     }
   </style>
 </head>
 
 <body>
-  <main class="page">
-    <section class="header">
-      <div class="eyebrow">五重祝福</div>
-      <h1>今日打卡</h1>
-    </section>
+  <main class="app-shell">
+    <header class="app-header">
+      <div class="brand" aria-label="五重祝福">
+        <span>五重祝福</span>
+        <span class="brand-icon" aria-hidden="true">✨</span>
+      </div>
 
-    <section class="card">
-      <div class="user-row">
-        <img id="avatar" class="avatar" alt="" />
-        <div>
-          <div id="userName" class="user-name">載入中...</div>
-          <div id="status" class="status">正在初始化 LINE 登入</div>
+      <button class="avatar-button" type="button" aria-label="使用者資料">
+        <img id="avatar" alt="" />
+      </button>
+    </header>
+
+    <div class="content">
+      <section aria-label="週日期選擇">
+        <div class="month-row">
+          <span>7月</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
         </div>
-      </div>
 
-      <div class="button-list">
-        <button class="checkin-button" data-type="morningPrayer" disabled>
-          <span>
-            <span class="button-title">晨禱</span>
-            <span class="button-subtitle">完成今日晨禱</span>
-          </span>
-          <span class="button-state">打卡</span>
-        </button>
+        <div class="week-selector">
+          <div class="day outline">
+            <div class="weekday">Mon</div>
+            <div class="date">2</div>
+          </div>
+          <div class="day outline">
+            <div class="weekday">Tue</div>
+            <div class="date">3</div>
+          </div>
+          <div class="day outline">
+            <div class="weekday">Wed</div>
+            <div class="date">4</div>
+          </div>
+          <div class="day selected" aria-current="date">
+            <div class="weekday">Thu</div>
+            <div class="date">5</div>
+          </div>
+          <div class="day">
+            <div class="weekday">Fri</div>
+            <div class="date">6</div>
+          </div>
+          <div class="day">
+            <div class="weekday">Sat</div>
+            <div class="date">7</div>
+          </div>
+          <div class="day">
+            <div class="weekday">Sun</div>
+            <div class="date">8</div>
+          </div>
+        </div>
+      </section>
 
-        <button class="checkin-button" data-type="prayerMeeting" disabled>
-          <span>
-            <span class="button-title">禱告會</span>
-            <span class="button-subtitle">參加禱告會</span>
-          </span>
-          <span class="button-state">打卡</span>
-        </button>
+      <section class="task-section" aria-labelledby="task-title">
+        <div class="section-header">
+          <div class="section-title" id="task-title">
+            <span class="section-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M7 3v3M17 3v3M4.5 9.2h15M6.5 5h11A2.5 2.5 0 0 1 20 7.5v10A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5v-10A2.5 2.5 0 0 1 6.5 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </span>
+            <span>本期任務</span>
+          </div>
 
-        <button class="checkin-button" data-type="smallGroup" disabled>
-          <span>
-            <span class="button-title">小家</span>
-            <span class="button-subtitle">參加小家聚會</span>
-          </span>
-          <span class="button-state">打卡</span>
-        </button>
+          <button class="view-all" type="button" disabled>
+            <span>查看全部</span>
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
 
-        <button class="checkin-button" data-type="sunday" disabled>
-          <span>
-            <span class="button-title">主日</span>
-            <span class="button-subtitle">參加主日聚會</span>
-          </span>
-          <span class="button-state">打卡</span>
-        </button>
+        <div class="task-list">
+          <article class="task-card" data-task-card="morningPrayer">
+            <div class="icon-tile mint" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 15a7 7 0 0 1 14 0H5Z" fill="currentColor" opacity=".9" />
+                <path d="M12 3v3M4.9 6.9 7 9M19.1 6.9 17 9M3 15h18M7 19h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="task-main">
+              <div class="task-copy">
+                <div class="task-date">7/21（二）</div>
+                <div class="task-name">晨禱</div>
+                <div class="task-note">今日可打卡</div>
+              </div>
+              <button class="checkin-button" type="button" data-type="morningPrayer">
+                <span class="button-label">打卡</span>
+              </button>
+            </div>
+          </article>
 
-        <button class="checkin-button" data-type="trainingSystem" disabled>
-          <span>
-            <span class="button-title">培育系統</span>
-            <span class="button-subtitle">完成培育相關項目</span>
-          </span>
-          <span class="button-state">打卡</span>
-        </button>
-      </div>
+          <article class="task-card" data-task-card="smallGroup">
+            <div class="icon-tile lavender" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 11.3 12 5l8 6.3V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-8.7Z" fill="currentColor" opacity=".9" />
+                <path d="m3 12 9-7 9 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div class="task-main">
+              <div class="task-copy">
+                <div class="task-date">7/21（日）- 7/27（六）</div>
+                <div class="task-name">小家</div>
+                <div class="task-note">本週完成一次</div>
+              </div>
+              <button class="checkin-button" type="button" data-type="smallGroup">
+                <span class="button-label">打卡</span>
+              </button>
+            </div>
+          </article>
 
-      <div id="message" class="message">請稍候...</div>
-    </section>
+          <article class="task-card is-done" data-task-card="sunday">
+            <div class="icon-tile sun" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 10.5 12 5l7 5.5V20H5v-9.5Z" fill="currentColor" opacity=".88" />
+                <path d="M12 5V2M8 20v-5h8v5M9.5 12h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div class="task-main">
+              <div class="task-copy">
+                <div class="task-date">7/21（日）- 7/27（六）</div>
+                <div class="task-name">主日</div>
+                <div class="task-note">本週完成一次</div>
+              </div>
+              <div class="done-pill" aria-label="已完成">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>已完成</span>
+              </div>
+            </div>
+          </article>
 
-    <div class="footer">
-      若打卡失敗，請重新開啟頁面再試一次。<br>
-      目前版本：Agent Test v1
+          <article class="task-card" data-task-card="tithe">
+            <div class="icon-tile blue" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 20s-7-4.3-7-9.2A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.8C19 15.7 12 20 12 20Z" fill="currentColor" opacity=".9" />
+                <path d="M4 20h6.8c1.4 0 2.7-.5 3.7-1.5l4-4a2 2 0 0 0-2.8-2.8l-2.6 2.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div class="task-main">
+              <div class="task-copy">
+                <div class="task-date">7月</div>
+                <div class="task-name">十一奉獻</div>
+                <div class="task-note">本月完成一次</div>
+              </div>
+              <button class="checkin-button" type="button" data-type="tithe">
+                <span class="button-label">打卡</span>
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
     </div>
   </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <script>
-    // TODO: 換成你的完整 LIFF ID，例如：2010462217-xxxxxxxx
     const LIFF_ID = '2010462217-tVZRATTG';
 
-    // Vercel API route，不要改成 Apps Script / Google Sheet URL
-    const API_URL = '/api/checkin';
-
-    let idToken = null;
-    let profile = null;
-    let isSubmitting = false;
-
-    const userNameEl = document.getElementById('userName');
-    const avatarEl = document.getElementById('avatar');
-    const statusEl = document.getElementById('status');
-    const messageEl = document.getElementById('message');
-    const buttons = Array.from(document.querySelectorAll('.checkin-button'));
-
-    const blessingLabels = {
+    const taskLabels = {
       morningPrayer: '晨禱',
-      prayerMeeting: '禱告會',
       smallGroup: '小家',
       sunday: '主日',
-      trainingSystem: '培育系統'
+      tithe: '十一奉獻'
     };
 
-    async function main() {
-      try {
-        setMessage('正在登入 LINE...', 'normal');
+    const fallbackAvatar = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+            <stop stop-color="#8fa1ff"/>
+            <stop offset="1" stop-color="#f0c9ff"/>
+          </linearGradient>
+        </defs>
+        <rect width="80" height="80" fill="url(#g)"/>
+        <circle cx="40" cy="32" r="14" fill="#fff" opacity=".86"/>
+        <path d="M17 70c4-15 14-23 23-23s19 8 23 23" fill="#fff" opacity=".86"/>
+      </svg>
+    `);
 
-        await liff.init({ liffId: LIFF_ID });
+    let toastTimer = null;
 
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
+    const avatarEl = document.getElementById('avatar');
+    const toastEl = document.getElementById('toast');
+    const checkinButtons = Array.from(document.querySelectorAll('.checkin-button'));
 
-        profile = await liff.getProfile();
-        idToken = liff.getIDToken();
+    avatarEl.src = fallbackAvatar;
 
-        if (!idToken) {
-          throw new Error('拿不到 LINE ID token，請確認 LIFF scope 有勾選 openid');
-        }
-
-        userNameEl.textContent = `Hello, ${profile.displayName}`;
-        statusEl.textContent = '請選擇今天完成的項目';
-
-        if (profile.pictureUrl) {
-          avatarEl.src = profile.pictureUrl;
-        } else {
-          avatarEl.style.display = 'none';
-        }
-
-        restoreLocalDoneState();
-        enableButtons();
-
-        setMessage('登入成功，可以開始打卡。', 'success');
-
-      } catch (error) {
-        userNameEl.textContent = '登入失敗';
-        statusEl.textContent = '請重新開啟頁面';
-        setMessage(String(error), 'error');
-      }
-    }
-
-    buttons.forEach(button => {
-      button.addEventListener('click', async () => {
-        const blessingType = button.dataset.type;
-        await submitCheckin(blessingType);
+    checkinButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        handleMockCheckin(button);
       });
     });
 
-    async function submitCheckin(blessingType) {
-      if (isSubmitting) return;
+    async function handleMockCheckin(button) {
+      if (button.disabled) return;
 
-      if (!idToken) {
-        setMessage('尚未完成 LINE 登入，請重新開啟頁面。', 'error');
-        return;
-      }
+      const type = button.dataset.type;
+      const label = taskLabels[type] || '任務';
 
-      isSubmitting = true;
-      disableButtons();
-
-      const label = blessingLabels[blessingType] || blessingType;
-      statusEl.textContent = `正在送出「${label}」...`;
-      setMessage('寫入中，請稍候...', 'normal');
+      setButtonLoading(button, true);
 
       try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            idToken: idToken,
-            blessingType: blessingType
-          })
-        });
-
-        const text = await response.text();
-
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (error) {
-          throw new Error('API 回傳的不是 JSON：' + text.slice(0, 300));
-        }
-
-        if (!data.success) {
-          throw new Error(data.error || '打卡失敗');
-        }
-
-        markButtonDone(blessingType);
-        saveLocalDoneState(blessingType);
-
-        statusEl.textContent = '打卡成功';
-        setMessage(`「${label}」打卡成功！`, 'success');
-
+        await wait(700);
+        markTaskDone(type);
+        showToast(`「${label}」打卡成功！`, 'success');
       } catch (error) {
-        statusEl.textContent = '打卡失敗';
-        setMessage(String(error), 'error');
-
-      } finally {
-        isSubmitting = false;
-        enableButtons();
+        setButtonLoading(button, false);
+        showToast('打卡失敗，請重新整理後再試一次。', 'error');
       }
     }
 
-    function enableButtons() {
-      buttons.forEach(button => {
-        button.disabled = false;
-      });
-    }
+    function setButtonLoading(button, isLoading) {
+      const label = button.querySelector('.button-label');
+      button.disabled = isLoading;
 
-    function disableButtons() {
-      buttons.forEach(button => {
-        button.disabled = true;
-      });
-    }
-
-    function markButtonDone(blessingType) {
-      const button = document.querySelector(`.checkin-button[data-type="${blessingType}"]`);
-      if (!button) return;
-
-      button.classList.add('done');
-
-      const stateEl = button.querySelector('.button-state');
-      if (stateEl) {
-        stateEl.textContent = '已完成';
+      if (isLoading) {
+        button.dataset.previousLabel = label.textContent;
+        label.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>送出中</span>';
+      } else {
+        label.textContent = button.dataset.previousLabel || '打卡';
       }
     }
 
-    function getTodayKey() {
-      const now = new Date();
-      const formatter = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Taipei',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      });
+    function markTaskDone(type) {
+      const card = document.querySelector(`[data-task-card="${type}"]`);
+      const button = document.querySelector(`.checkin-button[data-type="${type}"]`);
 
-      return formatter.format(now);
+      if (!card || !button) return;
+
+      card.classList.add('is-done');
+      button.outerHTML = `
+        <div class="done-pill" aria-label="已完成">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span>已完成</span>
+        </div>
+      `;
     }
 
-    function getLocalStorageKey() {
-      const userId = profile && profile.userId ? profile.userId : 'unknown';
-      return `fiveBlessingsDone:${getTodayKey()}:${userId}`;
+    function showToast(message, type) {
+      window.clearTimeout(toastTimer);
+      toastEl.textContent = message;
+      toastEl.classList.toggle('error', type === 'error');
+      toastEl.classList.add('show');
+
+      toastTimer = window.setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, 2400);
     }
 
-    function saveLocalDoneState(blessingType) {
+    function wait(ms) {
+      return new Promise(resolve => window.setTimeout(resolve, ms));
+    }
+
+    async function loadLiffAvatar() {
+      if (!window.liff) return;
+
       try {
-        const key = getLocalStorageKey();
-        const current = JSON.parse(localStorage.getItem(key) || '[]');
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) return;
 
-        if (!current.includes(blessingType)) {
-          current.push(blessingType);
+        const profile = await liff.getProfile();
+        if (profile.pictureUrl) {
+          avatarEl.src = profile.pictureUrl;
         }
-
-        localStorage.setItem(key, JSON.stringify(current));
       } catch (error) {
-        // MVP：localStorage 失敗不影響主要打卡功能
+        avatarEl.src = fallbackAvatar;
       }
     }
 
-    function restoreLocalDoneState() {
-      try {
-        const key = getLocalStorageKey();
-        const doneTypes = JSON.parse(localStorage.getItem(key) || '[]');
-
-        doneTypes.forEach(type => {
-          markButtonDone(type);
-        });
-      } catch (error) {
-        // MVP：localStorage 失敗不影響主要打卡功能
-      }
-    }
-
-    function setMessage(text, type) {
-      messageEl.textContent = text;
-      messageEl.classList.remove('success', 'error');
-
-      if (type === 'success') {
-        messageEl.classList.add('success');
-      } else if (type === 'error') {
-        messageEl.classList.add('error');
-      }
-    }
-
-    main();
+    loadLiffAvatar();
   </script>
 </body>
 </html>
