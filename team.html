@@ -491,7 +491,7 @@
           <span class="team-button-label">新增五重戰隊</span>
         </button>
 
-        <button class="team-button secondary" type="button">
+        <button class="team-button secondary" type="button" id="openJoinTeamSheet">
           <span class="team-button-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M16 11h5M18.5 8.5v5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
@@ -523,7 +523,7 @@
   </nav>
 
   <div class="sheet-overlay" id="createTeamOverlay" hidden>
-    <button class="sheet-backdrop" type="button" aria-label="關閉新增戰隊視窗" data-sheet-close></button>
+    <button class="sheet-backdrop" type="button" aria-label="關閉新增戰隊視窗" data-sheet-close="create"></button>
 
     <section
       class="bottom-sheet"
@@ -565,42 +565,120 @@
     </section>
   </div>
 
+  <div class="sheet-overlay" id="joinTeamOverlay" hidden>
+    <button class="sheet-backdrop" type="button" aria-label="關閉加入戰隊視窗" data-sheet-close="join"></button>
+
+    <section
+      class="bottom-sheet"
+      id="joinTeamSheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="joinTeamTitle"
+    >
+      <div class="sheet-handle" aria-hidden="true"></div>
+
+      <div class="sheet-body">
+        <h2 class="sheet-title" id="joinTeamTitle">加入五重戰隊</h2>
+        <p class="sheet-desc">輸入邀請碼後，加入成功即可與夥伴一起打卡。</p>
+
+        <label class="sheet-label" for="inviteCodeInput">邀請碼</label>
+
+        <div class="sheet-input-wrap" id="inviteCodeInputWrap">
+          <span class="sheet-input-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z" />
+            </svg>
+          </span>
+          <input
+            class="sheet-input"
+            id="inviteCodeInput"
+            type="text"
+            placeholder="請輸入邀請碼"
+            autocomplete="off"
+            autocapitalize="characters"
+            enterkeyhint="done"
+          />
+        </div>
+
+        <p class="sheet-helper" id="inviteCodeHelper">向戰隊成員索取邀請碼</p>
+      </div>
+
+      <div class="sheet-footer">
+        <button class="sheet-submit" type="button">加入戰隊</button>
+      </div>
+    </section>
+  </div>
+
   <script>
-    const createTeamOverlay = document.getElementById('createTeamOverlay');
-    const createTeamSheet = document.getElementById('createTeamSheet');
-    const openCreateTeamSheetButton = document.getElementById('openCreateTeamSheet');
-    const teamNameInput = document.getElementById('teamNameInput');
+    const sheetConfigs = {
+      create: {
+        overlay: document.getElementById('createTeamOverlay'),
+        sheet: document.getElementById('createTeamSheet'),
+        input: document.getElementById('teamNameInput'),
+        openButton: document.getElementById('openCreateTeamSheet')
+      },
+      join: {
+        overlay: document.getElementById('joinTeamOverlay'),
+        sheet: document.getElementById('joinTeamSheet'),
+        input: document.getElementById('inviteCodeInput'),
+        openButton: document.getElementById('openJoinTeamSheet')
+      }
+    };
 
-    function focusTeamNameInput() {
-      teamNameInput.focus({ preventScroll: true });
+    let activeSheetKey = null;
 
-      const end = teamNameInput.value.length;
-      if (typeof teamNameInput.setSelectionRange === 'function') {
-        teamNameInput.setSelectionRange(end, end);
+    function focusSheetInput(input) {
+      input.focus({ preventScroll: true });
+
+      const end = input.value.length;
+      if (typeof input.setSelectionRange === 'function') {
+        input.setSelectionRange(end, end);
       }
     }
 
-    function openCreateTeamSheet() {
-      createTeamOverlay.hidden = false;
+    function openTeamSheet(key) {
+      const config = sheetConfigs[key];
+      if (!config) return;
+
+      closeTeamSheet(activeSheetKey);
+
+      activeSheetKey = key;
+      config.overlay.hidden = false;
       document.body.classList.add('sheet-open');
       updateSheetKeyboardOffset();
-      focusTeamNameInput();
+      focusSheetInput(config.input);
 
       requestAnimationFrame(() => {
-        requestAnimationFrame(focusTeamNameInput);
+        requestAnimationFrame(() => focusSheetInput(config.input));
       });
     }
 
-    function closeCreateTeamSheet() {
-      createTeamOverlay.hidden = true;
-      document.body.classList.remove('sheet-open');
-      createTeamSheet.classList.remove('is-keyboard-open');
-      createTeamSheet.style.bottom = '';
-      teamNameInput.blur();
+    function closeTeamSheet(key) {
+      const config = sheetConfigs[key];
+      if (!config || config.overlay.hidden) return;
+
+      config.overlay.hidden = true;
+      config.sheet.classList.remove('is-keyboard-open');
+      config.sheet.style.bottom = '';
+      config.input.blur();
+
+      if (activeSheetKey === key) {
+        activeSheetKey = null;
+      }
+
+      const hasOpenSheet = Object.values(sheetConfigs).some(item => !item.overlay.hidden);
+      if (!hasOpenSheet) {
+        document.body.classList.remove('sheet-open');
+      }
     }
 
     function updateSheetKeyboardOffset() {
-      if (createTeamOverlay.hidden || !window.visualViewport) {
+      if (!activeSheetKey || !window.visualViewport) {
+        return;
+      }
+
+      const config = sheetConfigs[activeSheetKey];
+      if (!config || config.overlay.hidden) {
         return;
       }
 
@@ -608,14 +686,17 @@
       const keyboardOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
       const isKeyboardOpen = keyboardOffset > 80;
 
-      createTeamSheet.classList.toggle('is-keyboard-open', isKeyboardOpen);
-      createTeamSheet.style.bottom = isKeyboardOpen ? `${keyboardOffset}px` : '';
+      config.sheet.classList.toggle('is-keyboard-open', isKeyboardOpen);
+      config.sheet.style.bottom = isKeyboardOpen ? `${keyboardOffset}px` : '';
     }
 
-    openCreateTeamSheetButton.addEventListener('click', openCreateTeamSheet);
+    sheetConfigs.create.openButton.addEventListener('click', () => openTeamSheet('create'));
+    sheetConfigs.join.openButton.addEventListener('click', () => openTeamSheet('join'));
 
-    createTeamOverlay.querySelectorAll('[data-sheet-close]').forEach(element => {
-      element.addEventListener('click', closeCreateTeamSheet);
+    document.querySelectorAll('[data-sheet-close]').forEach(element => {
+      element.addEventListener('click', () => {
+        closeTeamSheet(element.dataset.sheetClose);
+      });
     });
 
     if (window.visualViewport) {
