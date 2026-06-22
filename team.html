@@ -40,6 +40,14 @@
       font: inherit;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
+    body.sheet-open {
+      overflow: hidden;
+    }
+
     .app-shell {
       width: min(100%, 480px);
       min-height: 100vh;
@@ -261,6 +269,177 @@
       transform: translateX(-50%);
     }
 
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      align-items: end;
+      justify-items: center;
+    }
+
+    .sheet-backdrop {
+      position: absolute;
+      inset: 0;
+      border: 0;
+      background: rgba(22, 28, 45, 0.48);
+      cursor: pointer;
+    }
+
+    .bottom-sheet {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      width: min(100%, 480px);
+      max-height: min(42vh, 420px);
+      border-radius: 36px 36px 0 0;
+      background: #fcfdff;
+      box-shadow: 0 -18px 48px rgba(38, 45, 70, 0.18);
+      transition: max-height 0.22s ease;
+    }
+
+    .bottom-sheet.is-keyboard-open {
+      max-height: min(70vh, 620px);
+    }
+
+    .sheet-handle {
+      flex: 0 0 auto;
+      width: 52px;
+      height: 5px;
+      margin: 15px auto 0;
+      border-radius: 999px;
+      background: #d5d9ea;
+    }
+
+    .sheet-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 26px 24px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .sheet-title {
+      margin: 0 0 18px;
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1.2;
+      text-align: center;
+      color: #171b28;
+    }
+
+    .sheet-desc {
+      margin: 0 0 22px;
+      color: #5d6787;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.6;
+    }
+
+    .sheet-label {
+      display: block;
+      margin-bottom: 10px;
+      color: #171b28;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .sheet-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 64px;
+      padding: 0 16px;
+      border: 1.5px solid #6a7df8;
+      border-radius: 16px;
+      background: #ffffff;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .sheet-input-wrap:focus-within {
+      border-color: #5067ee;
+      box-shadow: 0 0 0 3px rgba(106, 125, 248, 0.14);
+    }
+
+    .sheet-input-wrap.has-error {
+      border-color: #e2556d;
+      box-shadow: 0 0 0 3px rgba(226, 85, 109, 0.12);
+    }
+
+    .sheet-input-icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 24px;
+      height: 24px;
+      color: var(--primary-strong);
+    }
+
+    .sheet-input-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .sheet-input {
+      width: 100%;
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #171b28;
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.4;
+      outline: none;
+    }
+
+    .sheet-input::placeholder {
+      color: #a2aac0;
+      font-weight: 500;
+    }
+
+    .sheet-helper {
+      margin: 11px 0 0;
+      color: #8a93aa;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+
+    .sheet-helper.is-error {
+      color: #e2556d;
+    }
+
+    .sheet-footer {
+      flex: 0 0 auto;
+      padding: 28px 24px calc(16px + env(safe-area-inset-bottom));
+    }
+
+    .sheet-submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 64px;
+      padding: 0 20px;
+      border: 0;
+      border-radius: 18px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #6f82ff 0%, #7d6df4 52%, #8b67ee 100%);
+      box-shadow: 0 14px 28px rgba(106, 125, 248, 0.28);
+      font-size: 21px;
+      font-weight: 800;
+      line-height: 1.2;
+      cursor: pointer;
+      transition: transform 0.14s ease;
+    }
+
+    .sheet-submit:active {
+      transform: scale(0.985);
+    }
+
     @media (max-width: 374px) {
       .app-header,
       .content {
@@ -271,6 +450,12 @@
       .team-panel {
         width: calc(100% - 36px);
         padding: 30px 18px 24px;
+      }
+
+      .sheet-body,
+      .sheet-footer {
+        padding-left: 18px;
+        padding-right: 18px;
       }
     }
   </style>
@@ -297,7 +482,7 @@
       <p class="empty-desc">建立或加入一個五重戰隊，和夥伴一起完成使命！</p>
 
       <div class="team-actions">
-        <button class="team-button primary" type="button">
+        <button class="team-button primary" type="button" id="openCreateTeamSheet">
           <span class="team-button-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" />
@@ -336,5 +521,98 @@
       <span>五重戰隊</span>
     </a>
   </nav>
+
+  <div class="sheet-overlay" id="createTeamOverlay" hidden>
+    <button class="sheet-backdrop" type="button" aria-label="關閉新增戰隊視窗" data-sheet-close></button>
+
+    <section
+      class="bottom-sheet"
+      id="createTeamSheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="createTeamTitle"
+    >
+      <div class="sheet-handle" aria-hidden="true"></div>
+
+      <div class="sheet-body">
+        <h2 class="sheet-title" id="createTeamTitle">新增五重戰隊</h2>
+        <p class="sheet-desc">輸入戰隊名稱後，建立成功將自動加入此戰隊。</p>
+
+        <label class="sheet-label" for="teamNameInput">戰隊名稱</label>
+
+        <div class="sheet-input-wrap" id="teamNameInputWrap">
+          <span class="sheet-input-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="9" cy="9" r="2.8" stroke="currentColor" stroke-width="2" />
+              <circle cx="15.5" cy="10" r="2.4" stroke="currentColor" stroke-width="2" />
+              <path d="M4.5 18.5c.8-2.6 2.6-4 4.5-4s3.7 1.4 4.5 4M13.5 17.8c.5-1.7 1.7-2.8 3-2.8s2.5 1.1 3 2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </span>
+          <input
+            class="sheet-input"
+            id="teamNameInput"
+            type="text"
+            placeholder="請輸入戰隊名稱"
+            autocomplete="off"
+            enterkeyhint="done"
+          />
+        </div>
+
+        <p class="sheet-helper" id="teamNameHelper">建立後將自動加入此戰隊</p>
+      </div>
+
+      <div class="sheet-footer">
+        <button class="sheet-submit" type="button">建立戰隊</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const createTeamOverlay = document.getElementById('createTeamOverlay');
+    const createTeamSheet = document.getElementById('createTeamSheet');
+    const openCreateTeamSheetButton = document.getElementById('openCreateTeamSheet');
+    const teamNameInput = document.getElementById('teamNameInput');
+
+    function openCreateTeamSheet() {
+      createTeamOverlay.hidden = false;
+      document.body.classList.add('sheet-open');
+      updateSheetKeyboardOffset();
+      window.setTimeout(() => {
+        teamNameInput.focus();
+      }, 120);
+    }
+
+    function closeCreateTeamSheet() {
+      createTeamOverlay.hidden = true;
+      document.body.classList.remove('sheet-open');
+      createTeamSheet.classList.remove('is-keyboard-open');
+      createTeamSheet.style.bottom = '';
+      teamNameInput.blur();
+    }
+
+    function updateSheetKeyboardOffset() {
+      if (createTeamOverlay.hidden || !window.visualViewport) {
+        return;
+      }
+
+      const viewport = window.visualViewport;
+      const keyboardOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      const isKeyboardOpen = keyboardOffset > 80;
+
+      createTeamSheet.classList.toggle('is-keyboard-open', isKeyboardOpen);
+      createTeamSheet.style.bottom = isKeyboardOpen ? `${keyboardOffset}px` : '';
+    }
+
+    openCreateTeamSheetButton.addEventListener('click', openCreateTeamSheet);
+
+    createTeamOverlay.querySelectorAll('[data-sheet-close]').forEach(element => {
+      element.addEventListener('click', closeCreateTeamSheet);
+    });
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateSheetKeyboardOffset);
+      window.visualViewport.addEventListener('scroll', updateSheetKeyboardOffset);
+    }
+  </script>
 </body>
 </html>
