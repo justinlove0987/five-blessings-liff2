@@ -363,6 +363,22 @@
       animation: spin 0.75s linear infinite;
     }
 
+    .list-loading {
+      display: grid;
+      place-items: center;
+      min-height: 160px;
+      padding: 48px 16px;
+    }
+
+    .page-spinner {
+      width: 28px;
+      height: 28px;
+      border: 2.5px solid rgba(106, 125, 248, 0.18);
+      border-top-color: #6a7df8;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
     .empty-state {
       padding: 36px 16px;
       border: 1px dashed rgba(123, 132, 155, 0.24);
@@ -616,15 +632,21 @@
       nextMonthButton.disabled = atLatest;
     }
 
+    function showListLoading() {
+      taskListEl.innerHTML = `
+        <div class="list-loading" aria-label="載入中">
+          <span class="page-spinner" aria-hidden="true"></span>
+        </div>
+      `;
+    }
+
     async function loadHistory() {
       if (!idToken) {
         return;
       }
 
       isLoading = true;
-      taskListEl.innerHTML = `
-        <div class="empty-state">載入中...</div>
-      `;
+      showListLoading();
 
       try {
         const response = await fetch(HISTORY_API_URL, {
@@ -811,6 +833,7 @@
 
     async function initLiff() {
       updateMonthControls();
+      showListLoading();
 
       if (!window.liff) {
         taskListEl.innerHTML = `
