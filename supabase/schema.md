@@ -54,6 +54,25 @@ The app calculates all periods in the `Asia/Taipei` time zone.
 | 主日 | `sunday` | `week` | Monday date, `YYYY-MM-DD` | `2026-06-22` |
 | 十一奉獻 | `tithe` | `month` | `YYYY-MM` | `2026-06` |
 
+## Task Visibility Rules
+
+Tasks should appear in the LIFF page based on the current date in the `Asia/Taipei` time zone.
+
+| Task | Visibility rule | Check-in frequency |
+| --- | --- | --- |
+| 晨禱 | Appears Tuesday through Saturday. Hidden on Sunday and Monday. | Once per visible day. |
+| 小家 | Appears as a weekly task. The weekly cycle refreshes every Sunday. | Once per Sunday-start week. |
+| 主日 | Appears as a weekly task. The weekly cycle refreshes every Sunday. | Once per Sunday-start week. |
+| 十一奉獻 | Appears as a monthly task. The monthly cycle refreshes on the first day of each month. | Once per month. |
+
+### Current Implementation Gap
+
+The current implementation does not fully match the visibility rules above:
+
+- 晨禱 currently appears every day. It should be hidden on Sunday and Monday.
+- 小家 and 主日 currently use Monday as the weekly `period_key`. They should use Sunday as the weekly `period_key`.
+- 十一奉獻 already uses a monthly `period_key` in `YYYY-MM` format, which matches the monthly refresh rule.
+
 ## App Data Flow
 
 1. The LIFF page gets a LINE `idToken`.
