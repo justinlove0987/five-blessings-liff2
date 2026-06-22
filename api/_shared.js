@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const { randomInt } = require('crypto');
 
 const TAIPEI_TIME_ZONE = 'Asia/Taipei';
 
@@ -85,6 +86,16 @@ function getCurrentTaskPeriods(date = new Date()) {
       }
     ])
   );
+}
+
+function getTeamWeeklyPeriodKeys(date = new Date()) {
+  const periods = getCurrentTaskPeriods(date);
+
+  return Object.entries(periods).map(([blessingType, period]) => ({
+    blessingType,
+    periodType: period.periodType,
+    periodKey: period.periodKey
+  }));
 }
 
 function getVisibleTaskTypes(today = getTaipeiDateParts(new Date())) {
@@ -284,6 +295,133 @@ function getHistoryPeriods(year, month, blessingType, todayParts = getTaipeiDate
   return [];
 }
 
+async function upsertLineUser(supabase, lineProfile) {
+  const lineUserId = lineProfile.sub;
+
+  if (!lineUserId) {
+    throw createHttpError(401, 'Invalid LINE profile: missing sub');
+  }
+
+  const { data, error } = await supabase
+    .from('users')
+    .upsert({
+      line_user_id: lineUserId,
+      display_name: lineProfile.name || '',
+      picture_url: lineProfile.picture || null
+    }, {
+      onConflict: 'line_user_id'
+    })
+    .select('id,line_user_id,display_name,picture_url,team_id')
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+async function buildTeamSummary(supabase, userId) {
+  const { data: currentUser, error: userError } = await supabase
+    .from('users')
+    .select('id,team_id')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (userError) {
+    throw userError;
+  }
+
+  if (!currentUser || !currentUser.team_id) {
+    return {
+      success: true,
+      team: null
+    };
+  }
+
+  const { data: team, error: teamError } = await supabase
+    .from('teams')
+    .select('id,name,invite_code')
+    .eq('id', currentUser.team_id)
+    .maybeSingle();
+
+  if (teamError) {
+    throw teamError;
+  }
+
+  if (!team) {
+    return {
+      success: true,
+      team: null
+    };
+  }
+
+  const { data: members, error: membersError } = await supabase
+    .from('users')
+    .select('id,display_name,picture_url,created_at')
+    .eq('team_id', team.id)
+    .order('created_at', { ascending: true });
+
+  if (membersError) {
+    throw membersError;
+  }
+
+  const memberTotals = new Map((members || []).map(member => [member.id, 0]));
+  const periods = getTeamWeeklyPeriodKeys();
+  const periodKeys = [...new Set(periods.map(period => period.periodKey))];
+  const blessingTypes = [...new Set(periods.map(period => period.blessingType))];
+
+  if (periodKeys.length > 0 && blessingTypes.length > 0) {
+    const { data: checkins, error: checkinsError } = await supabase
+      .from('checkins')
+      .select('user_id,blessing_type,period_key')
+      .eq('team_id', team.id)
+      .in('period_key', periodKeys)
+      .in('blessing_type', blessingTypes);
+
+    if (checkinsError) {
+      throw checkinsError;
+    }
+
+    (checkins || []).forEach(checkin => {
+      if (!checkin.user_id || !memberTotals.has(checkin.user_id)) {
+        return;
+      }
+
+      memberTotals.set(checkin.user_id, memberTotals.get(checkin.user_id) + 1);
+    });
+  }
+
+  const summaryMembers = (members || []).map(member => ({
+    id: member.id,
+    displayName: member.display_name || '小隊成員',
+    pictureUrl: member.picture_url || null,
+    weeklyTotal: memberTotals.get(member.id) || 0
+  }));
+
+  return {
+    success: true,
+    team: {
+      id: team.id,
+      name: team.name,
+      inviteCode: team.invite_code
+    },
+    weeklyTotal: summaryMembers.reduce((sum, member) => sum + member.weeklyTotal, 0),
+    members: summaryMembers
+  };
+}
+
+function generateInviteCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+
+  for (let index = 0; index < 6; index += 1) {
+    code += alphabet[randomInt(alphabet.length)];
+  }
+
+  return code;
+}
+
 function buildHistoryDateLabel(blessingType, periodKey) {
   if (blessingType === 'morningPrayer') {
     const [year, month, day] = periodKey.split('-').map(Number);
@@ -350,11 +488,16 @@ module.exports = {
   getHistoryPeriods,
   getSupabaseClient,
   getTaskPeriod,
+  getTeamWeeklyPeriodKeys,
   getTaipeiDateParts,
   getVisibleTaskTypes,
   HISTORY_EARLIEST,
   parseBody,
   sendError,
   sendJson,
+  buildTeamSummary,
+  createHttpError,
+  generateInviteCode,
+  upsertLineUser,
   verifyLineIdToken
 };

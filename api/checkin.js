@@ -5,6 +5,7 @@ const {
   parseBody,
   sendError,
   sendJson,
+  upsertLineUser,
   verifyLineIdToken
 } = require('./_shared');
 
@@ -38,6 +39,7 @@ module.exports = async function handler(req, res) {
 
     const lineProfile = await verifyLineIdToken(idToken);
     const supabase = getSupabaseClient();
+    const user = await upsertLineUser(supabase, lineProfile);
     const periods = getCurrentTaskPeriods();
     const taskPeriod = periods[blessingType];
 
@@ -59,6 +61,14 @@ module.exports = async function handler(req, res) {
     });
 
     if (existing) {
+      await syncExistingCheckinUserSnapshot(supabase, {
+        lineUserId,
+        blessingType,
+        periodKey,
+        userId: user.id,
+        teamId: user.team_id
+      });
+
       return sendJson(res, 200, {
         success: true,
         alreadyCompleted: true,
@@ -73,6 +83,8 @@ module.exports = async function handler(req, res) {
     const { error: insertError } = await supabase
       .from('checkins')
       .insert({
+        user_id: user.id,
+        team_id: user.team_id || null,
         line_user_id: lineUserId,
         display_name: displayName,
         blessing_type: blessingType,
@@ -83,6 +95,14 @@ module.exports = async function handler(req, res) {
 
     if (insertError) {
       if (insertError.code === '23505') {
+        await syncExistingCheckinUserSnapshot(supabase, {
+          lineUserId,
+          blessingType,
+          periodKey,
+          userId: user.id,
+          teamId: user.team_id
+        });
+
         return sendJson(res, 200, {
           success: true,
           alreadyCompleted: true,
@@ -124,4 +144,20 @@ async function findExistingCheckin(supabase, params) {
   }
 
   return data;
+}
+
+async function syncExistingCheckinUserSnapshot(supabase, params) {
+  const { error } = await supabase
+    .from('checkins')
+    .update({
+      user_id: params.userId,
+      team_id: params.teamId || null
+    })
+    .eq('line_user_id', params.lineUserId)
+    .eq('blessing_type', params.blessingType)
+    .eq('period_key', params.periodKey);
+
+  if (error) {
+    throw error;
+  }
 }
