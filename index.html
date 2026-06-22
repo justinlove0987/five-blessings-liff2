@@ -122,9 +122,10 @@
     .header-month {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      justify-content: center;
+      gap: 2px;
       min-height: 36px;
-      padding: 0 8px 0 12px;
+      padding: 0 6px;
       border: 1px solid rgba(106, 125, 248, 0.12);
       border-radius: 999px;
       color: #39415f;
@@ -132,6 +133,29 @@
       font-size: 15px;
       font-weight: 760;
       white-space: nowrap;
+    }
+
+    .month-step {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      color: var(--muted);
+      background: transparent;
+      cursor: default;
+    }
+
+    .month-step svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .month-text {
+      min-width: 40px;
+      text-align: center;
     }
 
     .chevron {
@@ -193,48 +217,6 @@
     .task-section {
       display: grid;
       gap: 12px;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2px 2px;
-    }
-
-    .section-title {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-      font-size: 18px;
-      font-weight: 760;
-    }
-
-    .section-icon {
-      display: grid;
-      place-items: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 9px;
-      color: #fff;
-      background: linear-gradient(135deg, #5f78f4, #738aff);
-      box-shadow: 0 8px 16px rgba(95, 120, 244, 0.22);
-    }
-
-    .view-all {
-      display: inline-flex;
-      align-items: center;
-      gap: 2px;
-      min-height: 36px;
-      padding: 0;
-      border: 0;
-      color: #8a93aa;
-      background: transparent;
-      font-size: 14px;
-      font-weight: 650;
-      cursor: pointer;
-      text-decoration: none;
     }
 
     .task-list {
@@ -546,12 +528,19 @@
       </div>
 
       <div class="header-actions">
-        <button class="header-month" type="button" aria-label="選擇月份">
-          <span id="currentMonth">--月</span>
-          <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
+        <div class="header-month" aria-label="月份">
+          <button class="month-step" type="button" aria-label="上一個月" disabled>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <span class="month-text" id="currentMonth">--月</span>
+          <button class="month-step" type="button" aria-label="下一個月" disabled>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
 
         <button class="avatar-button" type="button" aria-label="使用者資料">
           <img id="avatar" alt="" />
@@ -564,25 +553,7 @@
         <div class="week-selector" id="weekSelector"></div>
       </section>
 
-      <section class="task-section" aria-labelledby="task-title">
-        <div class="section-header">
-          <div class="section-title" id="task-title">
-            <span class="section-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M7 3v3M17 3v3M4.5 9.2h15M6.5 5h11A2.5 2.5 0 0 1 20 7.5v10A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5v-10A2.5 2.5 0 0 1 6.5 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              </svg>
-            </span>
-            <span>本期任務</span>
-          </div>
-
-          <a class="view-all" href="all-tasks.html">
-            <span>查看全部</span>
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
-        </div>
-
+      <section class="task-section" aria-label="任務列表">
         <div class="task-list">
           <article class="task-card" data-task-card="morningPrayer">
             <div class="icon-tile" aria-hidden="true">

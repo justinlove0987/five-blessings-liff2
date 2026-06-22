@@ -282,8 +282,13 @@
       position: absolute;
       inset: 0;
       border: 0;
-      background: rgba(22, 28, 45, 0.48);
+      background-color: rgba(22, 28, 45, 0);
       cursor: pointer;
+      transition: background-color 0.28s ease;
+    }
+
+    .sheet-overlay.is-open .sheet-backdrop {
+      background-color: rgba(22, 28, 45, 0.48);
     }
 
     .bottom-sheet {
@@ -680,10 +685,12 @@
       activeSheetKey = key;
       config.overlay.hidden = false;
       document.body.classList.add('sheet-open');
+      void config.overlay.offsetHeight;
       updateSheetKeyboardOffset();
       focusSheetInput(config.input);
 
       requestAnimationFrame(() => {
+        config.overlay.classList.add('is-open');
         requestAnimationFrame(() => focusSheetInput(config.input));
       });
     }
@@ -692,6 +699,7 @@
       const config = sheetConfigs[key];
       if (!config || config.overlay.hidden) return;
 
+      config.overlay.classList.remove('is-open');
       config.overlay.hidden = true;
       config.sheet.classList.remove('is-keyboard-open');
       config.sheet.style.removeProperty('--sheet-keyboard-offset');
@@ -720,8 +728,7 @@
       const viewport = window.visualViewport;
       const keyboardOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
       const isKeyboardOpen = keyboardOffset > 80;
-      const inputAccessoryGap = 12;
-      const sheetOffset = Math.max(0, keyboardOffset + inputAccessoryGap);
+      const sheetOffset = keyboardOffset;
       const wasKeyboardOpen = config.sheet.classList.contains('is-keyboard-open');
 
       config.sheet.classList.toggle('is-keyboard-open', isKeyboardOpen);
