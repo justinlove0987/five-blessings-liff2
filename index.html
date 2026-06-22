@@ -564,7 +564,7 @@
             </div>
           </article>
 
-          <article class="task-card is-done" data-task-card="sunday">
+          <article class="task-card" data-task-card="sunday">
             <div class="icon-tile sun" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M5 10.5 12 5l7 5.5V20H5v-9.5Z" fill="currentColor" opacity=".88" />
@@ -577,12 +577,9 @@
                 <div class="task-name">主日</div>
                 <div class="task-note">本週完成一次</div>
               </div>
-              <div class="done-pill" aria-label="已完成">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                <span>已完成</span>
-              </div>
+              <button class="checkin-button" type="button" data-type="sunday">
+                <span class="button-label">打卡</span>
+              </button>
             </div>
           </article>
 
@@ -615,6 +612,7 @@
 
   <script>
     const LIFF_ID = '2010462217-tVZRATTG';
+    const API_URL = '/api/checkin';
 
     const taskLabels = {
       morningPrayer: '晨禱',
@@ -638,6 +636,7 @@
     `);
 
     let toastTimer = null;
+    let idToken = null;
 
     const avatarEl = document.getElementById('avatar');
     const toastEl = document.getElementById('toast');
@@ -650,20 +649,41 @@
 
     checkinButtons.forEach(button => {
       button.addEventListener('click', () => {
-        handleMockCheckin(button);
+        submitCheckin(button);
       });
     });
 
-    async function handleMockCheckin(button) {
+    async function submitCheckin(button) {
       if (button.disabled) return;
 
       const type = button.dataset.type;
       const label = taskLabels[type] || '任務';
 
+      if (!idToken) {
+        showToast('尚未完成 LINE 登入，請重新開啟頁面。', 'error');
+        return;
+      }
+
       setButtonLoading(button, true);
 
       try {
-        await wait(700);
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            idToken,
+            blessingType: type
+          })
+        });
+
+        const data = await parseJsonResponse(response);
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Checkin failed');
+        }
+
         markTaskDone(type);
         showToast(`「${label}」打卡成功！`, 'success');
       } catch (error) {
@@ -712,8 +732,17 @@
       }, 2400);
     }
 
-    function wait(ms) {
-      return new Promise(resolve => window.setTimeout(resolve, ms));
+    async function parseJsonResponse(response) {
+      const text = await response.text();
+
+      try {
+        return JSON.parse(text || '{}');
+      } catch (error) {
+        return {
+          success: false,
+          error: text || 'Invalid API response'
+        };
+      }
     }
 
     function renderCurrentDates() {
@@ -798,9 +827,14 @@
 
       try {
         await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) return;
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
 
         const profile = await liff.getProfile();
+        idToken = liff.getIDToken();
+
         if (profile.pictureUrl) {
           avatarEl.src = profile.pictureUrl;
         }
