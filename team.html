@@ -116,6 +116,21 @@
       font-weight: 700;
     }
 
+    .team-loading-inner {
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+    }
+
+    .team-loading-spinner {
+      width: 34px;
+      height: 34px;
+      border: 3px solid rgba(106, 125, 248, 0.18);
+      border-top-color: var(--primary-strong);
+      border-radius: 50%;
+      animation: spin 0.78s linear infinite;
+    }
+
     .team-panel {
       display: flex;
       flex-direction: column;
@@ -550,6 +565,12 @@
       background: rgba(198, 70, 91, 0.94);
     }
 
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     .sheet-overlay {
       position: fixed;
       inset: 0;
@@ -829,7 +850,10 @@
 
     <div class="content">
       <section class="team-loading" id="teamLoading" aria-label="小隊資料載入中">
-        載入小隊資料中...
+        <div class="team-loading-inner">
+          <span class="team-loading-spinner" aria-hidden="true"></span>
+          <span>載入小隊資料中...</span>
+        </div>
       </section>
 
       <section id="emptyTeamState" hidden>
