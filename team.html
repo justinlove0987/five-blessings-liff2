@@ -292,15 +292,15 @@
       display: flex;
       flex-direction: column;
       width: min(100%, 480px);
-      max-height: min(42vh, 420px);
+      max-height: min(38vh, 380px);
       border-radius: 36px 36px 0 0;
       background: #fcfdff;
       box-shadow: 0 -18px 48px rgba(38, 45, 70, 0.18);
-      transition: max-height 0.22s ease;
+      transition: bottom 0.18s ease, max-height 0.22s ease;
     }
 
     .bottom-sheet.is-keyboard-open {
-      max-height: min(70vh, 620px);
+      max-height: min(40vh, 360px);
     }
 
     .sheet-handle {
@@ -316,15 +316,15 @@
       flex: 1 1 auto;
       min-height: 0;
       overflow-y: auto;
-      padding: 26px 24px 0;
+      padding: 22px 24px 0;
       -webkit-overflow-scrolling: touch;
     }
 
     .sheet-title {
-      margin: 0 0 18px;
-      font-size: 30px;
+      margin: 0 0 20px;
+      font-size: 24px;
       font-weight: 800;
-      line-height: 1.2;
+      line-height: 1.18;
       text-align: center;
       color: #171b28;
     }
@@ -414,7 +414,7 @@
 
     .sheet-footer {
       flex: 0 0 auto;
-      padding: 28px 24px calc(16px + env(safe-area-inset-bottom));
+      padding: 20px 24px calc(10px + env(safe-area-inset-bottom));
     }
 
     .sheet-submit {
@@ -438,6 +438,38 @@
 
     .sheet-submit:active {
       transform: scale(0.985);
+    }
+
+    .bottom-sheet.is-keyboard-open .sheet-handle {
+      margin-top: 12px;
+    }
+
+    .bottom-sheet.is-keyboard-open .sheet-body {
+      padding-top: 16px;
+    }
+
+    .bottom-sheet.is-keyboard-open .sheet-title {
+      margin-bottom: 14px;
+      font-size: 21px;
+    }
+
+    .bottom-sheet.is-keyboard-open .sheet-input-wrap {
+      min-height: 58px;
+    }
+
+    .bottom-sheet.is-keyboard-open .sheet-helper {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .bottom-sheet.is-keyboard-open .sheet-footer {
+      padding-top: 14px;
+      padding-bottom: 6px;
+    }
+
+    .bottom-sheet.is-keyboard-open .sheet-submit {
+      min-height: 56px;
+      font-size: 19px;
     }
 
     @media (max-width: 374px) {
@@ -536,7 +568,6 @@
 
       <div class="sheet-body">
         <h2 class="sheet-title" id="createTeamTitle">新增五重戰隊</h2>
-        <p class="sheet-desc">輸入戰隊名稱後，建立成功將自動加入此戰隊。</p>
 
         <label class="sheet-label" for="teamNameInput">戰隊名稱</label>
 
@@ -579,7 +610,6 @@
 
       <div class="sheet-body">
         <h2 class="sheet-title" id="joinTeamTitle">加入五重戰隊</h2>
-        <p class="sheet-desc">輸入邀請碼後，加入成功即可與夥伴一起打卡。</p>
 
         <label class="sheet-label" for="inviteCodeInput">邀請碼</label>
 
@@ -685,9 +715,11 @@
       const viewport = window.visualViewport;
       const keyboardOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
       const isKeyboardOpen = keyboardOffset > 80;
+      const sheetKeyboardGap = 6;
+      const sheetOffset = Math.max(0, keyboardOffset - sheetKeyboardGap);
 
       config.sheet.classList.toggle('is-keyboard-open', isKeyboardOpen);
-      config.sheet.style.bottom = isKeyboardOpen ? `${keyboardOffset}px` : '';
+      config.sheet.style.bottom = isKeyboardOpen ? `${sheetOffset}px` : '';
     }
 
     sheetConfigs.create.openButton.addEventListener('click', () => openTeamSheet('create'));
