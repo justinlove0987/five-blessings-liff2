@@ -32,10 +32,9 @@ module.exports = async function handler(req, res) {
     const periodKeys = Object.values(periods).map(period => period.periodKey);
 
     const { data, error } = await supabase
-      .from('user_task_status')
-      .select('blessing_type,period_key,completed,completed_at')
+      .from('checkins')
+      .select('blessing_type,period_key,checked_in_at')
       .eq('line_user_id', lineProfile.sub)
-      .eq('completed', true)
       .in('period_key', periodKeys);
 
     if (error) {
@@ -47,14 +46,13 @@ module.exports = async function handler(req, res) {
         const row = (data || []).find(item => (
           item.blessing_type === blessingType
           && item.period_key === period.periodKey
-          && item.completed === true
         ));
 
         return [
           blessingType,
           {
             completed: Boolean(row),
-            completedAt: row ? row.completed_at : null,
+            completedAt: row ? row.checked_in_at : null,
             periodType: period.periodType,
             periodKey: period.periodKey
           }

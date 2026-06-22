@@ -50,15 +50,6 @@ module.exports = async function handler(req, res) {
     });
 
     if (existing) {
-      await upsertTaskStatus(supabase, {
-        lineUserId,
-        displayName,
-        blessingType,
-        periodType,
-        periodKey,
-        completedAt: existing.checked_in_at || new Date().toISOString()
-      });
-
       return sendJson(res, 200, {
         success: true,
         alreadyCompleted: true,
@@ -83,15 +74,6 @@ module.exports = async function handler(req, res) {
 
     if (insertError) {
       if (insertError.code === '23505') {
-        await upsertTaskStatus(supabase, {
-          lineUserId,
-          displayName,
-          blessingType,
-          periodType,
-          periodKey,
-          completedAt: checkedInAt
-        });
-
         return sendJson(res, 200, {
           success: true,
           alreadyCompleted: true,
@@ -104,15 +86,6 @@ module.exports = async function handler(req, res) {
 
       throw insertError;
     }
-
-    await upsertTaskStatus(supabase, {
-      lineUserId,
-      displayName,
-      blessingType,
-      periodType,
-      periodKey,
-      completedAt: checkedInAt
-    });
 
     return sendJson(res, 200, {
       success: true,
@@ -142,25 +115,4 @@ async function findExistingCheckin(supabase, params) {
   }
 
   return data;
-}
-
-async function upsertTaskStatus(supabase, params) {
-  const { error } = await supabase
-    .from('user_task_status')
-    .upsert({
-      line_user_id: params.lineUserId,
-      display_name: params.displayName,
-      blessing_type: params.blessingType,
-      period_type: params.periodType,
-      period_key: params.periodKey,
-      completed: true,
-      completed_at: params.completedAt,
-      updated_at: new Date().toISOString()
-    }, {
-      onConflict: 'line_user_id,blessing_type,period_key'
-    });
-
-  if (error) {
-    throw error;
-  }
 }
