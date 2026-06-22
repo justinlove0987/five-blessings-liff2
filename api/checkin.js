@@ -1,18 +1,12 @@
-const { createClient } = require('@supabase/supabase-js');
-
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const LINE_LOGIN_CHANNEL_ID = process.env.LINE_LOGIN_CHANNEL_ID;
-const TAIPEI_TIME_ZONE = 'Asia/Taipei';
-
-const taskPeriodMap = {
-  morningPrayer: 'day',
-  smallGroup: 'week',
-  sunday: 'week',
-  tithe: 'month'
-};
-
-let supabaseClient = null;
+const {
+  getCurrentTaskPeriods,
+  getSupabaseClient,
+  getTaskPeriod,
+  parseBody,
+  sendError,
+  sendJson,
+  verifyLineIdToken
+} = require('./_shared');
 
 module.exports = async function handler(req, res) {
   try {
@@ -23,16 +17,10 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !LINE_LOGIN_CHANNEL_ID) {
-      return sendJson(res, 500, {
-        success: false,
-        error: 'Missing server environment variables'
-      });
-    }
-
     const body = parseBody(req.body);
     const idToken = body.idToken;
     const blessingType = body.blessingType;
+    const periodType = getTaskPeriod(blessingType);
 
     if (!idToken) {
       return sendJson(res, 400, {
@@ -41,7 +29,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    if (!blessingType || !taskPeriodMap[blessingType]) {
+    if (!periodType) {
       return sendJson(res, 400, {
         success: false,
         error: 'Invalid blessingType'
@@ -50,10 +38,8 @@ module.exports = async function handler(req, res) {
 
     const lineProfile = await verifyLineIdToken(idToken);
     const supabase = getSupabaseClient();
-    const now = new Date();
-    const taipeiToday = getTaipeiDateParts(now);
-    const periodType = taskPeriodMap[blessingType];
-    const periodKey = getPeriodKey(periodType, taipeiToday);
+    const periods = getCurrentTaskPeriods();
+    const periodKey = periods[blessingType].periodKey;
     const lineUserId = lineProfile.sub;
     const displayName = lineProfile.name || '';
 
@@ -70,7 +56,7 @@ module.exports = async function handler(req, res) {
         blessingType,
         periodType,
         periodKey,
-        completedAt: existing.checked_in_at || now.toISOString()
+        completedAt: existing.checked_in_at || new Date().toISOString()
       });
 
       return sendJson(res, 200, {
@@ -83,7 +69,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const checkedInAt = now.toISOString();
+    const checkedInAt = new Date().toISOString();
     const { error: insertError } = await supabase
       .from('checkins')
       .insert({
@@ -138,28 +124,9 @@ module.exports = async function handler(req, res) {
     });
 
   } catch (error) {
-    return sendJson(res, 500, {
-      success: false,
-      error: String(error.message || error)
-    });
+    return sendError(res, error);
   }
 };
-
-function parseBody(body) {
-  if (typeof body === 'string') {
-    return JSON.parse(body || '{}');
-  }
-
-  return body || {};
-}
-
-function getSupabaseClient() {
-  if (!supabaseClient) {
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  }
-
-  return supabaseClient;
-}
 
 async function findExistingCheckin(supabase, params) {
   const { data, error } = await supabase
@@ -196,87 +163,4 @@ async function upsertTaskStatus(supabase, params) {
   if (error) {
     throw error;
   }
-}
-
-async function verifyLineIdToken(idToken) {
-  const response = await fetch('https://api.line.me/oauth2/v2.1/verify', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: new URLSearchParams({
-      id_token: idToken,
-      client_id: LINE_LOGIN_CHANNEL_ID
-    })
-  });
-
-  const text = await response.text();
-
-  if (!response.ok) {
-    throw new Error(`LINE verify failed: ${text}`);
-  }
-
-  const profile = JSON.parse(text);
-
-  if (!profile.sub) {
-    throw new Error('Invalid LINE profile: missing sub');
-  }
-
-  return profile;
-}
-
-function getTaipeiDateParts(date) {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: TAIPEI_TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).formatToParts(date);
-
-  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
-
-  return {
-    year: Number(values.year),
-    month: Number(values.month),
-    day: Number(values.day)
-  };
-}
-
-function getPeriodKey(periodType, today) {
-  if (periodType === 'day') {
-    return formatDateKey(today);
-  }
-
-  if (periodType === 'week') {
-    return formatDateKey(getMondayDateParts(today));
-  }
-
-  return `${today.year}-${String(today.month).padStart(2, '0')}`;
-}
-
-function getMondayDateParts(today) {
-  const date = new Date(Date.UTC(today.year, today.month - 1, today.day));
-  const dayOfWeek = date.getUTCDay();
-  const daysSinceMonday = (dayOfWeek + 6) % 7;
-  date.setUTCDate(date.getUTCDate() - daysSinceMonday);
-
-  return {
-    year: date.getUTCFullYear(),
-    month: date.getUTCMonth() + 1,
-    day: date.getUTCDate()
-  };
-}
-
-function formatDateKey(dateParts) {
-  return [
-    dateParts.year,
-    String(dateParts.month).padStart(2, '0'),
-    String(dateParts.day).padStart(2, '0')
-  ].join('-');
-}
-
-function sendJson(res, statusCode, data) {
-  res.statusCode = statusCode;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.end(JSON.stringify(data));
 }
