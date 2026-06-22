@@ -310,6 +310,8 @@
 
     .bottom-sheet.is-keyboard-open {
       max-height: min(40vh, 360px);
+      overscroll-behavior: none;
+      touch-action: none;
     }
 
     .sheet-handle {
@@ -454,7 +456,9 @@
     }
 
     .bottom-sheet.is-keyboard-open .sheet-body {
+      overflow: hidden;
       padding-top: 16px;
+      touch-action: none;
     }
 
     .bottom-sheet.is-keyboard-open .sheet-title {
@@ -756,6 +760,13 @@
       });
     }
 
+    function preventKeyboardSheetDrag(event) {
+      const config = sheetConfigs[activeSheetKey];
+      if (config && config.sheet.classList.contains('is-keyboard-open')) {
+        event.preventDefault();
+      }
+    }
+
     sheetConfigs.create.openButton.addEventListener('click', () => openTeamSheet('create'));
     sheetConfigs.join.openButton.addEventListener('click', () => openTeamSheet('join'));
 
@@ -771,6 +782,8 @@
     }
 
     Object.values(sheetConfigs).forEach(config => {
+      config.sheet.addEventListener('touchmove', preventKeyboardSheetDrag, { passive: false });
+
       config.input.addEventListener('keydown', event => {
         if (event.key === 'Enter') {
           closeTeamSheet(activeSheetKey);

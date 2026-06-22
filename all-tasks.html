@@ -60,7 +60,6 @@
       z-index: 10;
       display: grid;
       grid-template-columns: 40px 1fr 40px;
-      gap: 10px;
       align-items: center;
       min-height: 64px;
       padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
@@ -68,6 +67,13 @@
       border-bottom: 1px solid rgba(232, 236, 248, 0.72);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
+    }
+
+    .header-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 760;
+      color: #171b28;
     }
 
     .icon-button {
@@ -97,15 +103,22 @@
       padding: 18px 20px 0;
     }
 
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
     .month-pill {
       display: inline-flex;
       align-items: center;
+      gap: 4px;
+      min-width: 92px;
       justify-content: center;
-      gap: 2px;
-      justify-self: center;
-      min-width: 128px;
       min-height: 40px;
-      padding: 0 6px;
+      padding: 0 14px;
       border: 1px solid rgba(106, 125, 248, 0.12);
       border-radius: 999px;
       color: #39415f;
@@ -115,32 +128,10 @@
       white-space: nowrap;
     }
 
-    .month-step {
-      display: grid;
-      place-items: center;
-      width: 30px;
-      height: 30px;
-      padding: 0;
-      border: 0;
-      border-radius: 50%;
+    .month-pill .chevron {
+      width: 16px;
+      height: 16px;
       color: var(--muted);
-      background: transparent;
-      cursor: pointer;
-    }
-
-    .month-step:disabled {
-      opacity: 0.35;
-      cursor: default;
-    }
-
-    .month-step svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    .month-text {
-      min-width: 44px;
-      text-align: center;
     }
 
     .filter-row {
@@ -487,23 +478,32 @@
           <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </button>
-      <div class="month-pill" id="monthLabel" aria-label="月份切換">
-        <button class="month-step" type="button" id="prevMonthButton" aria-label="上一個月">
+      <div class="header-title">全部任務</div>
+      <span aria-hidden="true"></span>
+    </header>
+
+    <div class="content">
+      <div class="month-nav">
+        <button class="icon-button" type="button" id="prevMonthButton" aria-label="上一個月">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </button>
-        <span class="month-text" id="currentMonthText">--月</span>
-        <button class="month-step" type="button" id="nextMonthButton" aria-label="下一個月">
+
+        <div class="month-pill" id="monthLabel">
+          <span id="currentMonthText">--月</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+
+        <button class="icon-button" type="button" id="nextMonthButton" aria-label="下一個月">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </button>
       </div>
-      <span aria-hidden="true"></span>
-    </header>
 
-    <div class="content">
       <div class="filter-row" id="filterRow">
         <button class="filter-chip is-active" type="button" data-type="morningPrayer">
           <span class="filter-icon" aria-hidden="true">
