@@ -73,16 +73,29 @@ function getTaskPeriod(blessingType) {
 
 function getCurrentTaskPeriods(date = new Date()) {
   const today = getTaipeiDateParts(date);
+  const visibleTasks = getVisibleTaskTypes(today);
 
   return Object.fromEntries(
     Object.entries(taskPeriodMap).map(([blessingType, periodType]) => [
       blessingType,
       {
+        visible: visibleTasks.includes(blessingType),
         periodType,
         periodKey: getPeriodKey(periodType, today)
       }
     ])
   );
+}
+
+function getVisibleTaskTypes(today = getTaipeiDateParts(new Date())) {
+  const dayOfWeek = getUtcDateFromParts(today).getUTCDay();
+  const tasks = ['smallGroup', 'sunday', 'tithe'];
+
+  if (dayOfWeek >= 2 && dayOfWeek <= 6) {
+    tasks.unshift('morningPrayer');
+  }
+
+  return tasks;
 }
 
 function getTaipeiDateParts(date) {
@@ -108,23 +121,26 @@ function getPeriodKey(periodType, today) {
   }
 
   if (periodType === 'week') {
-    return formatDateKey(getMondayDateParts(today));
+    return formatDateKey(getSundayDateParts(today));
   }
 
   return `${today.year}-${String(today.month).padStart(2, '0')}`;
 }
 
-function getMondayDateParts(today) {
-  const date = new Date(Date.UTC(today.year, today.month - 1, today.day));
+function getSundayDateParts(today) {
+  const date = getUtcDateFromParts(today);
   const dayOfWeek = date.getUTCDay();
-  const daysSinceMonday = (dayOfWeek + 6) % 7;
-  date.setUTCDate(date.getUTCDate() - daysSinceMonday);
+  date.setUTCDate(date.getUTCDate() - dayOfWeek);
 
   return {
     year: date.getUTCFullYear(),
     month: date.getUTCMonth() + 1,
     day: date.getUTCDate()
   };
+}
+
+function getUtcDateFromParts(dateParts) {
+  return new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day));
 }
 
 function formatDateKey(dateParts) {
@@ -158,6 +174,7 @@ module.exports = {
   getCurrentTaskPeriods,
   getSupabaseClient,
   getTaskPeriod,
+  getVisibleTaskTypes,
   parseBody,
   sendError,
   sendJson,

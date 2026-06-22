@@ -1,101 +1,102 @@
-# Supabase Table Schema
+# Supabase 資料表結構
 
-This document records the current database structure used by the Five Blessings LIFF check-in app.
+這份文件記錄「五重祝福」LINE LIFF 打卡 App 目前使用的 Supabase 資料庫結構與任務規則。
 
-The app now uses a single table as the source of truth:
+目前 App 以單一資料表作為資料來源：
 
-- `checkins`: one completed check-in record per user, task, and period.
+- `checkins`：每位使用者、每個任務、每個週期只會有一筆完成紀錄。
 
-The previous summary tables, `user_task_status` and `user_daily_status`, are no longer used.
+舊的彙整表已不再使用：
 
-## Table: `checkins`
+- `user_task_status`
+- `user_daily_status`
 
-Stores one completion record per LINE user, blessing task, and period. The row itself means the task is completed for that period.
+## 資料表：`checkins`
 
-| Column | Type | Nullable | Description |
+`checkins` 用來記錄使用者在某個任務週期內已完成打卡。只要存在對應 row，就代表該任務在該週期已完成。
+
+| 欄位 | 型別 | 可為空 | 說明 |
 | --- | --- | --- | --- |
-| `id` | `uuid` | No | Primary key. Generated with `gen_random_uuid()`. |
-| `line_user_id` | `text` | No | LINE user id from the verified LINE ID token. |
-| `display_name` | `text` | No | LINE display name at the time of check-in. |
-| `blessing_type` | `text` | No | Task key, such as `morningPrayer`, `smallGroup`, `sunday`, or `tithe`. |
-| `period_type` | `text` | No | Check-in period type: `day`, `week`, or `month`. |
-| `period_key` | `text` | No | Period identifier used for lookup and duplicate prevention. |
-| `checked_in_at` | `timestamptz` | No | Timestamp when the task was checked in. |
-| `created_at` | `timestamptz` | No | Timestamp when the row was created. |
+| `id` | `uuid` | 否 | 主鍵，預設使用 `gen_random_uuid()` 產生。 |
+| `line_user_id` | `text` | 否 | 從 LINE ID token 驗證後取得的 LINE user id。 |
+| `display_name` | `text` | 否 | 打卡當下的 LINE 顯示名稱。 |
+| `blessing_type` | `text` | 否 | 任務代碼，例如 `morningPrayer`、`smallGroup`、`sunday`、`tithe`。 |
+| `period_type` | `text` | 否 | 任務週期類型：`day`、`week`、`month`。 |
+| `period_key` | `text` | 否 | 任務週期識別值，用於查詢與避免重複打卡。 |
+| `checked_in_at` | `timestamptz` | 否 | 使用者完成打卡的時間。 |
+| `created_at` | `timestamptz` | 否 | row 建立時間。 |
 
 ## Constraints
 
-- Primary key: `id`
-- Unique completion record:
+- 主鍵：`id`
+- 同一任務週期只能完成一次：
   - `unique (line_user_id, blessing_type, period_key)`
-- Allowed `blessing_type` values:
+- `blessing_type` 允許值：
   - `morningPrayer`
   - `smallGroup`
   - `sunday`
   - `tithe`
-- Allowed `period_type` values:
+- `period_type` 允許值：
   - `day`
   - `week`
   - `month`
 
 ## Indexes
 
-- `checkins_line_user_id_idx` on `line_user_id`
-- `checkins_period_key_idx` on `period_key`
+- `checkins_line_user_id_idx`：建立在 `line_user_id`
+- `checkins_period_key_idx`：建立在 `period_key`
 
-## Task Period Rules
+## 任務週期規則
 
-The app calculates all periods in the `Asia/Taipei` time zone.
+所有任務週期都以 `Asia/Taipei` 時區計算。
 
-| Task | `blessing_type` | `period_type` | `period_key` format | Example |
+| 任務 | `blessing_type` | `period_type` | `period_key` 格式 | 範例 |
 | --- | --- | --- | --- | --- |
 | 晨禱 | `morningPrayer` | `day` | `YYYY-MM-DD` | `2026-06-22` |
-| 小家 | `smallGroup` | `week` | Monday date, `YYYY-MM-DD` | `2026-06-22` |
-| 主日 | `sunday` | `week` | Monday date, `YYYY-MM-DD` | `2026-06-22` |
+| 小家 | `smallGroup` | `week` | 週日日期，`YYYY-MM-DD` | `2026-06-21` |
+| 主日 | `sunday` | `week` | 週日日期，`YYYY-MM-DD` | `2026-06-21` |
 | 十一奉獻 | `tithe` | `month` | `YYYY-MM` | `2026-06` |
 
-## Task Visibility Rules
+## 任務出現規則
 
-Tasks should appear in the LIFF page based on the current date in the `Asia/Taipei` time zone.
+任務是否出現在 LIFF 頁面，應依照 `Asia/Taipei` 當日日期判斷。
 
-| Task | Visibility rule | Check-in frequency |
+| 任務 | 出現規則 | 打卡頻率 |
 | --- | --- | --- |
-| 晨禱 | Appears Tuesday through Saturday. Hidden on Sunday and Monday. | Once per visible day. |
-| 小家 | Appears as a weekly task. The weekly cycle refreshes every Sunday. | Once per Sunday-start week. |
-| 主日 | Appears as a weekly task. The weekly cycle refreshes every Sunday. | Once per Sunday-start week. |
-| 十一奉獻 | Appears as a monthly task. The monthly cycle refreshes on the first day of each month. | Once per month. |
+| 晨禱 | 每週二到週六出現；週日與週一不出現。 | 出現日每天可打卡一次。 |
+| 小家 | 週任務，每週日更新一次；日期顯示為週日到週六。 | 每個週日開始的週期可完成一次。 |
+| 主日 | 週任務，每週日更新一次；日期顯示為週日到週六。 | 每個週日開始的週期可完成一次。 |
+| 十一奉獻 | 月任務，每個月第一天更新一次。 | 每月可完成一次。 |
 
-### Current Implementation Gap
+### 後端防呆規則
 
-The current implementation does not fully match the visibility rules above:
+- `/api/status` 只回傳當天應該出現的任務狀態。
+- `/api/checkin` 若收到當天不應出現的任務，會回傳錯誤且不寫入 `checkins`。
+- 晨禱在週日與週一不可打卡，即使前端被繞過，後端也會拒絕寫入。
 
-- 晨禱 currently appears every day. It should be hidden on Sunday and Monday.
-- 小家 and 主日 currently use Monday as the weekly `period_key`. They should use Sunday as the weekly `period_key`.
-- 十一奉獻 already uses a monthly `period_key` in `YYYY-MM` format, which matches the monthly refresh rule.
+## App 資料流程
 
-## App Data Flow
-
-1. The LIFF page gets a LINE `idToken`.
-2. `/api/status` verifies the token and reads `checkins`.
-3. If a matching `checkins` row exists, the task is shown as `已完成`.
-4. When the user checks in, `/api/checkin` verifies the token.
-5. `/api/checkin` inserts one row into `checkins`.
-6. Duplicate check-ins for the same `line_user_id`, `blessing_type`, and `period_key` return success without creating another row.
+1. LIFF 頁面取得 LINE `idToken`。
+2. `/api/status` 驗證 token，並查詢 `checkins`。
+3. 如果找到符合目前任務週期的 `checkins` row，該任務顯示為 `已完成`。
+4. 使用者點擊打卡時，`/api/checkin` 驗證 token。
+5. `/api/checkin` 新增一筆 `checkins` row。
+6. 若同一個 `line_user_id`、`blessing_type`、`period_key` 已經存在，API 回傳成功，不再新增重複 row。
 
 ## Production Migration Notes
 
-Run `supabase/schema.sql` in Supabase SQL Editor.
+在 Supabase SQL Editor 執行 `supabase/schema.sql`。
 
-The migration:
+這份 migration 會：
 
-- Drops `user_task_status`.
-- Drops `user_daily_status`.
-- Keeps `checkins` as the only active app table.
-- Ensures required `checkins` columns, constraints, and indexes exist.
-- Removes duplicate `checkins` rows for the same `line_user_id`, `blessing_type`, and `period_key`, keeping the earliest `checked_in_at`.
+- 刪除 `user_task_status`。
+- 刪除 `user_daily_status`。
+- 保留 `checkins` 作為目前唯一使用中的 App 資料表。
+- 確認 `checkins` 必要欄位、constraints、indexes 都存在。
+- 如果 `checkins` 中有同一個 `line_user_id`、`blessing_type`、`period_key` 的重複 row，保留最早的 `checked_in_at`，刪除其他重複資料。
 
 ## Row Level Security
 
-RLS is enabled on `public.checkins`.
+`public.checkins` 已啟用 RLS。
 
-The current app writes and reads through Vercel serverless API routes using `SUPABASE_SERVICE_ROLE_KEY`, so browser clients do not access this table directly.
+目前 App 透過 Vercel serverless API routes 使用 `SUPABASE_SERVICE_ROLE_KEY` 讀寫資料，因此瀏覽器端不會直接存取 Supabase 資料表。

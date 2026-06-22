@@ -720,6 +720,8 @@
           throw new Error(data.error || 'Status failed');
         }
 
+        syncVisibleTaskCards(Object.keys(data.tasks));
+
         Object.entries(data.tasks).forEach(([type, task]) => {
           if (task && task.completed) {
             markTaskDone(type);
@@ -731,6 +733,15 @@
         setPendingButtonsUnavailable();
         showToast('讀取打卡狀態失敗，請重新整理後再試一次。', 'error');
       }
+    }
+
+    function syncVisibleTaskCards(visibleTypes) {
+      const visibleTypeSet = new Set(visibleTypes);
+
+      document.querySelectorAll('[data-task-card]').forEach(card => {
+        const type = card.dataset.taskCard;
+        card.hidden = !visibleTypeSet.has(type);
+      });
     }
 
     function setPendingButtonsLoading(isLoading) {
@@ -810,9 +821,12 @@
       const today = getTaipeiToday();
       const weekStart = addDays(today, -((today.getDay() + 6) % 7));
       const weekEnd = addDays(weekStart, 6);
+      const taskWeekStart = addDays(today, -today.getDay());
+      const taskWeekEnd = addDays(taskWeekStart, 6);
 
       currentMonthEl.textContent = `${today.getMonth() + 1}月`;
       weekSelectorEl.innerHTML = '';
+      syncVisibleTaskCards(getVisibleTaskTypes(today));
 
       for (let index = 0; index < 7; index += 1) {
         const date = addDays(weekStart, index);
@@ -839,12 +853,23 @@
       });
 
       document.querySelectorAll('[data-date-label="week"]').forEach(el => {
-        el.textContent = `${formatMonthDayWithWeekday(weekStart)} - ${formatMonthDayWithWeekday(weekEnd)}`;
+        el.textContent = `${formatMonthDayWithWeekday(taskWeekStart)} - ${formatMonthDayWithWeekday(taskWeekEnd)}`;
       });
 
       document.querySelectorAll('[data-date-label="month"]').forEach(el => {
         el.textContent = `${today.getMonth() + 1}月`;
       });
+    }
+
+    function getVisibleTaskTypes(date) {
+      const tasks = ['smallGroup', 'sunday', 'tithe'];
+      const dayOfWeek = date.getDay();
+
+      if (dayOfWeek >= 2 && dayOfWeek <= 6) {
+        tasks.unshift('morningPrayer');
+      }
+
+      return tasks;
     }
 
     function getTaipeiToday() {

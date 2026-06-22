@@ -29,7 +29,10 @@ module.exports = async function handler(req, res) {
     const lineProfile = await verifyLineIdToken(idToken);
     const supabase = getSupabaseClient();
     const periods = getCurrentTaskPeriods();
-    const periodKeys = Object.values(periods).map(period => period.periodKey);
+    const visiblePeriods = Object.fromEntries(
+      Object.entries(periods).filter(([, period]) => period.visible)
+    );
+    const periodKeys = Object.values(visiblePeriods).map(period => period.periodKey);
 
     const { data, error } = await supabase
       .from('checkins')
@@ -42,7 +45,7 @@ module.exports = async function handler(req, res) {
     }
 
     const tasks = Object.fromEntries(
-      Object.entries(periods).map(([blessingType, period]) => {
+      Object.entries(visiblePeriods).map(([blessingType, period]) => {
         const row = (data || []).find(item => (
           item.blessing_type === blessingType
           && item.period_key === period.periodKey

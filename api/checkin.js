@@ -39,6 +39,15 @@ module.exports = async function handler(req, res) {
     const lineProfile = await verifyLineIdToken(idToken);
     const supabase = getSupabaseClient();
     const periods = getCurrentTaskPeriods();
+    const taskPeriod = periods[blessingType];
+
+    if (!taskPeriod.visible) {
+      return sendJson(res, 400, {
+        success: false,
+        error: 'Task is not available today'
+      });
+    }
+
     const periodKey = periods[blessingType].periodKey;
     const lineUserId = lineProfile.sub;
     const displayName = lineProfile.name || '';
