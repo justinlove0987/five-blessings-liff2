@@ -266,7 +266,8 @@
     }
 
     .team-heading {
-      display: flex;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
       align-items: center;
       gap: 10px;
       min-width: 0;
@@ -289,6 +290,33 @@
       line-height: 1.2;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .leave-team-button {
+      display: inline-grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 50%;
+      color: #8a93aa;
+      background: rgba(238, 241, 255, 0.9);
+      cursor: pointer;
+      transition: transform 0.14s ease, background-color 0.14s ease, color 0.14s ease;
+    }
+
+    .leave-team-button:active {
+      transform: scale(0.94);
+    }
+
+    .leave-team-button:disabled {
+      cursor: default;
+      opacity: 0.55;
+    }
+
+    .leave-team-button svg {
+      width: 17px;
+      height: 17px;
     }
 
     .invite-row {
@@ -899,6 +927,11 @@
                 <img src="assets/five-blessings-icons/team_icon.png" alt="" />
               </span>
               <h2 class="team-name" id="joinedTeamName">--</h2>
+              <button class="leave-team-button" type="button" id="leaveTeamButton" aria-label="退出小隊">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M10 6H6.5A2.5 2.5 0 0 0 4 8.5v7A2.5 2.5 0 0 0 6.5 18H10M15 8l4 4-4 4M9 12h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
             </div>
 
             <div class="invite-row">
@@ -1095,6 +1128,7 @@
     const memberListEl = document.getElementById('memberList');
     const copyInviteButton = document.getElementById('copyInviteCode');
     const copyInviteLabel = document.getElementById('copyInviteLabel');
+    const leaveTeamButton = document.getElementById('leaveTeamButton');
     const toastEl = document.getElementById('toast');
 
     function focusSheetInput(input) {
@@ -1336,6 +1370,26 @@
       }
     }
 
+    async function leaveTeam() {
+      if (!idToken || leaveTeamButton.disabled) {
+        return;
+      }
+
+      leaveTeamButton.disabled = true;
+
+      try {
+        await requestTeam({ action: 'leave' });
+        currentInviteCode = '';
+        memberListEl.innerHTML = '';
+        showEmptyState();
+        showToast('已退出小隊', 'success');
+      } catch (error) {
+        showToast('退出小隊失敗，請稍後再試。', 'error');
+      } finally {
+        leaveTeamButton.disabled = false;
+      }
+    }
+
     function showToast(message, type) {
       window.clearTimeout(toastTimer);
       toastEl.textContent = message;
@@ -1422,6 +1476,7 @@
     sheetConfigs.create.submitButton.addEventListener('click', () => submitTeamAction('create'));
     sheetConfigs.join.submitButton.addEventListener('click', () => submitTeamAction('join'));
     copyInviteButton.addEventListener('click', copyInviteCode);
+    leaveTeamButton.addEventListener('click', leaveTeam);
 
     document.querySelectorAll('[data-sheet-close]').forEach(element => {
       element.addEventListener('click', () => {

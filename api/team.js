@@ -48,6 +48,14 @@ module.exports = async function handler(req, res) {
       return sendJson(res, 200, await buildTeamSummary(supabase, user.id));
     }
 
+    if (action === 'leave') {
+      await leaveTeam(supabase, user.id);
+      return sendJson(res, 200, {
+        success: true,
+        team: null
+      });
+    }
+
     return sendJson(res, 400, {
       success: false,
       error: 'Invalid action'
@@ -133,5 +141,16 @@ async function joinTeam(supabase, userId, rawInviteCode) {
 
   if (updateError) {
     throw updateError;
+  }
+}
+
+async function leaveTeam(supabase, userId) {
+  const { error } = await supabase
+    .from('users')
+    .update({ team_id: null })
+    .eq('id', userId);
+
+  if (error) {
+    throw error;
   }
 }
