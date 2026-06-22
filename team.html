@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>五重戰隊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <style>
+    :root {
+      --page-bg: #f5f7ff;
+      --ink: #1f2433;
+      --muted: #7b849b;
+      --primary: #6a7df8;
+      --primary-strong: #5067ee;
+      --primary-soft: #eef1ff;
+      --tab-height: 72px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--page-bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(214, 207, 255, 0.5), transparent 36%),
+        radial-gradient(circle at 88% 6%, rgba(202, 232, 255, 0.38), transparent 32%),
+        linear-gradient(180deg, #f7f4ff 0%, #f4f8ff 48%, #fbfcff 100%);
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app-shell {
+      width: min(100%, 480px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding-bottom: calc(var(--tab-height) + 24px + env(safe-area-inset-bottom));
+    }
+
+    .page-header {
+      padding: calc(18px + env(safe-area-inset-top)) 24px 0;
+    }
+
+    .page-title {
+      margin: 0 0 8px;
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: #171b28;
+    }
+
+    .page-subtitle {
+      margin: 0;
+      max-width: 320px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 560;
+      line-height: 1.55;
+    }
+
+    .team-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 24px 0;
+    }
+
+    .empty-state {
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+      width: 100%;
+      margin-bottom: 34px;
+    }
+
+    .empty-illustration {
+      position: relative;
+      width: min(100%, 320px);
+      aspect-ratio: 1.15;
+      display: grid;
+      place-items: center;
+    }
+
+    .empty-illustration img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    .empty-copy {
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+      text-align: center;
+      padding: 0 8px;
+    }
+
+    .empty-title {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.3;
+      color: #171b28;
+    }
+
+    .empty-desc {
+      margin: 0;
+      max-width: 300px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 560;
+      line-height: 1.6;
+    }
+
+    .team-actions {
+      display: grid;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .team-button {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      min-height: 64px;
+      padding: 8px 20px 8px 10px;
+      border: 0;
+      border-radius: 20px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    .team-button:active {
+      transform: scale(0.985);
+    }
+
+    .team-button-icon {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(82, 95, 160, 0.12);
+    }
+
+    .team-button-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .team-button-label {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .team-button.primary {
+      color: #ffffff;
+      background: linear-gradient(135deg, #6f82ff 0%, #7d6df4 52%, #8b67ee 100%);
+      box-shadow: 0 14px 28px rgba(106, 125, 248, 0.28);
+    }
+
+    .team-button.primary .team-button-icon svg {
+      color: var(--primary-strong);
+    }
+
+    .team-button.secondary {
+      color: var(--primary-strong);
+      background: linear-gradient(180deg, #f1f3ff 0%, #e9edff 100%);
+      box-shadow: 0 8px 20px rgba(106, 125, 248, 0.08);
+    }
+
+    .team-button.secondary .team-button-icon svg {
+      color: var(--primary-strong);
+    }
+
+    .tab-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      z-index: 30;
+      width: min(100%, 480px);
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      min-height: var(--tab-height);
+      padding: 8px 18px calc(10px + env(safe-area-inset-bottom));
+      border-top: 1px solid rgba(232, 236, 248, 0.9);
+      border-radius: 24px 24px 0 0;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 -10px 30px rgba(83, 95, 143, 0.08);
+    }
+
+    .tab-item {
+      position: relative;
+      display: grid;
+      justify-items: center;
+      align-content: center;
+      gap: 4px;
+      min-height: 54px;
+      padding-top: 6px;
+      color: #9aa3b8;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .tab-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .tab-item.is-active {
+      color: var(--primary-strong);
+    }
+
+    .tab-item.is-active::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 28px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #6f82ff, #8b67ee);
+      transform: translateX(-50%);
+    }
+
+    @media (max-width: 374px) {
+      .page-header,
+      .team-content {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .page-title {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app-shell">
+    <header class="page-header">
+      <h1 class="page-title">五重戰隊</h1>
+      <p class="page-subtitle">和夥伴一起打卡，完成五重祝福！</p>
+    </header>
+
+    <section class="team-content" aria-label="尚未加入戰隊">
+      <div class="empty-state">
+        <div class="empty-illustration" aria-hidden="true">
+          <img src="assets/team-empty-illustration.png" alt="" />
+        </div>
+
+        <div class="empty-copy">
+          <h2 class="empty-title">還沒有加入戰隊</h2>
+          <p class="empty-desc">建立或加入一個五重戰隊，和夥伴一起完成使命！</p>
+        </div>
+      </div>
+
+      <div class="team-actions">
+        <button class="team-button primary" type="button">
+          <span class="team-button-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" />
+            </svg>
+          </span>
+          <span class="team-button-label">新增五重戰隊</span>
+        </button>
+
+        <button class="team-button secondary" type="button">
+          <span class="team-button-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="9" cy="9" r="2.6" fill="currentColor" />
+              <circle cx="15.5" cy="10" r="2.2" fill="currentColor" opacity=".88" />
+              <path d="M4.5 18.5c.8-2.6 2.6-4 4.5-4s3.7 1.4 4.5 4M13.5 17.8c.5-1.7 1.7-2.8 3-2.8s2.5 1.1 3 2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </span>
+          <span class="team-button-label">加入五重戰隊</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tab-bar" aria-label="主要導覽">
+    <a class="tab-item" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4.5 10.2 12 4.5l7.5 5.7V20a1 1 0 0 1-1 1h-5v-6H10.5v6h-5a1 1 0 0 1-1-1v-9.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+      </svg>
+      <span>首頁</span>
+    </a>
+
+    <a class="tab-item is-active" href="team.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="9" cy="9" r="2.6" stroke="currentColor" stroke-width="2" />
+        <circle cx="15.5" cy="10" r="2.2" stroke="currentColor" stroke-width="2" />
+        <path d="M4.5 18.5c.8-2.6 2.6-4 4.5-4s3.7 1.4 4.5 4M13.5 17.8c.5-1.7 1.7-2.8 3-2.8s2.5 1.1 3 2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </svg>
+      <span>五重戰隊</span>
+    </a>
+  </nav>
+</body>
+</html>
