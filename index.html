@@ -647,6 +647,7 @@
 
     avatarEl.src = fallbackAvatar;
     renderCurrentDates();
+    setPendingButtonsLoading(true);
 
     checkinButtons.forEach(button => {
       button.addEventListener('click', () => {
@@ -694,7 +695,13 @@
     }
 
     async function loadTaskStatus() {
-      if (!idToken) return;
+      if (!idToken) {
+        setPendingButtonsUnavailable();
+        showToast('尚未完成 LINE 登入，請重新開啟頁面。', 'error');
+        return;
+      }
+
+      setPendingButtonsLoading(true);
 
       try {
         const response = await fetch(STATUS_API_URL, {
@@ -718,9 +725,33 @@
             markTaskDone(type);
           }
         });
+
+        setPendingButtonsLoading(false);
       } catch (error) {
+        setPendingButtonsUnavailable();
         showToast('讀取打卡狀態失敗，請重新整理後再試一次。', 'error');
       }
+    }
+
+    function setPendingButtonsLoading(isLoading) {
+      document.querySelectorAll('.checkin-button').forEach(button => {
+        const label = button.querySelector('.button-label');
+        button.disabled = isLoading;
+
+        if (isLoading) {
+          label.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>確認中</span>';
+        } else {
+          label.textContent = '打卡';
+        }
+      });
+    }
+
+    function setPendingButtonsUnavailable() {
+      document.querySelectorAll('.checkin-button').forEach(button => {
+        const label = button.querySelector('.button-label');
+        button.disabled = true;
+        label.textContent = '請重試';
+      });
     }
 
     function setButtonLoading(button, isLoading) {
@@ -728,10 +759,9 @@
       button.disabled = isLoading;
 
       if (isLoading) {
-        button.dataset.previousLabel = label.textContent;
         label.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>送出中</span>';
       } else {
-        label.textContent = button.dataset.previousLabel || '打卡';
+        label.textContent = '打卡';
       }
     }
 
@@ -854,7 +884,10 @@
     }
 
     async function loadLiffAvatar() {
-      if (!window.liff) return;
+      if (!window.liff) {
+        setPendingButtonsUnavailable();
+        return;
+      }
 
       try {
         await liff.init({ liffId: LIFF_ID });
@@ -866,6 +899,10 @@
         const profile = await liff.getProfile();
         idToken = liff.getIDToken();
 
+        if (!idToken) {
+          throw new Error('Missing LINE idToken');
+        }
+
         if (profile.pictureUrl) {
           avatarEl.src = profile.pictureUrl;
         }
@@ -873,6 +910,7 @@
         await loadTaskStatus();
       } catch (error) {
         avatarEl.src = fallbackAvatar;
+        setPendingButtonsUnavailable();
       }
     }
 
