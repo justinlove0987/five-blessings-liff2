@@ -43,6 +43,10 @@
       font: inherit;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
     .app-shell {
       width: min(100%, 480px);
       min-height: 100vh;
@@ -228,8 +232,8 @@
       background: transparent;
       font-size: 14px;
       font-weight: 650;
-      cursor: default;
-      opacity: 0.74;
+      cursor: pointer;
+      text-decoration: none;
     }
 
     .task-list {
@@ -517,12 +521,12 @@
             <span>本期任務</span>
           </div>
 
-          <button class="view-all" type="button" disabled>
+          <a class="view-all" href="all-tasks.html">
             <span>查看全部</span>
             <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
-          </button>
+          </a>
         </div>
 
         <div class="task-list">

@@ -151,6 +151,179 @@ function formatDateKey(dateParts) {
   ].join('-');
 }
 
+const HISTORY_EARLIEST = { year: 2026, month: 6 };
+
+function compareDateParts(a, b) {
+  if (a.year !== b.year) {
+    return a.year - b.year;
+  }
+
+  if (a.month !== b.month) {
+    return a.month - b.month;
+  }
+
+  return a.day - b.day;
+}
+
+function compareYearMonth(year, month, compareYear, compareMonth) {
+  return (year - compareYear) * 12 + (month - compareMonth);
+}
+
+function addDaysToDateParts(dateParts, days) {
+  const date = getUtcDateFromParts(dateParts);
+  date.setUTCDate(date.getUTCDate() + days);
+
+  return {
+    year: date.getUTCFullYear(),
+    month: date.getUTCMonth() + 1,
+    day: date.getUTCDate()
+  };
+}
+
+function isMorningPrayerDay(dateParts) {
+  const dayOfWeek = getUtcDateFromParts(dateParts).getUTCDay();
+  return dayOfWeek >= 2 && dayOfWeek <= 6;
+}
+
+function getDaysInMonth(year, month) {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function getMorningPrayerPeriodsInMonth(year, month, todayParts) {
+  const items = [];
+  const daysInMonth = getDaysInMonth(year, month);
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dateParts = { year, month, day };
+
+    if (!isMorningPrayerDay(dateParts)) {
+      continue;
+    }
+
+    if (compareDateParts(dateParts, todayParts) > 0) {
+      continue;
+    }
+
+    items.push({
+      blessingType: 'morningPrayer',
+      periodType: 'day',
+      periodKey: formatDateKey(dateParts),
+      sortKey: formatDateKey(dateParts)
+    });
+  }
+
+  return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+}
+
+function getWeekPeriodsInMonth(year, month, blessingType, todayParts) {
+  const monthStart = { year, month, day: 1 };
+  const monthEnd = { year, month, day: getDaysInMonth(year, month) };
+  const items = [];
+  const seen = new Set();
+  let sunday = getSundayDateParts(monthStart);
+
+  while (compareDateParts(sunday, monthEnd) <= 0) {
+    const weekEnd = addDaysToDateParts(sunday, 6);
+
+    if (compareDateParts(weekEnd, monthStart) >= 0 && compareDateParts(sunday, todayParts) <= 0) {
+      const periodKey = formatDateKey(sunday);
+
+      if (!seen.has(periodKey)) {
+        seen.add(periodKey);
+        items.push({
+          blessingType,
+          periodType: 'week',
+          periodKey,
+          sortKey: periodKey
+        });
+      }
+    }
+
+    sunday = addDaysToDateParts(sunday, 7);
+  }
+
+  return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+}
+
+function getTithePeriodInMonth(year, month, todayParts) {
+  if (compareYearMonth(year, month, todayParts.year, todayParts.month) > 0) {
+    return [];
+  }
+
+  const periodKey = `${year}-${String(month).padStart(2, '0')}`;
+
+  return [{
+    blessingType: 'tithe',
+    periodType: 'month',
+    periodKey,
+    sortKey: periodKey
+  }];
+}
+
+function getHistoryPeriods(year, month, blessingType, todayParts = getTaipeiDateParts(new Date())) {
+  if (compareYearMonth(year, month, HISTORY_EARLIEST.year, HISTORY_EARLIEST.month) < 0) {
+    return [];
+  }
+
+  if (compareYearMonth(year, month, todayParts.year, todayParts.month) > 0) {
+    return [];
+  }
+
+  if (blessingType === 'morningPrayer') {
+    return getMorningPrayerPeriodsInMonth(year, month, todayParts);
+  }
+
+  if (blessingType === 'smallGroup' || blessingType === 'sunday') {
+    return getWeekPeriodsInMonth(year, month, blessingType, todayParts);
+  }
+
+  if (blessingType === 'tithe') {
+    return getTithePeriodInMonth(year, month, todayParts);
+  }
+
+  return [];
+}
+
+function buildHistoryDateLabel(blessingType, periodKey) {
+  if (blessingType === 'morningPrayer') {
+    const [year, month, day] = periodKey.split('-').map(Number);
+    const weekday = ['日', '一', '二', '三', '四', '五', '六'][
+      getUtcDateFromParts({ year, month, day }).getUTCDay()
+    ];
+    return `${month}/${day}（${weekday}）`;
+  }
+
+  if (blessingType === 'smallGroup' || blessingType === 'sunday') {
+    const [year, month, day] = periodKey.split('-').map(Number);
+    const start = { year, month, day };
+    const end = addDaysToDateParts(start, 6);
+    const startWeekday = ['日', '一', '二', '三', '四', '五', '六'][
+      getUtcDateFromParts(start).getUTCDay()
+    ];
+    const endWeekday = ['日', '一', '二', '三', '四', '五', '六'][
+      getUtcDateFromParts(end).getUTCDay()
+    ];
+    return `${start.month}/${start.day}（${startWeekday}） - ${end.month}/${end.day}（${endWeekday}）`;
+  }
+
+  const [year, month] = periodKey.split('-').map(Number);
+  return `${month}月`;
+}
+
+function buildHistoryTaskNote(blessingType, periodKey, currentPeriodKey) {
+  const isCurrent = periodKey === currentPeriodKey;
+
+  if (blessingType === 'morningPrayer') {
+    return isCurrent ? '今日可打卡' : '每日可打卡一次';
+  }
+
+  if (blessingType === 'smallGroup' || blessingType === 'sunday') {
+    return isCurrent ? '本週完成一次' : '每週完成一次';
+  }
+
+  return isCurrent ? '本月完成一次' : '每月完成一次';
+}
+
 function sendJson(res, statusCode, data) {
   res.statusCode = statusCode;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -171,10 +344,15 @@ function createHttpError(statusCode, message) {
 }
 
 module.exports = {
+  buildHistoryDateLabel,
+  buildHistoryTaskNote,
   getCurrentTaskPeriods,
+  getHistoryPeriods,
   getSupabaseClient,
   getTaskPeriod,
+  getTaipeiDateParts,
   getVisibleTaskTypes,
+  HISTORY_EARLIEST,
   parseBody,
   sendError,
   sendJson,

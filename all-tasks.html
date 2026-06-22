@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>全部任務</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <style>
+    :root {
+      --page-bg: #f5f7ff;
+      --card: #ffffff;
+      --ink: #1f2433;
+      --muted: #7b849b;
+      --line: #e8ecf8;
+      --primary: #6a7df8;
+      --primary-strong: #5067ee;
+      --success: #22c58f;
+      --success-soft: #f0fbf5;
+      --shadow: 0 10px 28px rgba(83, 95, 143, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--page-bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background:
+        radial-gradient(circle at 10% 14%, rgba(214, 207, 255, 0.55), transparent 34%),
+        radial-gradient(circle at 90% 5%, rgba(202, 232, 255, 0.42), transparent 30%),
+        linear-gradient(180deg, #f7f4ff 0%, #f4f8ff 42%, #fbfcff 100%);
+    }
+
+    button {
+      font: inherit;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .app-shell {
+      width: min(100%, 480px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 40px 1fr 40px;
+      align-items: center;
+      min-height: 64px;
+      padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+      background: rgba(255, 255, 255, 0.72);
+      border-bottom: 1px solid rgba(232, 236, 248, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .header-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 760;
+      color: #171b28;
+    }
+
+    .icon-button {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      color: #39415f;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .icon-button:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .icon-button svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .content {
+      padding: 18px 20px 0;
+    }
+
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .month-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 92px;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid rgba(106, 125, 248, 0.12);
+      border-radius: 999px;
+      color: #39415f;
+      background: rgba(255, 255, 255, 0.72);
+      font-size: 16px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .month-pill .chevron {
+      width: 16px;
+      height: 16px;
+      color: var(--muted);
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .filter-chip {
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+      min-height: 74px;
+      padding: 10px 6px;
+      border: 1px solid rgba(232, 236, 248, 0.92);
+      border-radius: 16px;
+      color: #4b5568;
+      background: rgba(255, 255, 255, 0.72);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: border-color 0.14s ease, box-shadow 0.14s ease, transform 0.14s ease;
+    }
+
+    .filter-chip:active {
+      transform: scale(0.98);
+    }
+
+    .filter-chip.is-active {
+      border-color: rgba(106, 125, 248, 0.28);
+      box-shadow: 0 8px 18px rgba(106, 125, 248, 0.12);
+      color: #171b28;
+      background: #ffffff;
+    }
+
+    .filter-icon {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+    }
+
+    .filter-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .filter-icon.mint {
+      color: #22b98b;
+      background: linear-gradient(135deg, #e3f8ec, #f2fbf5);
+    }
+
+    .filter-icon.lavender {
+      color: #8172f6;
+      background: linear-gradient(135deg, #ebe8ff, #f5f1ff);
+    }
+
+    .filter-icon.sun {
+      color: #ee9d27;
+      background: linear-gradient(135deg, #fff0c8, #fff7e7);
+    }
+
+    .filter-icon.blue {
+      color: #3aa8ec;
+      background: linear-gradient(135deg, #ddf2ff, #edf8ff);
+    }
+
+    .task-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .task-card {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+      min-height: 108px;
+      padding: 16px;
+      border: 1px solid rgba(232, 236, 248, 0.82);
+      border-radius: 18px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .task-card.is-done {
+      border-color: rgba(34, 197, 143, 0.12);
+      background: linear-gradient(135deg, var(--success-soft), #ffffff 76%);
+    }
+
+    .icon-tile {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      flex: 0 0 auto;
+    }
+
+    .icon-tile svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .icon-tile.mint {
+      color: #22b98b;
+      background: linear-gradient(135deg, #e3f8ec, #f2fbf5);
+    }
+
+    .icon-tile.lavender {
+      color: #8172f6;
+      background: linear-gradient(135deg, #ebe8ff, #f5f1ff);
+    }
+
+    .icon-tile.sun {
+      color: #ee9d27;
+      background: linear-gradient(135deg, #fff0c8, #fff7e7);
+    }
+
+    .icon-tile.blue {
+      color: #3aa8ec;
+      background: linear-gradient(135deg, #ddf2ff, #edf8ff);
+    }
+
+    .task-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .task-copy {
+      min-width: 0;
+    }
+
+    .task-date {
+      margin-bottom: 5px;
+      color: #7180a6;
+      font-size: 13.5px;
+      font-weight: 650;
+      line-height: 1.25;
+    }
+
+    .task-name {
+      margin-bottom: 5px;
+      color: #171b28;
+      font-size: 19px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .task-note {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 560;
+      line-height: 1.35;
+    }
+
+    .checkin-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-width: 86px;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 999px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #20c98e, #24b978);
+      box-shadow: 0 9px 18px rgba(31, 191, 132, 0.26);
+      font-size: 16px;
+      font-weight: 760;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: transform 0.14s ease, opacity 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    .button-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .checkin-button:active {
+      transform: scale(0.97);
+    }
+
+    .checkin-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .done-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 44px;
+      min-width: 90px;
+      padding: 0 12px;
+      border: 1px solid rgba(34, 197, 143, 0.18);
+      border-radius: 999px;
+      color: #19b980;
+      background: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .missed-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      min-width: 90px;
+      padding: 0 12px;
+      border: 1px solid rgba(123, 132, 155, 0.18);
+      border-radius: 999px;
+      color: #8a93aa;
+      background: rgba(255, 255, 255, 0.72);
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .done-pill svg,
+    .checkin-button svg {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 auto;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    .empty-state {
+      padding: 36px 16px;
+      border: 1px dashed rgba(123, 132, 155, 0.24);
+      border-radius: 18px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.56);
+      text-align: center;
+      font-size: 14px;
+      font-weight: 650;
+      line-height: 1.6;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      z-index: 20;
+      width: min(calc(100% - 40px), 420px);
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      border-radius: 16px;
+      color: #ffffff;
+      background: rgba(38, 45, 70, 0.92);
+      box-shadow: 0 16px 36px rgba(38, 45, 70, 0.24);
+      font-size: 14px;
+      font-weight: 650;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 18px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .toast.error {
+      background: rgba(190, 67, 83, 0.94);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 374px) {
+      .content,
+      .app-header {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .filter-row {
+        gap: 6px;
+      }
+
+      .filter-chip {
+        min-height: 68px;
+        font-size: 12px;
+      }
+
+      .task-card {
+        grid-template-columns: 44px minmax(0, 1fr);
+        gap: 12px;
+        padding: 14px;
+      }
+
+      .icon-tile {
+        width: 44px;
+        height: 44px;
+      }
+
+      .task-main {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .checkin-button,
+      .done-pill,
+      .missed-pill {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <button class="icon-button" type="button" id="backButton" aria-label="返回首頁">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+      <div class="header-title">全部任務</div>
+      <span aria-hidden="true"></span>
+    </header>
+
+    <div class="content">
+      <div class="month-nav">
+        <button class="icon-button" type="button" id="prevMonthButton" aria-label="上一個月">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+
+        <div class="month-pill" id="monthLabel">
+          <span id="currentMonthText">--月</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+
+        <button class="icon-button" type="button" id="nextMonthButton" aria-label="下一個月">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="filter-row" id="filterRow">
+        <button class="filter-chip is-active" type="button" data-type="morningPrayer">
+          <span class="filter-icon mint" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 15a7 7 0 0 1 14 0H5Z" fill="currentColor" opacity=".9" />
+              <path d="M12 3v3M4.9 6.9 7 9M19.1 6.9 17 9M3 15h18M7 19h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </span>
+          <span>晨禱</span>
+        </button>
+
+        <button class="filter-chip" type="button" data-type="smallGroup">
+          <span class="filter-icon lavender" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 11.3 12 5l8 6.3V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-8.7Z" fill="currentColor" opacity=".9" />
+              <path d="m3 12 9-7 9 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <span>小家</span>
+        </button>
+
+        <button class="filter-chip" type="button" data-type="sunday">
+          <span class="filter-icon sun" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 10.5 12 5l7 5.5V20H5v-9.5Z" fill="currentColor" opacity=".88" />
+              <path d="M12 5V2M8 20v-5h8v5M9.5 12h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <span>主日</span>
+        </button>
+
+        <button class="filter-chip" type="button" data-type="tithe">
+          <span class="filter-icon blue" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 20s-7-4.3-7-9.2A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.8C19 15.7 12 20 12 20Z" fill="currentColor" opacity=".9" />
+              <path d="M4 20h6.8c1.4 0 2.7-.5 3.7-1.5l4-4a2 2 0 0 0-2.8-2.8l-2.6 2.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <span>十一奉獻</span>
+        </button>
+      </div>
+
+      <div class="task-list" id="taskList"></div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <script>
+    const LIFF_ID = '2010462217-tVZRATTG';
+    const CHECKIN_API_URL = '/api/checkin';
+    const HISTORY_API_URL = '/api/history';
+    const EARLIEST_YEAR = 2026;
+    const EARLIEST_MONTH = 6;
+
+    const taskLabels = {
+      morningPrayer: '晨禱',
+      smallGroup: '小家',
+      sunday: '主日',
+      tithe: '十一奉獻'
+    };
+
+    const taskIconClass = {
+      morningPrayer: 'mint',
+      smallGroup: 'lavender',
+      sunday: 'sun',
+      tithe: 'blue'
+    };
+
+    const taskIcons = {
+      morningPrayer: `
+        <path d="M5 15a7 7 0 0 1 14 0H5Z" fill="currentColor" opacity=".9" />
+        <path d="M12 3v3M4.9 6.9 7 9M19.1 6.9 17 9M3 15h18M7 19h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      `,
+      smallGroup: `
+        <path d="M4 11.3 12 5l8 6.3V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-8.7Z" fill="currentColor" opacity=".9" />
+        <path d="m3 12 9-7 9 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      `,
+      sunday: `
+        <path d="M5 10.5 12 5l7 5.5V20H5v-9.5Z" fill="currentColor" opacity=".88" />
+        <path d="M12 5V2M8 20v-5h8v5M9.5 12h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      `,
+      tithe: `
+        <path d="M12 20s-7-4.3-7-9.2A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.8C19 15.7 12 20 12 20Z" fill="currentColor" opacity=".9" />
+        <path d="M4 20h6.8c1.4 0 2.7-.5 3.7-1.5l4-4a2 2 0 0 0-2.8-2.8l-2.6 2.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      `
+    };
+
+    let toastTimer = null;
+    let idToken = null;
+    let selectedType = 'morningPrayer';
+    let selectedYear = 0;
+    let selectedMonth = 0;
+    let isLoading = false;
+
+    const toastEl = document.getElementById('toast');
+    const taskListEl = document.getElementById('taskList');
+    const currentMonthTextEl = document.getElementById('currentMonthText');
+    const prevMonthButton = document.getElementById('prevMonthButton');
+    const nextMonthButton = document.getElementById('nextMonthButton');
+    const backButton = document.getElementById('backButton');
+    const filterButtons = Array.from(document.querySelectorAll('.filter-chip'));
+
+    const today = getTaipeiToday();
+    selectedYear = today.getFullYear();
+    selectedMonth = today.getMonth() + 1;
+
+    backButton.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    prevMonthButton.addEventListener('click', () => {
+      shiftMonth(-1);
+    });
+
+    nextMonthButton.addEventListener('click', () => {
+      shiftMonth(1);
+    });
+
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        selectedType = button.dataset.type;
+        filterButtons.forEach(chip => {
+          chip.classList.toggle('is-active', chip.dataset.type === selectedType);
+        });
+        loadHistory();
+      });
+    });
+
+    function shiftMonth(delta) {
+      const next = new Date(selectedYear, selectedMonth - 1 + delta, 1);
+      selectedYear = next.getFullYear();
+      selectedMonth = next.getMonth() + 1;
+      updateMonthControls();
+      loadHistory();
+    }
+
+    function compareYearMonth(year, month, compareYear, compareMonth) {
+      return (year - compareYear) * 12 + (month - compareMonth);
+    }
+
+    function updateMonthControls() {
+      currentMonthTextEl.textContent = `${selectedMonth}月`;
+
+      const atEarliest = compareYearMonth(
+        selectedYear,
+        selectedMonth,
+        EARLIEST_YEAR,
+        EARLIEST_MONTH
+      ) <= 0;
+      const atLatest = selectedYear === today.getFullYear()
+        && selectedMonth === today.getMonth() + 1;
+
+      prevMonthButton.disabled = atEarliest;
+      nextMonthButton.disabled = atLatest;
+    }
+
+    async function loadHistory() {
+      if (!idToken) {
+        return;
+      }
+
+      isLoading = true;
+      taskListEl.innerHTML = `
+        <div class="empty-state">載入中...</div>
+      `;
+
+      try {
+        const response = await fetch(HISTORY_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            idToken,
+            year: selectedYear,
+            month: selectedMonth,
+            blessingType: selectedType
+          })
+        });
+
+        const data = await parseJsonResponse(response);
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'History failed');
+        }
+
+        renderTaskList(data.items || []);
+      } catch (error) {
+        taskListEl.innerHTML = `
+          <div class="empty-state">讀取任務紀錄失敗，請重新整理後再試一次。</div>
+        `;
+        showToast('讀取任務紀錄失敗，請重新整理後再試一次。', 'error');
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    function renderTaskList(items) {
+      if (!items.length) {
+        taskListEl.innerHTML = `
+          <div class="empty-state">這個月份目前沒有可查看的${taskLabels[selectedType]}任務。</div>
+        `;
+        return;
+      }
+
+      taskListEl.innerHTML = items.map(item => {
+        const iconClass = taskIconClass[item.blessingType];
+        const label = taskLabels[item.blessingType];
+        const actionHtml = buildActionHtml(item);
+
+        return `
+          <article class="task-card${item.completed ? ' is-done' : ''}" data-period-key="${item.periodKey}">
+            <div class="icon-tile ${iconClass}" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">${taskIcons[item.blessingType]}</svg>
+            </div>
+            <div class="task-main">
+              <div class="task-copy">
+                <div class="task-date">${item.dateLabel}</div>
+                <div class="task-name">${label}</div>
+                <div class="task-note">${item.note}</div>
+              </div>
+              ${actionHtml}
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      taskListEl.querySelectorAll('.checkin-button').forEach(button => {
+        button.addEventListener('click', () => {
+          submitCheckin(button);
+        });
+      });
+    }
+
+    function buildActionHtml(item) {
+      if (item.completed) {
+        return `
+          <div class="done-pill" aria-label="已完成">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span>已完成</span>
+          </div>
+        `;
+      }
+
+      if (item.canCheckin) {
+        return `
+          <button class="checkin-button" type="button" data-type="${item.blessingType}">
+            <span class="button-label">打卡</span>
+          </button>
+        `;
+      }
+
+      return `
+        <div class="missed-pill" aria-label="未完成">未完成</div>
+      `;
+    }
+
+    async function submitCheckin(button) {
+      if (button.disabled || isLoading) {
+        return;
+      }
+
+      const type = button.dataset.type;
+      const label = taskLabels[type] || '任務';
+
+      if (!idToken) {
+        showToast('尚未完成 LINE 登入，請重新開啟頁面。', 'error');
+        return;
+      }
+
+      setButtonLoading(button, true);
+
+      try {
+        const response = await fetch(CHECKIN_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            idToken,
+            blessingType: type
+          })
+        });
+
+        const data = await parseJsonResponse(response);
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Checkin failed');
+        }
+
+        showToast(`「${label}」打卡成功！`, 'success');
+        await loadHistory();
+      } catch (error) {
+        setButtonLoading(button, false);
+        showToast('打卡失敗，請重新整理後再試一次。', 'error');
+      }
+    }
+
+    function setButtonLoading(button, isLoading) {
+      const label = button.querySelector('.button-label');
+      button.disabled = isLoading;
+
+      if (isLoading) {
+        label.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>送出中</span>';
+      } else {
+        label.textContent = '打卡';
+      }
+    }
+
+    function showToast(message, type) {
+      window.clearTimeout(toastTimer);
+      toastEl.textContent = message;
+      toastEl.classList.toggle('error', type === 'error');
+      toastEl.classList.add('show');
+
+      toastTimer = window.setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, 2400);
+    }
+
+    async function parseJsonResponse(response) {
+      const text = await response.text();
+
+      try {
+        return JSON.parse(text || '{}');
+      } catch (error) {
+        return {
+          success: false,
+          error: text || 'Invalid API response'
+        };
+      }
+    }
+
+    function getTaipeiToday() {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Taipei',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(new Date());
+
+      const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+      return new Date(Number(values.year), Number(values.month) - 1, Number(values.day));
+    }
+
+    async function initLiff() {
+      updateMonthControls();
+
+      if (!window.liff) {
+        taskListEl.innerHTML = `
+          <div class="empty-state">無法初始化 LINE 登入，請重新開啟頁面。</div>
+        `;
+        return;
+      }
+
+      try {
+        await liff.init({ liffId: LIFF_ID });
+
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: window.location.href });
+          return;
+        }
+
+        idToken = liff.getIDToken();
+
+        if (!idToken) {
+          throw new Error('Missing LINE idToken');
+        }
+
+        await loadHistory();
+      } catch (error) {
+        taskListEl.innerHTML = `
+          <div class="empty-state">登入失敗，請重新開啟頁面。</div>
+        `;
+      }
+    }
+
+    initLiff();
+  </script>
+</body>
+</html>
