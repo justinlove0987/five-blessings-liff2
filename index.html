@@ -65,6 +65,13 @@
       -webkit-backdrop-filter: blur(18px);
     }
 
+    .header-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      flex: 0 0 auto;
+    }
+
     .brand {
       display: inline-flex;
       align-items: center;
@@ -107,13 +114,19 @@
       padding: 18px 20px 0;
     }
 
-    .month-row {
-      display: flex;
+    .header-month {
+      display: inline-flex;
       align-items: center;
       gap: 4px;
-      margin: 2px 0 16px;
-      font-size: 20px;
-      font-weight: 750;
+      min-height: 36px;
+      padding: 0 8px 0 12px;
+      border: 1px solid rgba(106, 125, 248, 0.12);
+      border-radius: 999px;
+      color: #39415f;
+      background: rgba(255, 255, 255, 0.58);
+      font-size: 15px;
+      font-weight: 760;
+      white-space: nowrap;
     }
 
     .chevron {
@@ -127,7 +140,7 @@
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 2px;
-      margin-bottom: 26px;
+      margin: 4px 0 26px;
     }
 
     .day {
@@ -474,50 +487,23 @@
         <span class="brand-icon" aria-hidden="true">✨</span>
       </div>
 
-      <button class="avatar-button" type="button" aria-label="使用者資料">
-        <img id="avatar" alt="" />
-      </button>
+      <div class="header-actions">
+        <button class="header-month" type="button" aria-label="選擇月份">
+          <span id="currentMonth">--月</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+
+        <button class="avatar-button" type="button" aria-label="使用者資料">
+          <img id="avatar" alt="" />
+        </button>
+      </div>
     </header>
 
     <div class="content">
       <section aria-label="週日期選擇">
-        <div class="month-row">
-          <span>7月</span>
-          <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
-
-        <div class="week-selector">
-          <div class="day outline">
-            <div class="weekday">Mon</div>
-            <div class="date">2</div>
-          </div>
-          <div class="day outline">
-            <div class="weekday">Tue</div>
-            <div class="date">3</div>
-          </div>
-          <div class="day outline">
-            <div class="weekday">Wed</div>
-            <div class="date">4</div>
-          </div>
-          <div class="day selected" aria-current="date">
-            <div class="weekday">Thu</div>
-            <div class="date">5</div>
-          </div>
-          <div class="day">
-            <div class="weekday">Fri</div>
-            <div class="date">6</div>
-          </div>
-          <div class="day">
-            <div class="weekday">Sat</div>
-            <div class="date">7</div>
-          </div>
-          <div class="day">
-            <div class="weekday">Sun</div>
-            <div class="date">8</div>
-          </div>
-        </div>
+        <div class="week-selector" id="weekSelector"></div>
       </section>
 
       <section class="task-section" aria-labelledby="task-title">
@@ -549,7 +535,7 @@
             </div>
             <div class="task-main">
               <div class="task-copy">
-                <div class="task-date">7/21（二）</div>
+                <div class="task-date" data-date-label="today">--/--</div>
                 <div class="task-name">晨禱</div>
                 <div class="task-note">今日可打卡</div>
               </div>
@@ -568,7 +554,7 @@
             </div>
             <div class="task-main">
               <div class="task-copy">
-                <div class="task-date">7/21（日）- 7/27（六）</div>
+                <div class="task-date" data-date-label="week">--/-- - --/--</div>
                 <div class="task-name">小家</div>
                 <div class="task-note">本週完成一次</div>
               </div>
@@ -587,7 +573,7 @@
             </div>
             <div class="task-main">
               <div class="task-copy">
-                <div class="task-date">7/21（日）- 7/27（六）</div>
+                <div class="task-date" data-date-label="week">--/-- - --/--</div>
                 <div class="task-name">主日</div>
                 <div class="task-note">本週完成一次</div>
               </div>
@@ -609,7 +595,7 @@
             </div>
             <div class="task-main">
               <div class="task-copy">
-                <div class="task-date">7月</div>
+                <div class="task-date" data-date-label="month">--月</div>
                 <div class="task-name">十一奉獻</div>
                 <div class="task-note">本月完成一次</div>
               </div>
@@ -655,9 +641,12 @@
 
     const avatarEl = document.getElementById('avatar');
     const toastEl = document.getElementById('toast');
+    const currentMonthEl = document.getElementById('currentMonth');
+    const weekSelectorEl = document.getElementById('weekSelector');
     const checkinButtons = Array.from(document.querySelectorAll('.checkin-button'));
 
     avatarEl.src = fallbackAvatar;
+    renderCurrentDates();
 
     checkinButtons.forEach(button => {
       button.addEventListener('click', () => {
@@ -725,6 +714,83 @@
 
     function wait(ms) {
       return new Promise(resolve => window.setTimeout(resolve, ms));
+    }
+
+    function renderCurrentDates() {
+      const today = getTaipeiToday();
+      const weekStart = addDays(today, -((today.getDay() + 6) % 7));
+      const weekEnd = addDays(weekStart, 6);
+
+      currentMonthEl.textContent = `${today.getMonth() + 1}月`;
+      weekSelectorEl.innerHTML = '';
+
+      for (let index = 0; index < 7; index += 1) {
+        const date = addDays(weekStart, index);
+        const dayEl = document.createElement('div');
+        dayEl.className = 'day';
+
+        if (isSameDate(date, today)) {
+          dayEl.classList.add('selected');
+          dayEl.setAttribute('aria-current', 'date');
+        } else if (date < today) {
+          dayEl.classList.add('outline');
+        }
+
+        dayEl.innerHTML = `
+          <div class="weekday">${formatWeekdayEn(date)}</div>
+          <div class="date">${date.getDate()}</div>
+        `;
+
+        weekSelectorEl.appendChild(dayEl);
+      }
+
+      document.querySelectorAll('[data-date-label="today"]').forEach(el => {
+        el.textContent = formatMonthDayWithWeekday(today);
+      });
+
+      document.querySelectorAll('[data-date-label="week"]').forEach(el => {
+        el.textContent = `${formatMonthDayWithWeekday(weekStart)} - ${formatMonthDayWithWeekday(weekEnd)}`;
+      });
+
+      document.querySelectorAll('[data-date-label="month"]').forEach(el => {
+        el.textContent = `${today.getMonth() + 1}月`;
+      });
+    }
+
+    function getTaipeiToday() {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Taipei',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(new Date());
+
+      const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+      return new Date(Number(values.year), Number(values.month) - 1, Number(values.day));
+    }
+
+    function addDays(date, days) {
+      const next = new Date(date);
+      next.setDate(next.getDate() + days);
+      return next;
+    }
+
+    function isSameDate(a, b) {
+      return a.getFullYear() === b.getFullYear()
+        && a.getMonth() === b.getMonth()
+        && a.getDate() === b.getDate();
+    }
+
+    function formatWeekdayEn(date) {
+      return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+    }
+
+    function formatWeekdayZh(date) {
+      return ['日', '一', '二', '三', '四', '五', '六'][date.getDay()];
+    }
+
+    function formatMonthDayWithWeekday(date) {
+      return `${date.getMonth() + 1}/${date.getDate()}（${formatWeekdayZh(date)}）`;
     }
 
     async function loadLiffAvatar() {
