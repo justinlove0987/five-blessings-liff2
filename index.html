@@ -387,27 +387,23 @@
     }
 
     .done-pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      min-height: 44px;
-      min-width: 90px;
-      padding: 0 12px;
-      border: 1px solid rgba(34, 197, 143, 0.18);
-      border-radius: 999px;
+      display: inline-grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 1.5px solid rgba(34, 197, 143, 0.42);
+      border-radius: 50%;
       color: #19b980;
-      background: rgba(255, 255, 255, 0.7);
-      font-size: 14px;
-      font-weight: 760;
-      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.82);
+      flex: 0 0 auto;
     }
 
     .done-pill svg,
     .checkin-button svg,
     .section-icon svg {
-      width: 17px;
-      height: 17px;
+      width: 18px;
+      height: 18px;
       flex: 0 0 auto;
     }
 
@@ -494,8 +490,7 @@
         gap: 10px;
       }
 
-      .checkin-button,
-      .done-pill {
+      .checkin-button {
         width: 100%;
       }
     }
@@ -819,7 +814,6 @@
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-          <span>已完成</span>
         </div>
       `;
     }
