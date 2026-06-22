@@ -269,14 +269,14 @@
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) auto;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       min-width: 0;
     }
 
     .team-house img {
       display: block;
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       object-fit: contain;
     }
 
@@ -293,10 +293,12 @@
     }
 
     .leave-team-button {
-      display: inline-grid;
-      place-items: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: 32px;
       height: 32px;
+      padding: 0;
       border: 0;
       border-radius: 50%;
       color: #8a93aa;
@@ -315,8 +317,9 @@
     }
 
     .leave-team-button svg {
-      width: 17px;
-      height: 17px;
+      display: block;
+      width: 18px;
+      height: 18px;
     }
 
     .invite-row {
@@ -593,6 +596,32 @@
       background: rgba(198, 70, 91, 0.94);
     }
 
+    .blocking-loading {
+      position: fixed;
+      inset: 0;
+      z-index: 180;
+      display: grid;
+      place-items: center;
+      background: rgba(247, 248, 255, 0.56);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .blocking-loading-panel {
+      display: grid;
+      justify-items: center;
+      gap: 12px;
+      min-width: 132px;
+      padding: 22px 24px;
+      border: 1px solid rgba(219, 225, 249, 0.78);
+      border-radius: 24px;
+      color: #52607c;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 18px 42px rgba(84, 94, 142, 0.16);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
     @keyframes spin {
       to {
         transform: rotate(360deg);
@@ -832,8 +861,8 @@
       }
 
       .team-house img {
-        width: 28px;
-        height: 28px;
+        width: 36px;
+        height: 36px;
       }
 
       .invite-row {
@@ -996,6 +1025,13 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <div class="blocking-loading" id="blockingLoading" hidden aria-live="polite" aria-label="資料處理中">
+    <div class="blocking-loading-panel">
+      <span class="team-loading-spinner" aria-hidden="true"></span>
+      <span id="blockingLoadingText">資料處理中...</span>
+    </div>
+  </div>
+
   <div class="sheet-overlay" id="createTeamOverlay" hidden>
     <button class="sheet-backdrop" type="button" aria-label="關閉新增戰隊視窗" data-sheet-close="create"></button>
 
@@ -1130,6 +1166,8 @@
     const copyInviteLabel = document.getElementById('copyInviteLabel');
     const leaveTeamButton = document.getElementById('leaveTeamButton');
     const toastEl = document.getElementById('toast');
+    const blockingLoadingEl = document.getElementById('blockingLoading');
+    const blockingLoadingTextEl = document.getElementById('blockingLoadingText');
 
     function focusSheetInput(input) {
       input.focus({ preventScroll: true });
@@ -1164,11 +1202,7 @@
       const config = sheetConfigs[key];
       if (!config || config.overlay.hidden) return;
 
-      config.overlay.classList.remove('is-open');
-      config.overlay.hidden = true;
-      config.sheet.classList.remove('is-keyboard-open');
-      config.sheet.style.removeProperty('--sheet-keyboard-offset');
-      config.input.blur();
+      hideTeamSheet(config);
 
       if (activeSheetKey === key) {
         activeSheetKey = null;
@@ -1178,6 +1212,14 @@
       if (!hasOpenSheet) {
         document.body.classList.remove('sheet-open');
       }
+    }
+
+    function hideTeamSheet(config) {
+      config.overlay.classList.remove('is-open');
+      config.overlay.hidden = true;
+      config.sheet.classList.remove('is-keyboard-open');
+      config.sheet.style.removeProperty('--sheet-keyboard-offset');
+      config.input.blur();
     }
 
     async function submitTeamAction(key) {
@@ -1198,6 +1240,7 @@
 
       setSheetLoading(config, true);
       resetSheetFeedback(config);
+      showBlockingLoading(key === 'create' ? '建立戰隊中...' : '加入戰隊中...');
 
       try {
         const payload = key === 'create'
@@ -1210,8 +1253,10 @@
         }
 
         config.input.value = '';
-        closeTeamSheet(key);
         renderTeamSummary(data);
+        hideTeamSheet(config);
+        activeSheetKey = null;
+        document.body.classList.remove('sheet-open');
         showToast(key === 'create' ? '戰隊建立成功！' : '加入戰隊成功！', 'success');
       } catch (error) {
         const fallback = key === 'create'
@@ -1220,6 +1265,7 @@
         setSheetError(config, error.statusCode === 404 ? '找不到這組邀請碼' : fallback);
       } finally {
         setSheetLoading(config, false);
+        hideBlockingLoading();
       }
     }
 
@@ -1279,6 +1325,15 @@
       teamLoadingEl.hidden = false;
       emptyTeamStateEl.hidden = true;
       joinedTeamStateEl.hidden = true;
+    }
+
+    function showBlockingLoading(message) {
+      blockingLoadingTextEl.textContent = message || '資料處理中...';
+      blockingLoadingEl.hidden = false;
+    }
+
+    function hideBlockingLoading() {
+      blockingLoadingEl.hidden = true;
     }
 
     function showEmptyState() {
@@ -1376,6 +1431,7 @@
       }
 
       leaveTeamButton.disabled = true;
+      showBlockingLoading('退出小隊中...');
 
       try {
         await requestTeam({ action: 'leave' });
@@ -1387,6 +1443,7 @@
         showToast('退出小隊失敗，請稍後再試。', 'error');
       } finally {
         leaveTeamButton.disabled = false;
+        hideBlockingLoading();
       }
     }
 
