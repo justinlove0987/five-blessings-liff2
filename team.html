@@ -47,22 +47,42 @@
       padding-bottom: calc(var(--tab-height) + 24px + env(safe-area-inset-bottom));
     }
 
-    .page-header {
-      padding: calc(18px + env(safe-area-inset-top)) 24px 0;
-      margin-bottom: 20px;
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 64px;
+      padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
+      background: rgba(255, 255, 255, 0.72);
+      border-bottom: 1px solid rgba(232, 236, 248, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
 
-    .page-title {
-      margin: 0 0 8px;
-      font-size: 28px;
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
-      color: #171b28;
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      font-size: 20px;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+
+    .brand-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .content {
+      padding: 18px 20px 0;
     }
 
     .page-subtitle {
-      margin: 0;
+      margin: 0 0 18px;
       max-width: 320px;
       color: var(--muted);
       font-size: 15px;
@@ -242,18 +262,15 @@
     }
 
     @media (max-width: 374px) {
-      .page-header {
-        padding-left: 18px;
-        padding-right: 18px;
+      .app-header,
+      .content {
+        padding-left: 16px;
+        padding-right: 16px;
       }
 
       .team-panel {
         width: calc(100% - 36px);
         padding: 30px 18px 24px;
-      }
-
-      .page-title {
-        font-size: 26px;
       }
     }
   </style>
@@ -261,12 +278,17 @@
 
 <body>
   <main class="app-shell">
-    <header class="page-header">
-      <h1 class="page-title">五重戰隊</h1>
-      <p class="page-subtitle">和夥伴一起打卡，完成五重祝福！</p>
+    <header class="app-header">
+      <div class="brand" aria-label="五重戰隊">
+        <span>五重戰隊</span>
+        <span class="brand-icon" aria-hidden="true">✨</span>
+      </div>
     </header>
 
-    <section class="team-panel" aria-label="尚未加入戰隊">
+    <div class="content">
+      <p class="page-subtitle">和夥伴一起打卡，完成五重祝福！</p>
+
+      <section class="team-panel" aria-label="尚未加入戰隊">
       <div class="empty-illustration" aria-hidden="true">
         <img src="assets/team-icon.png" alt="" />
       </div>
@@ -296,6 +318,7 @@
         </button>
       </div>
     </section>
+    </div>
   </main>
 
   <nav class="tab-bar" aria-label="主要導覽">
