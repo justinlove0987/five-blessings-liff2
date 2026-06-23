@@ -205,18 +205,6 @@
       min-width: 0;
     }
 
-    .winner-kicker {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 0;
-      color: #8b67ee;
-      font-size: 15px;
-      font-weight: 850;
-      line-height: 1.25;
-      text-align: center;
-    }
-
     .winner-name {
       min-width: 0;
       margin: 0;
@@ -758,7 +746,17 @@
       </div>
 
       <section class="winner-card" id="winnerCard" aria-label="本月勝利戰隊">
-        <div class="winner-kicker" id="winnerKicker">本月勝利戰隊</div>
+        <div class="tied-winner-header">
+          <div class="tied-crown-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m4 8 4.1 3.4L12 5l3.9 6.4L20 8l-1.7 9.5H5.7L4 8Z" fill="#ffbd38" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+              <path d="M6.5 20h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="tied-title">本月勝利戰隊</h1>
+          </div>
+        </div>
 
         <div class="winner-hero">
           <div class="winner-trophy" aria-hidden="true">
@@ -848,7 +846,6 @@
     const emptyStateEl = document.getElementById('emptyState');
     const rankListEl = document.getElementById('rankList');
     const rankingSubtitleEl = document.getElementById('rankingSubtitle');
-    const winnerKickerEl = document.getElementById('winnerKicker');
     const winnerNameEl = document.getElementById('winnerName');
     const winnerAverageEl = document.getElementById('winnerAverage');
     const winnerMembersEl = document.getElementById('winnerMembers');
@@ -950,7 +947,14 @@
     function renderSingleWinner(winner) {
       winnerCardEl.classList.remove('is-tied');
       winnerCardEl.innerHTML = `
-        <div class="winner-kicker" id="winnerKicker">${selectedDate.getMonth() + 1}月勝利戰隊</div>
+        <div class="tied-winner-header">
+          <div class="tied-crown-badge" aria-hidden="true">
+            ${renderCrownSvg()}
+          </div>
+          <div>
+            <h1 class="tied-title">${selectedDate.getMonth() + 1}月勝利戰隊</h1>
+          </div>
+        </div>
 
         <div class="winner-hero">
           <div class="winner-trophy" aria-hidden="true">
