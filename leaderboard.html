@@ -710,7 +710,7 @@
     </header>
 
     <main class="content">
-      <section class="winner-card" id="winnerCard" aria-label="本月勝利戰隊">
+      <section class="winner-card" id="winnerCard" aria-label="本月勝利戰隊" hidden>
         <div class="tied-winner-header">
           <div class="tied-crown-badge" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none">
@@ -744,7 +744,7 @@
       </section>
 
       <section>
-        <div class="section-header">
+        <div class="section-header" id="rankingHeader" hidden>
           <h2 class="section-title">排行榜</h2>
           <span class="section-subtitle" id="rankingSubtitle">前 10 戰隊</span>
         </div>
@@ -804,6 +804,7 @@
     const winnerCardEl = document.getElementById('winnerCard');
     const loadingStateEl = document.getElementById('loadingState');
     const emptyStateEl = document.getElementById('emptyState');
+    const rankingHeaderEl = document.getElementById('rankingHeader');
     const rankListEl = document.getElementById('rankList');
     const rankingSubtitleEl = document.getElementById('rankingSubtitle');
     const winnerNameEl = document.getElementById('winnerName');
@@ -876,6 +877,7 @@
     function renderLeaderboard(data) {
       const rows = Array.isArray(data.leaderboard) ? data.leaderboard : [];
       rankingSubtitleEl.textContent = `${data.periodLabel || ''}前10戰隊`;
+      rankingHeaderEl.hidden = false;
 
       if (isCurrentSelectedMonth()) {
         winnerCardEl.hidden = true;
@@ -1094,6 +1096,8 @@
     }
 
     function showLoading() {
+      winnerCardEl.hidden = true;
+      rankingHeaderEl.hidden = true;
       loadingStateEl.hidden = false;
       emptyStateEl.hidden = true;
       rankListEl.hidden = true;
@@ -1101,6 +1105,7 @@
     }
 
     function showEmpty() {
+      rankingHeaderEl.hidden = false;
       loadingStateEl.hidden = true;
       emptyStateEl.hidden = false;
       rankListEl.hidden = true;
