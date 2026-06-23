@@ -256,9 +256,10 @@
       box-shadow: 0 10px 20px rgba(255, 184, 55, 0.18);
     }
 
-    .tied-crown-badge svg {
-      width: 27px;
-      height: 27px;
+    .tied-crown-badge img {
+      width: 29px;
+      height: 29px;
+      object-fit: contain;
     }
 
     .tied-title {
@@ -720,10 +721,7 @@
       <section class="winner-card" id="winnerCard" aria-label="本月勝利戰隊" hidden>
         <div class="tied-winner-header">
           <div class="tied-crown-badge" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m4 8 4.1 3.4L12 5l3.9 6.4L20 8l-1.7 9.5H5.7L4 8Z" fill="#ffbd38" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
-              <path d="M6.5 20h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-            </svg>
+            <img src="assets/five-blessings-icons/crown.png" alt="" />
           </div>
           <div>
             <h1 class="tied-title">本月勝利戰隊</h1>
@@ -925,7 +923,7 @@
       winnerCardEl.innerHTML = `
         <div class="tied-winner-header">
           <div class="tied-crown-badge" aria-hidden="true">
-            ${renderCrownSvg()}
+            ${renderCrownImage()}
           </div>
           <div>
             <h1 class="tied-title">${selectedDate.getMonth() + 1}月勝利戰隊</h1>
@@ -962,7 +960,7 @@
       winnerCardEl.innerHTML = `
         <div class="tied-winner-header">
           <div class="tied-crown-badge" aria-hidden="true">
-            ${renderCrownSvg()}
+            ${renderCrownImage()}
           </div>
           <div>
             <h1 class="tied-title">本月並列第一戰隊</h1>
@@ -1027,12 +1025,9 @@
       `;
     }
 
-    function renderCrownSvg() {
+    function renderCrownImage() {
       return `
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="m4 8 4.1 3.4L12 5l3.9 6.4L20 8l-1.7 9.5H5.7L4 8Z" fill="#ffbd38" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
-          <path d="M6.5 20h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-        </svg>
+        <img src="assets/five-blessings-icons/crown.png" alt="" />
       `;
     }
 
