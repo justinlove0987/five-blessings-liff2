@@ -469,17 +469,24 @@
 
     .rank-1 .rank-badge {
       color: #f2a313;
-      background: linear-gradient(180deg, #fff9e7, #ffe19a);
+      background: transparent;
     }
 
     .rank-2 .rank-badge {
       color: #7d8aa1;
-      background: linear-gradient(180deg, #f6f8ff, #dce7f5);
+      background: transparent;
     }
 
     .rank-3 .rank-badge {
       color: #e87a3c;
-      background: linear-gradient(180deg, #fff1e9, #ffc6a3);
+      background: transparent;
+    }
+
+    .rank-badge img {
+      display: block;
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
     }
 
     .rank-main {
@@ -1035,7 +1042,7 @@
 
       return `
         <article class="${className}">
-          <div class="rank-badge" aria-label="第 ${rank} 名">${rank}</div>
+          ${renderRankBadge(rank)}
           <div class="rank-main">
             <div class="rank-name">${escapeHtml(row.teamName || '未命名戰隊')}</div>
             <div class="rank-meta">${Number(row.memberCount || 0)} 人 ｜ 總次數 ${Number(row.total || 0)}</div>
@@ -1045,6 +1052,25 @@
             <span>平均/人</span>
           </div>
         </article>
+      `;
+    }
+
+    function renderRankBadge(rank) {
+      const placeIconMap = {
+        1: 'first_place.png',
+        2: 'second_place.png',
+        3: 'third_place.png'
+      };
+      const iconName = placeIconMap[rank];
+
+      if (!iconName) {
+        return `<div class="rank-badge" aria-label="第 ${rank} 名">${rank}</div>`;
+      }
+
+      return `
+        <div class="rank-badge" aria-label="第 ${rank} 名">
+          <img src="assets/five-blessings-icons/${iconName}" alt="" />
+        </div>
       `;
     }
 
