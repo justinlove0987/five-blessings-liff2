@@ -168,9 +168,10 @@
       color: #ffffff;
     }
 
-    .winner-trophy svg {
+    .winner-trophy img {
       width: 58px;
       height: 58px;
+      object-fit: contain;
       filter: drop-shadow(0 7px 10px rgba(221, 139, 21, 0.24));
     }
 
@@ -325,9 +326,10 @@
       background: linear-gradient(145deg, #fff8dc, #ffd474);
     }
 
-    .tied-card-trophy svg {
+    .tied-card-trophy img {
       width: 38px;
       height: 38px;
+      object-fit: contain;
     }
 
     .tied-team-name {
@@ -655,7 +657,7 @@
         border-radius: 20px;
       }
 
-      .winner-trophy svg {
+      .winner-trophy img {
         width: 48px;
         height: 48px;
       }
@@ -731,12 +733,7 @@
 
         <div class="winner-hero">
           <div class="winner-trophy" aria-hidden="true">
-            <svg viewBox="0 0 64 64" fill="none">
-              <path d="M21 13h22v9.5C43 34.4 37.8 40 32 40s-11-5.6-11-17.5V13Z" fill="#fff8dc" stroke="#f4a91f" stroke-width="3" />
-              <path d="M21 18h-7c0 8.2 3.9 13 10.1 14.7M43 18h7c0 8.2-3.9 13-10.1 14.7" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
-              <path d="M32 40v8M23 51h18M19 57h26" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
-              <path d="m32 19 2.5 5.1 5.6.8-4.1 4 1 5.6-5-2.6-5 2.6 1-5.6-4.1-4 5.6-.8L32 19Z" fill="#ffbd38" />
-            </svg>
+            <img src="assets/five-blessings-icons/trophy.png" alt="" />
           </div>
 
           <div class="winner-copy">
@@ -936,7 +933,7 @@
 
         <div class="winner-hero">
           <div class="winner-trophy" aria-hidden="true">
-            ${renderTrophySvg()}
+            ${renderTrophyImage()}
           </div>
 
           <div class="winner-copy">
@@ -1014,7 +1011,7 @@
       return `
         <article class="tied-team-card">
           <div class="tied-card-trophy" aria-hidden="true">
-            ${renderTrophySvg()}
+            ${renderTrophyImage()}
           </div>
           <div class="tied-team-name">${escapeHtml(team.teamName || '未命名戰隊')}</div>
           <div class="tied-team-average">平均每人 <strong>${formatAverage(team.average)}</strong> 次</div>
@@ -1023,14 +1020,9 @@
       `;
     }
 
-    function renderTrophySvg() {
+    function renderTrophyImage() {
       return `
-        <svg viewBox="0 0 64 64" fill="none">
-          <path d="M21 13h22v9.5C43 34.4 37.8 40 32 40s-11-5.6-11-17.5V13Z" fill="#fff8dc" stroke="#f4a91f" stroke-width="3" />
-          <path d="M21 18h-7c0 8.2 3.9 13 10.1 14.7M43 18h7c0 8.2-3.9 13-10.1 14.7" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
-          <path d="M32 40v8M23 51h18M19 57h26" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
-          <path d="m32 19 2.5 5.1 5.6.8-4.1 4 1 5.6-5-2.6-5 2.6 1-5.6-4.1-4 5.6-.8L32 19Z" fill="#ffbd38" />
-        </svg>
+        <img src="assets/five-blessings-icons/trophy.png" alt="" />
       `;
     }
 
