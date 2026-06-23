@@ -7,16 +7,16 @@
 
   <style>
     :root {
-      --page-bg: #f5f7ff;
-      --card: #ffffff;
-      --ink: #1f2433;
-      --muted: #7b849b;
-      --line: #e8ecf8;
-      --primary: #6a7df8;
-      --primary-strong: #5067ee;
-      --success: #22c58f;
-      --success-soft: #f0fbf5;
-      --shadow: 0 10px 28px rgba(83, 95, 143, 0.12);
+      --page-bg: #fffaf0;
+      --card: #fffef9;
+      --ink: #30251a;
+      --muted: #8d7b66;
+      --line: #f3dfbd;
+      --primary: #f3b34f;
+      --primary-strong: #d8872b;
+      --success: #efb24f;
+      --success-soft: #fff7e7;
+      --shadow: 0 10px 28px rgba(174, 116, 45, 0.12);
     }
 
     * {
@@ -34,9 +34,9 @@
       color: var(--ink);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
       background:
-        radial-gradient(circle at 10% 14%, rgba(214, 207, 255, 0.55), transparent 34%),
-        radial-gradient(circle at 90% 5%, rgba(202, 232, 255, 0.42), transparent 30%),
-        linear-gradient(180deg, #f7f4ff 0%, #f4f8ff 42%, #fbfcff 100%);
+        radial-gradient(circle at 10% 14%, rgba(255, 229, 181, 0.68), transparent 34%),
+        radial-gradient(circle at 90% 5%, rgba(255, 244, 209, 0.58), transparent 30%),
+        linear-gradient(180deg, #fff4df 0%, #fff9ed 42%, #fffef9 100%);
     }
 
     button {
@@ -64,8 +64,8 @@
       align-items: center;
       min-height: 64px;
       padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
-      background: rgba(255, 255, 255, 0.72);
-      border-bottom: 1px solid rgba(232, 236, 248, 0.72);
+      background: rgba(255, 254, 249, 0.72);
+      border-bottom: 1px solid rgba(243, 223, 189, 0.72);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
     }
@@ -78,7 +78,7 @@
       padding: 0;
       border: 0;
       border-radius: 50%;
-      color: #39415f;
+      color: #614a31;
       background: transparent;
       cursor: pointer;
     }
@@ -106,10 +106,10 @@
       min-width: 128px;
       min-height: 40px;
       padding: 0 6px;
-      border: 1px solid rgba(106, 125, 248, 0.12);
+      border: 1px solid rgba(243, 179, 79, 0.12);
       border-radius: 999px;
-      color: #39415f;
-      background: rgba(255, 255, 255, 0.72);
+      color: #614a31;
+      background: rgba(255, 254, 249, 0.72);
       font-size: 16px;
       font-weight: 760;
       white-space: nowrap;
@@ -156,10 +156,10 @@
       gap: 6px;
       min-height: 74px;
       padding: 10px 6px;
-      border: 1px solid rgba(232, 236, 248, 0.92);
+      border: 1px solid rgba(243, 223, 189, 0.92);
       border-radius: 16px;
-      color: #4b5568;
-      background: rgba(255, 255, 255, 0.72);
+      color: #735f49;
+      background: rgba(255, 254, 249, 0.72);
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
@@ -171,10 +171,10 @@
     }
 
     .filter-chip.is-active {
-      border-color: rgba(106, 125, 248, 0.28);
-      box-shadow: 0 8px 18px rgba(106, 125, 248, 0.12);
-      color: #171b28;
-      background: #ffffff;
+      border-color: rgba(243, 179, 79, 0.28);
+      box-shadow: 0 8px 18px rgba(243, 179, 79, 0.12);
+      color: #30251a;
+      background: #fffef9;
     }
 
     .filter-icon {
@@ -206,15 +206,15 @@
       align-items: center;
       min-height: 108px;
       padding: 16px;
-      border: 1px solid rgba(232, 236, 248, 0.82);
+      border: 1px solid rgba(243, 223, 189, 0.82);
       border-radius: 18px;
       background: var(--card);
       box-shadow: var(--shadow);
     }
 
     .task-card.is-done {
-      border-color: rgba(34, 197, 143, 0.12);
-      background: linear-gradient(135deg, var(--success-soft), #ffffff 76%);
+      border-color: rgba(239, 178, 79, 0.12);
+      background: linear-gradient(135deg, var(--success-soft), #fffef9 76%);
     }
 
     .icon-tile {
@@ -249,7 +249,7 @@
 
     .task-date {
       margin-bottom: 5px;
-      color: #7180a6;
+      color: #947b5e;
       font-size: 13.5px;
       font-weight: 650;
       line-height: 1.25;
@@ -257,7 +257,7 @@
 
     .task-name {
       margin-bottom: 5px;
-      color: #171b28;
+      color: #30251a;
       font-size: 19px;
       font-weight: 800;
       line-height: 1.2;
@@ -280,9 +280,9 @@
       padding: 0 18px;
       border: 0;
       border-radius: 999px;
-      color: #ffffff;
-      background: linear-gradient(135deg, #20c98e, #24b978);
-      box-shadow: 0 9px 18px rgba(31, 191, 132, 0.26);
+      color: #fffef9;
+      background: linear-gradient(135deg, #f2b551, #e3a044);
+      box-shadow: 0 9px 18px rgba(227, 160, 68, 0.26);
       font-size: 16px;
       font-weight: 760;
       white-space: nowrap;
@@ -323,8 +323,8 @@
     .checkin-button.is-loading .spinner {
       width: 22px;
       height: 22px;
-      border-color: rgba(106, 125, 248, 0.18);
-      border-top-color: #6a7df8;
+      border-color: rgba(243, 179, 79, 0.18);
+      border-top-color: #f3b34f;
     }
 
     .done-pill {
@@ -333,10 +333,10 @@
       width: 44px;
       height: 44px;
       padding: 0;
-      border: 1.5px solid rgba(34, 197, 143, 0.42);
+      border: 1.5px solid rgba(239, 178, 79, 0.42);
       border-radius: 50%;
-      color: #19b980;
-      background: rgba(255, 255, 255, 0.82);
+      color: #e39a38;
+      background: rgba(255, 254, 249, 0.82);
       flex: 0 0 auto;
     }
 
@@ -349,8 +349,8 @@
       padding: 0 12px;
       border: 1px solid rgba(123, 132, 155, 0.18);
       border-radius: 999px;
-      color: #8a93aa;
-      background: rgba(255, 255, 255, 0.72);
+      color: #a18d73;
+      background: rgba(255, 254, 249, 0.72);
       font-size: 14px;
       font-weight: 700;
       white-space: nowrap;
@@ -366,8 +366,8 @@
     .spinner {
       width: 16px;
       height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.45);
-      border-top-color: #ffffff;
+      border: 2px solid rgba(255, 254, 249, 0.45);
+      border-top-color: #fffef9;
       border-radius: 50%;
       animation: spin 0.75s linear infinite;
     }
@@ -382,8 +382,8 @@
     .page-spinner {
       width: 28px;
       height: 28px;
-      border: 2.5px solid rgba(106, 125, 248, 0.18);
-      border-top-color: #6a7df8;
+      border: 2.5px solid rgba(243, 179, 79, 0.18);
+      border-top-color: #f3b34f;
       border-radius: 50%;
       animation: spin 0.75s linear infinite;
     }
@@ -393,7 +393,7 @@
       border: 1px dashed rgba(123, 132, 155, 0.24);
       border-radius: 18px;
       color: var(--muted);
-      background: rgba(255, 255, 255, 0.56);
+      background: rgba(255, 254, 249, 0.56);
       text-align: center;
       font-size: 14px;
       font-weight: 650;
@@ -412,7 +412,7 @@
       justify-content: center;
       padding: 12px 16px;
       border-radius: 16px;
-      color: #ffffff;
+      color: #fffef9;
       background: rgba(38, 45, 70, 0.92);
       box-shadow: 0 16px 36px rgba(38, 45, 70, 0.24);
       font-size: 14px;

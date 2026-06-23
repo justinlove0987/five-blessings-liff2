@@ -7,15 +7,15 @@
 
   <style>
     :root {
-      --page-bg: #f5f7ff;
-      --card: #ffffff;
-      --ink: #1f2433;
-      --muted: #7b849b;
-      --line: #e8ecf8;
-      --primary: #6a7df8;
-      --primary-strong: #5067ee;
-      --gold: #ffb837;
-      --shadow: 0 10px 28px rgba(83, 95, 143, 0.12);
+      --page-bg: #fffaf0;
+      --card: #fffef9;
+      --ink: #30251a;
+      --muted: #8d7b66;
+      --line: #f3dfbd;
+      --primary: #f3b34f;
+      --primary-strong: #d8872b;
+      --gold: #f3b34f;
+      --shadow: 0 10px 28px rgba(174, 116, 45, 0.12);
       --tab-height: 72px;
     }
 
@@ -34,9 +34,9 @@
       color: var(--ink);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
       background:
-        radial-gradient(circle at 10% 14%, rgba(214, 207, 255, 0.55), transparent 34%),
-        radial-gradient(circle at 90% 5%, rgba(202, 232, 255, 0.42), transparent 30%),
-        linear-gradient(180deg, #f7f4ff 0%, #f4f8ff 42%, #fbfcff 100%);
+        radial-gradient(circle at 10% 14%, rgba(255, 229, 181, 0.68), transparent 34%),
+        radial-gradient(circle at 90% 5%, rgba(255, 244, 209, 0.58), transparent 30%),
+        linear-gradient(180deg, #fff4df 0%, #fff9ed 42%, #fffef9 100%);
     }
 
     button {
@@ -63,8 +63,8 @@
       justify-content: space-between;
       min-height: 64px;
       padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
-      background: rgba(255, 255, 255, 0.72);
-      border-bottom: 1px solid rgba(232, 236, 248, 0.72);
+      background: rgba(255, 254, 249, 0.72);
+      border-bottom: 1px solid rgba(243, 223, 189, 0.72);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
     }
@@ -90,10 +90,10 @@
       gap: 4px;
       min-height: 36px;
       padding: 0 8px;
-      border: 1px solid rgba(106, 125, 248, 0.12);
+      border: 1px solid rgba(243, 179, 79, 0.12);
       border-radius: 999px;
-      color: #39415f;
-      background: rgba(255, 255, 255, 0.58);
+      color: #614a31;
+      background: rgba(255, 254, 249, 0.58);
       font-size: 15px;
       font-weight: 760;
       white-space: nowrap;
@@ -143,8 +143,8 @@
       border-radius: 18px;
       background:
         radial-gradient(circle at 22% 30%, rgba(255, 207, 94, 0.24), transparent 34%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(250, 246, 255, 0.94));
-      box-shadow: 0 16px 40px rgba(113, 91, 156, 0.14);
+        linear-gradient(135deg, rgba(255, 254, 249, 0.96), rgba(250, 246, 255, 0.94));
+      box-shadow: 0 16px 40px rgba(174, 116, 45, 0.14);
       overflow: hidden;
     }
 
@@ -182,7 +182,7 @@
       min-width: 0;
       margin: 0;
       overflow: hidden;
-      color: #111827;
+      color: #30251a;
       font-size: 24px;
       font-weight: 900;
       line-height: 1.2;
@@ -198,14 +198,14 @@
       min-width: 0;
       padding: 9px 10px;
       border-radius: 14px;
-      background: rgba(255, 255, 255, 0.72);
+      background: rgba(255, 254, 249, 0.72);
     }
 
     .winner-stat {
       display: inline-flex;
       align-items: baseline;
       min-width: 0;
-      color: #68728f;
+      color: #846d53;
       font-size: 13px;
       font-weight: 760;
       line-height: 1.2;
@@ -213,7 +213,7 @@
     }
 
     .winner-stat strong {
-      color: #6d64ee;
+      color: #e59d3f;
       font-size: 24px;
       font-weight: 900;
       line-height: 1;
@@ -264,14 +264,14 @@
 
     .tied-title {
       margin: 0 0 2px;
-      color: #111827;
+      color: #30251a;
       font-size: 18px;
       font-weight: 900;
       line-height: 1.25;
     }
 
     .tied-count {
-      color: #74809d;
+      color: #92795d;
       font-size: 13px;
       font-weight: 760;
       line-height: 1.25;
@@ -307,8 +307,8 @@
       padding: 13px 10px 11px;
       border: 1px solid rgba(255, 202, 92, 0.36);
       border-radius: 16px;
-      background: rgba(255, 255, 255, 0.82);
-      box-shadow: 0 10px 20px rgba(113, 91, 156, 0.08);
+      background: rgba(255, 254, 249, 0.82);
+      box-shadow: 0 10px 20px rgba(174, 116, 45, 0.08);
       scroll-snap-align: start;
     }
 
@@ -330,7 +330,7 @@
       width: 100%;
       margin-bottom: 4px;
       overflow: hidden;
-      color: #111827;
+      color: #30251a;
       font-size: 15px;
       font-weight: 900;
       line-height: 1.25;
@@ -341,7 +341,7 @@
 
     .tied-team-average {
       margin-bottom: 8px;
-      color: #6d64ee;
+      color: #e59d3f;
       font-size: 13px;
       font-weight: 850;
       line-height: 1.25;
@@ -359,7 +359,7 @@
       padding: 6px 9px;
       border-radius: 999px;
       overflow: hidden;
-      color: #68728f;
+      color: #846d53;
       background: rgba(245, 247, 255, 0.92);
       font-size: 12px;
       font-weight: 760;
@@ -377,9 +377,9 @@
       width: 42px;
       height: 42px;
       border-radius: 50%;
-      color: #5d6682;
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 10px 22px rgba(83, 95, 143, 0.13);
+      color: #80694f;
+      background: rgba(255, 254, 249, 0.9);
+      box-shadow: 0 10px 22px rgba(174, 116, 45, 0.13);
       font-size: 15px;
       font-weight: 900;
       transform: translateY(-50%);
@@ -397,11 +397,11 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #d8deec;
+      background: #efd9b8;
     }
 
     .tied-dot.is-active {
-      background: #7f7af6;
+      background: #efaa42;
     }
 
     .section-header {
@@ -413,14 +413,14 @@
 
     .section-title {
       margin: 0;
-      color: #111827;
+      color: #30251a;
       font-size: 20px;
       font-weight: 900;
       line-height: 1.25;
     }
 
     .section-subtitle {
-      color: #8a93aa;
+      color: #a18d73;
       font-size: 14px;
       font-weight: 750;
     }
@@ -438,10 +438,10 @@
       align-items: center;
       min-height: 82px;
       padding: 12px 14px;
-      border: 1px solid rgba(232, 236, 248, 0.82);
+      border: 1px solid rgba(243, 223, 189, 0.82);
       border-radius: 14px;
-      background: rgba(255, 255, 255, 0.94);
-      box-shadow: 0 8px 20px rgba(83, 95, 143, 0.08);
+      background: rgba(255, 254, 249, 0.94);
+      box-shadow: 0 8px 20px rgba(174, 116, 45, 0.08);
     }
 
     .rank-card.rank-1 {
@@ -462,8 +462,8 @@
       width: 46px;
       height: 46px;
       border-radius: 50%;
-      color: #909ab3;
-      background: #f1f3fb;
+      color: #ad9678;
+      background: #fff5df;
       font-size: 19px;
       font-weight: 900;
     }
@@ -474,7 +474,7 @@
     }
 
     .rank-2 .rank-badge {
-      color: #7d8aa1;
+      color: #92795d;
       background: transparent;
     }
 
@@ -498,7 +498,7 @@
       min-width: 0;
       margin-bottom: 5px;
       overflow: hidden;
-      color: #111827;
+      color: #30251a;
       font-size: 18px;
       font-weight: 900;
       line-height: 1.22;
@@ -507,7 +507,7 @@
     }
 
     .rank-meta {
-      color: #7d88a8;
+      color: #92795d;
       font-size: 13.5px;
       font-weight: 720;
       line-height: 1.35;
@@ -517,14 +517,14 @@
       display: grid;
       justify-items: end;
       gap: 2px;
-      color: #7d88a8;
+      color: #92795d;
       font-size: 13px;
       font-weight: 750;
       white-space: nowrap;
     }
 
     .rank-score strong {
-      color: #6674f6;
+      color: #e59d3f;
       font-size: 24px;
       font-weight: 900;
       line-height: 1;
@@ -550,7 +550,7 @@
     .spinner {
       width: 34px;
       height: 34px;
-      border: 3px solid rgba(106, 125, 248, 0.18);
+      border: 3px solid rgba(243, 179, 79, 0.18);
       border-top-color: var(--primary-strong);
       border-radius: 50%;
       animation: spin 0.78s linear infinite;
@@ -567,12 +567,12 @@
       grid-template-columns: repeat(3, 1fr);
       min-height: var(--tab-height);
       padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
-      border-top: 1px solid rgba(232, 236, 248, 0.9);
+      border-top: 1px solid rgba(243, 223, 189, 0.9);
       border-radius: 24px 24px 0 0;
-      background: rgba(255, 255, 255, 0.88);
+      background: rgba(255, 254, 249, 0.88);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-      box-shadow: 0 -10px 30px rgba(83, 95, 143, 0.08);
+      box-shadow: 0 -10px 30px rgba(174, 116, 45, 0.08);
     }
 
     .tab-item {
@@ -583,7 +583,7 @@
       gap: 4px;
       min-height: 54px;
       padding-top: 6px;
-      color: #9aa3b8;
+      color: #b29a7a;
       text-decoration: none;
       font-size: 11px;
       font-weight: 700;
@@ -607,7 +607,7 @@
       width: 28px;
       height: 3px;
       border-radius: 999px;
-      background: linear-gradient(90deg, #6f82ff, #8b67ee);
+      background: linear-gradient(90deg, #f7c46b, #eba84b);
       transform: translateX(-50%);
     }
 
@@ -619,7 +619,7 @@
       max-width: calc(100% - 40px);
       padding: 11px 16px;
       border-radius: 999px;
-      color: #ffffff;
+      color: #fffef9;
       background: rgba(39, 47, 77, 0.92);
       box-shadow: 0 12px 28px rgba(39, 47, 77, 0.18);
       font-size: 14px;
