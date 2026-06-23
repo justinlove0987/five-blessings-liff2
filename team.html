@@ -1045,7 +1045,7 @@
         </div>
 
         <div class="members-header">
-          <h2 class="members-title">小隊成員本週累積</h2>
+          <h2 class="members-title" id="membersPeriodTitle">小隊成員本週累積</h2>
           <div class="member-count">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2.8 19c.9-3.1 2.7-4.8 5.2-4.8s4.3 1.7 5.2 4.8M13.8 14.5c.7-.2 1.4-.3 2.2-.3 2.5 0 4.3 1.7 5.2 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -1225,6 +1225,7 @@
     const joinedMonthlyTotalEl = document.getElementById('joinedMonthlyTotal');
     const joinedMonthlyLabelEl = document.getElementById('joinedMonthlyLabel');
     const joinedMemberCountEl = document.getElementById('joinedMemberCount');
+    const membersPeriodTitleEl = document.getElementById('membersPeriodTitle');
     const memberListEl = document.getElementById('memberList');
     const memberPeriodTabs = Array.from(document.querySelectorAll('[data-member-period]'));
     const copyInviteButton = document.getElementById('copyInviteCode');
@@ -1431,6 +1432,9 @@
 
     function setMemberPeriod(period) {
       selectedMemberPeriod = period === 'month' ? 'month' : 'week';
+      membersPeriodTitleEl.textContent = selectedMemberPeriod === 'month'
+        ? '小隊成員本月累積'
+        : '小隊成員本週累積';
       memberPeriodTabs.forEach(tab => {
         const isActive = tab.dataset.memberPeriod === selectedMemberPeriod;
         tab.classList.toggle('is-active', isActive);

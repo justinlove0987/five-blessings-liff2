@@ -1090,6 +1090,7 @@
           total,
           average: Number((total / memberCount).toFixed(1))
         }))
+        .filter(row => row.memberCount > 0 && row.total > 0)
         .sort((a, b) => b.average - a.average)
         .map((row, index, sortedRows) => {
           const previous = sortedRows[index - 1];

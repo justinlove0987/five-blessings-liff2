@@ -165,7 +165,7 @@ async function buildLeaderboard(supabase, periods) {
   }
 
   const sortedRows = [...teamStats.values()]
-    .filter(stats => stats.memberCount > 0)
+    .filter(stats => stats.memberCount > 0 && stats.total > 0)
     .map(stats => ({
       ...stats,
       average: Number((stats.total / stats.memberCount).toFixed(1))
