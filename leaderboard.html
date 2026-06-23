@@ -160,7 +160,7 @@
     .winner-card {
       position: relative;
       display: grid;
-      gap: 14px;
+      gap: 12px;
       min-height: 148px;
       padding: 20px 18px;
       border: 1px solid rgba(255, 202, 92, 0.42);
@@ -208,10 +208,13 @@
     .winner-kicker {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
+      min-width: 0;
       color: #8b67ee;
       font-size: 15px;
       font-weight: 850;
       line-height: 1.25;
+      text-align: center;
     }
 
     .winner-name {
@@ -232,7 +235,7 @@
       align-items: center;
       gap: 8px;
       min-width: 0;
-      padding: 10px 12px;
+      padding: 9px 10px;
       border-radius: 14px;
       background: rgba(255, 255, 255, 0.72);
     }
@@ -525,7 +528,7 @@
 
       .winner-stats {
         gap: 6px 10px;
-        padding: 9px 10px;
+        padding: 8px 9px;
       }
 
       .rank-card {
@@ -565,6 +568,8 @@
       </div>
 
       <section class="winner-card" id="winnerCard" aria-label="本月勝利戰隊">
+        <div class="winner-kicker" id="winnerKicker">本月勝利戰隊</div>
+
         <div class="winner-hero">
           <div class="winner-trophy" aria-hidden="true">
             <svg viewBox="0 0 64 64" fill="none">
@@ -576,18 +581,15 @@
           </div>
 
           <div class="winner-copy">
-            <div class="winner-kicker" id="winnerKicker">本月勝利戰隊</div>
             <h1 class="winner-name" id="winnerName">讀取中...</h1>
-          </div>
-        </div>
 
-        <div class="winner-copy">
-          <div class="winner-stats">
-            <div class="winner-stat">
-              <span class="winner-stat-line">平均每人 <strong id="winnerAverage">--</strong> 次</span>
-            </div>
-            <div class="winner-stat">
-              <span class="winner-stat-line"><span id="winnerMembers">-- 人</span><span id="winnerTotal">總次數 --</span></span>
+            <div class="winner-stats">
+              <div class="winner-stat">
+                <span class="winner-stat-line">平均每人 <strong id="winnerAverage">--</strong> 次</span>
+              </div>
+              <div class="winner-stat">
+                <span class="winner-stat-line"><span id="winnerMembers">-- 人</span><span id="winnerTotal">總次數 --</span></span>
+              </div>
             </div>
           </div>
         </div>
