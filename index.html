@@ -124,7 +124,7 @@
       align-items: center;
       gap: 4px;
       min-height: 36px;
-      padding: 0 8px 0 12px;
+      padding: 0 12px;
       border: 1px solid rgba(106, 125, 248, 0.12);
       border-radius: 999px;
       color: #39415f;
@@ -132,6 +132,10 @@
       font-size: 15px;
       font-weight: 760;
       white-space: nowrap;
+    }
+
+    .header-month:disabled {
+      cursor: default;
     }
 
     .chevron {
@@ -629,11 +633,8 @@
       </div>
 
       <div class="header-actions">
-        <button class="header-month" type="button" aria-label="選擇月份">
+        <button class="header-month" type="button" aria-label="目前月份" disabled>
           <span id="currentMonth">--月</span>
-          <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
         </button>
 
         <button class="avatar-button" type="button" aria-label="使用者資料">
