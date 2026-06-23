@@ -164,11 +164,11 @@ async function buildLeaderboard(supabase, periods) {
     });
   }
 
-  return [...teamStats.values()]
+  const sortedRows = [...teamStats.values()]
     .filter(stats => stats.memberCount > 0)
     .map(stats => ({
       ...stats,
-      average: stats.total / stats.memberCount
+      average: Number((stats.total / stats.memberCount).toFixed(1))
     }))
     .sort((a, b) => {
       if (b.average !== a.average) {
@@ -184,13 +184,23 @@ async function buildLeaderboard(supabase, periods) {
       }
 
       return a.teamName.localeCompare(b.teamName, 'zh-Hant');
-    })
-    .map((stats, index) => ({
-      rank: index + 1,
+    });
+
+  return sortedRows.map((stats, index) => {
+    const previous = sortedRows[index - 1];
+    const rank = previous && previous.average === stats.average
+      ? previous.rank
+      : index + 1;
+
+    stats.rank = rank;
+
+    return {
+      rank,
       teamId: stats.teamId,
       teamName: stats.teamName,
       memberCount: stats.memberCount,
       total: stats.total,
-      average: Number(stats.average.toFixed(1))
-    }));
+      average: stats.average
+    };
+  });
 }
