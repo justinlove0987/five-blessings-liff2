@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>戰隊排行榜</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <style>
+    :root {
+      --page-bg: #f5f7ff;
+      --card: #ffffff;
+      --ink: #1f2433;
+      --muted: #7b849b;
+      --line: #e8ecf8;
+      --primary: #6a7df8;
+      --primary-strong: #5067ee;
+      --gold: #ffb837;
+      --shadow: 0 10px 28px rgba(83, 95, 143, 0.12);
+      --tab-height: 72px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--page-bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background:
+        radial-gradient(circle at 10% 14%, rgba(214, 207, 255, 0.55), transparent 34%),
+        radial-gradient(circle at 90% 5%, rgba(202, 232, 255, 0.42), transparent 30%),
+        linear-gradient(180deg, #f7f4ff 0%, #f4f8ff 42%, #fbfcff 100%);
+    }
+
+    button {
+      font: inherit;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .app-shell {
+      width: min(100%, 480px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding-bottom: calc(var(--tab-height) + 24px + env(safe-area-inset-bottom));
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 64px;
+      padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
+      background: rgba(255, 255, 255, 0.72);
+      border-bottom: 1px solid rgba(232, 236, 248, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      font-size: 20px;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+
+    .brand-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .month-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 36px;
+      padding: 0 8px;
+      border: 1px solid rgba(106, 125, 248, 0.12);
+      border-radius: 999px;
+      color: #39415f;
+      background: rgba(255, 255, 255, 0.58);
+      font-size: 15px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .month-step {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .month-step svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .month-text {
+      min-width: 36px;
+      text-align: center;
+    }
+
+    .content {
+      display: grid;
+      gap: 20px;
+      padding: 18px 20px 0;
+    }
+
+    .segmented-control {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: min(100%, 292px);
+      min-height: 44px;
+      margin: 0 auto;
+      padding: 3px;
+      border: 1px solid rgba(219, 225, 249, 0.92);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: inset 0 1px 2px rgba(70, 82, 132, 0.05);
+    }
+
+    .segment-button {
+      border: 0;
+      border-radius: 999px;
+      color: #838ca7;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .segment-button.is-active {
+      color: #ffffff;
+      background: linear-gradient(135deg, #8d7af4, #6d80f8);
+      box-shadow: 0 8px 16px rgba(106, 125, 248, 0.24);
+    }
+
+    .winner-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+      min-height: 154px;
+      padding: 20px 18px;
+      border: 1px solid rgba(255, 202, 92, 0.42);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 22% 30%, rgba(255, 207, 94, 0.24), transparent 34%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(250, 246, 255, 0.94));
+      box-shadow: 0 16px 40px rgba(113, 91, 156, 0.14);
+      overflow: hidden;
+    }
+
+    .winner-trophy {
+      display: grid;
+      place-items: center;
+      width: 88px;
+      height: 88px;
+      border-radius: 26px;
+      background: linear-gradient(145deg, #fff6dc, #ffd474);
+      box-shadow: 0 14px 28px rgba(255, 184, 55, 0.24);
+      color: #ffffff;
+    }
+
+    .winner-trophy svg {
+      width: 58px;
+      height: 58px;
+      filter: drop-shadow(0 7px 10px rgba(221, 139, 21, 0.24));
+    }
+
+    .winner-copy {
+      min-width: 0;
+    }
+
+    .winner-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      color: #8b67ee;
+      font-size: 15px;
+      font-weight: 850;
+    }
+
+    .winner-name {
+      min-width: 0;
+      margin: 0 0 12px;
+      overflow: hidden;
+      color: #111827;
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .winner-stats {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 1px;
+      min-height: 44px;
+      border-radius: 13px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .winner-stat {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 4px;
+      padding: 8px 6px;
+      color: #68728f;
+      background: rgba(255, 255, 255, 0.68);
+      font-size: 13px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .winner-stat strong {
+      color: #6d64ee;
+      font-size: 23px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 0 2px;
+    }
+
+    .section-title {
+      margin: 0;
+      color: #111827;
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .section-subtitle {
+      color: #8a93aa;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .rank-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .rank-card {
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      min-height: 82px;
+      padding: 12px 14px;
+      border: 1px solid rgba(232, 236, 248, 0.82);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 8px 20px rgba(83, 95, 143, 0.08);
+    }
+
+    .rank-card.rank-1 {
+      border-color: rgba(255, 202, 92, 0.52);
+    }
+
+    .rank-card.rank-2 {
+      border-color: rgba(186, 208, 234, 0.78);
+    }
+
+    .rank-card.rank-3 {
+      border-color: rgba(255, 184, 138, 0.66);
+    }
+
+    .rank-badge {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      color: #909ab3;
+      background: #f1f3fb;
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .rank-1 .rank-badge {
+      color: #f2a313;
+      background: linear-gradient(180deg, #fff9e7, #ffe19a);
+    }
+
+    .rank-2 .rank-badge {
+      color: #7d8aa1;
+      background: linear-gradient(180deg, #f6f8ff, #dce7f5);
+    }
+
+    .rank-3 .rank-badge {
+      color: #e87a3c;
+      background: linear-gradient(180deg, #fff1e9, #ffc6a3);
+    }
+
+    .rank-main {
+      min-width: 0;
+    }
+
+    .rank-name {
+      min-width: 0;
+      margin-bottom: 5px;
+      overflow: hidden;
+      color: #111827;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.22;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .rank-meta {
+      color: #7d88a8;
+      font-size: 13.5px;
+      font-weight: 720;
+      line-height: 1.35;
+    }
+
+    .rank-score {
+      display: grid;
+      justify-items: end;
+      gap: 2px;
+      color: #7d88a8;
+      font-size: 13px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .rank-score strong {
+      color: #6674f6;
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .loading-state,
+    .empty-state {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 750;
+      text-align: center;
+    }
+
+    .loading-inner {
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+    }
+
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border: 3px solid rgba(106, 125, 248, 0.18);
+      border-top-color: var(--primary-strong);
+      border-radius: 50%;
+      animation: spin 0.78s linear infinite;
+    }
+
+    .tab-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      z-index: 30;
+      width: min(100%, 480px);
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      min-height: var(--tab-height);
+      padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
+      border-top: 1px solid rgba(232, 236, 248, 0.9);
+      border-radius: 24px 24px 0 0;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 -10px 30px rgba(83, 95, 143, 0.08);
+    }
+
+    .tab-item {
+      position: relative;
+      display: grid;
+      justify-items: center;
+      align-content: center;
+      gap: 4px;
+      min-height: 54px;
+      padding-top: 6px;
+      color: #9aa3b8;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .tab-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .tab-item.is-active {
+      color: var(--primary-strong);
+    }
+
+    .tab-item.is-active::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 28px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #6f82ff, #8b67ee);
+      transform: translateX(-50%);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--tab-height) + 24px + env(safe-area-inset-bottom));
+      z-index: 120;
+      max-width: calc(100% - 40px);
+      padding: 11px 16px;
+      border-radius: 999px;
+      color: #ffffff;
+      background: rgba(39, 47, 77, 0.92);
+      box-shadow: 0 12px 28px rgba(39, 47, 77, 0.18);
+      font-size: 14px;
+      font-weight: 750;
+      line-height: 1.35;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 12px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .toast.error {
+      background: rgba(198, 70, 91, 0.94);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 360px) {
+      .winner-card {
+        grid-template-columns: 78px minmax(0, 1fr);
+        gap: 12px;
+        padding: 18px 14px;
+      }
+
+      .winner-trophy {
+        width: 72px;
+        height: 72px;
+        border-radius: 22px;
+      }
+
+      .winner-trophy svg {
+        width: 48px;
+        height: 48px;
+      }
+
+      .rank-card {
+        grid-template-columns: 50px minmax(0, 1fr) auto;
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <span>五重戰隊</span>
+        <span class="brand-icon" aria-hidden="true">✨</span>
+      </div>
+
+      <div class="month-pill" aria-label="排行榜月份">
+        <button class="month-step" type="button" id="prevMonth" aria-label="上一個月">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <span class="month-text" id="monthText">--月</span>
+        <button class="month-step" type="button" id="nextMonth" aria-label="下一個月">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="segmented-control" role="tablist" aria-label="排行榜範圍">
+        <button class="segment-button" type="button" data-range="week" role="tab" aria-selected="false">週</button>
+        <button class="segment-button is-active" type="button" data-range="month" role="tab" aria-selected="true">月</button>
+      </div>
+
+      <section class="winner-card" id="winnerCard" aria-label="本月勝利戰隊">
+        <div class="winner-trophy" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <path d="M21 13h22v9.5C43 34.4 37.8 40 32 40s-11-5.6-11-17.5V13Z" fill="#fff8dc" stroke="#f4a91f" stroke-width="3" />
+            <path d="M21 18h-7c0 8.2 3.9 13 10.1 14.7M43 18h7c0 8.2-3.9 13-10.1 14.7" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
+            <path d="M32 40v8M23 51h18M19 57h26" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
+            <path d="m32 19 2.5 5.1 5.6.8-4.1 4 1 5.6-5-2.6-5 2.6 1-5.6-4.1-4 5.6-.8L32 19Z" fill="#ffbd38" />
+          </svg>
+        </div>
+
+        <div class="winner-copy">
+          <div class="winner-kicker">♕ <span id="winnerKicker">本月勝利戰隊</span> ♕</div>
+          <h1 class="winner-name" id="winnerName">讀取中...</h1>
+          <div class="winner-stats">
+            <div class="winner-stat">平均每人 <strong id="winnerAverage">--</strong> 次</div>
+            <div class="winner-stat"><span id="winnerMembers">-- 人</span> / <span id="winnerTotal">總次數 --</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-header">
+          <h2 class="section-title">排行榜</h2>
+          <span class="section-subtitle" id="rankingSubtitle">前 10 戰隊</span>
+        </div>
+        <div class="loading-state" id="loadingState">
+          <div class="loading-inner">
+            <span class="spinner" aria-hidden="true"></span>
+            <span>排行榜讀取中...</span>
+          </div>
+        </div>
+        <div class="empty-state" id="emptyState" hidden>目前還沒有可排名的戰隊</div>
+        <div class="rank-list" id="rankList" hidden></div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="tab-bar" aria-label="主要導覽">
+    <a class="tab-item" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4.5 10.2 12 4.5l7.5 5.7V20a1 1 0 0 1-1 1h-5v-6H10.5v6h-5a1 1 0 0 1-1-1v-9.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+      </svg>
+      <span>首頁</span>
+    </a>
+
+    <a class="tab-item" href="team.html">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3Zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z" />
+      </svg>
+      <span>五重戰隊</span>
+    </a>
+
+    <a class="tab-item is-active" href="leaderboard.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M8 20V10M16 20V4M4 20v-5M20 20v-9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+      <span>排行榜</span>
+    </a>
+  </nav>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <script>
+    const LIFF_ID = '2010462217-tVZRATTG';
+    const LEADERBOARD_API_URL = '/api/leaderboard';
+
+    let idToken = null;
+    let selectedRange = 'month';
+    let selectedDate = getTaipeiToday();
+    let toastTimer = null;
+    const isLocalPreview = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+      && new URLSearchParams(window.location.search).get('preview') === '1';
+
+    const monthTextEl = document.getElementById('monthText');
+    const prevMonthButton = document.getElementById('prevMonth');
+    const nextMonthButton = document.getElementById('nextMonth');
+    const loadingStateEl = document.getElementById('loadingState');
+    const emptyStateEl = document.getElementById('emptyState');
+    const rankListEl = document.getElementById('rankList');
+    const rankingSubtitleEl = document.getElementById('rankingSubtitle');
+    const winnerKickerEl = document.getElementById('winnerKicker');
+    const winnerNameEl = document.getElementById('winnerName');
+    const winnerAverageEl = document.getElementById('winnerAverage');
+    const winnerMembersEl = document.getElementById('winnerMembers');
+    const winnerTotalEl = document.getElementById('winnerTotal');
+    const toastEl = document.getElementById('toast');
+
+    document.querySelectorAll('.segment-button').forEach(button => {
+      button.addEventListener('click', () => {
+        selectedRange = button.dataset.range;
+        syncRangeButtons();
+        loadLeaderboard();
+      });
+    });
+
+    prevMonthButton.addEventListener('click', () => {
+      selectedDate.setMonth(selectedDate.getMonth() - 1);
+      loadLeaderboard();
+    });
+
+    nextMonthButton.addEventListener('click', () => {
+      selectedDate.setMonth(selectedDate.getMonth() + 1);
+      loadLeaderboard();
+    });
+
+    async function loadLeaderboard() {
+      if (isLocalPreview) {
+        renderLeaderboard(buildPreviewData());
+        syncMonthLabel();
+        return;
+      }
+
+      if (!idToken) {
+        showToast('尚未完成 LINE 登入，請重新開啟頁面。', 'error');
+        return;
+      }
+
+      showLoading();
+      syncMonthLabel();
+
+      try {
+        const response = await fetch(LEADERBOARD_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            idToken,
+            range: selectedRange,
+            year: selectedDate.getFullYear(),
+            month: selectedDate.getMonth() + 1
+          })
+        });
+        const data = await parseJsonResponse(response);
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Leaderboard API failed');
+        }
+
+        renderLeaderboard(data);
+      } catch (error) {
+        showEmpty();
+        renderWinner(null);
+        showToast('讀取排行榜失敗，請重新整理後再試一次。', 'error');
+      }
+    }
+
+    function renderLeaderboard(data) {
+      const rows = Array.isArray(data.leaderboard) ? data.leaderboard : [];
+      rankingSubtitleEl.textContent = `${data.periodLabel || ''} 前 10 戰隊`;
+      renderWinner(data.winner);
+
+      if (!rows.length) {
+        showEmpty();
+        return;
+      }
+
+      loadingStateEl.hidden = true;
+      emptyStateEl.hidden = true;
+      rankListEl.hidden = false;
+      rankListEl.innerHTML = rows.map(renderRankCard).join('');
+    }
+
+    function renderWinner(winner) {
+      winnerKickerEl.textContent = `${selectedDate.getMonth() + 1}月勝利戰隊`;
+
+      if (!winner) {
+        winnerNameEl.textContent = '尚無勝利戰隊';
+        winnerAverageEl.textContent = '--';
+        winnerMembersEl.textContent = '-- 人';
+        winnerTotalEl.textContent = '總次數 --';
+        return;
+      }
+
+      winnerNameEl.textContent = winner.teamName || '未命名戰隊';
+      winnerAverageEl.textContent = formatAverage(winner.average);
+      winnerMembersEl.textContent = `${Number(winner.memberCount || 0)} 人`;
+      winnerTotalEl.textContent = `總次數 ${Number(winner.total || 0)}`;
+    }
+
+    function renderRankCard(row) {
+      const rank = Number(row.rank || 0);
+      const className = rank <= 3 ? `rank-card rank-${rank}` : 'rank-card';
+
+      return `
+        <article class="${className}">
+          <div class="rank-badge" aria-label="第 ${rank} 名">${rank}</div>
+          <div class="rank-main">
+            <div class="rank-name">${escapeHtml(row.teamName || '未命名戰隊')}</div>
+            <div class="rank-meta">${Number(row.memberCount || 0)} 人 ｜ 總次數 ${Number(row.total || 0)}</div>
+          </div>
+          <div class="rank-score">
+            <strong>${formatAverage(row.average)}</strong>
+            <span>平均/人</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function buildPreviewData() {
+      const baseRows = [
+        ['五重戰隊 A', 2, 70],
+        ['五重戰隊 B', 3, 96],
+        ['五重戰隊 C', 4, 120],
+        ['五重戰隊 D', 2, 56],
+        ['五重戰隊 E', 5, 130],
+        ['五重戰隊 F', 4, 92],
+        ['五重戰隊 G', 6, 132],
+        ['五重戰隊 H', 3, 60],
+        ['五重戰隊 I', 5, 90],
+        ['五重戰隊 J', 4, 68]
+      ];
+      const rows = baseRows
+        .map(([teamName, memberCount, total], index) => ({
+          rank: index + 1,
+          teamId: `preview-${index}`,
+          teamName,
+          memberCount,
+          total,
+          average: total / memberCount
+        }))
+        .sort((a, b) => b.average - a.average)
+        .map((row, index) => ({
+          ...row,
+          rank: index + 1,
+          average: Number(row.average.toFixed(1))
+        }));
+
+      return {
+        success: true,
+        range: selectedRange,
+        year: selectedDate.getFullYear(),
+        month: selectedDate.getMonth() + 1,
+        periodLabel: selectedRange === 'week' ? '本週' : `${selectedDate.getMonth() + 1}月`,
+        leaderboard: rows,
+        winner: rows[0]
+      };
+    }
+
+    function showLoading() {
+      loadingStateEl.hidden = false;
+      emptyStateEl.hidden = true;
+      rankListEl.hidden = true;
+      rankListEl.innerHTML = '';
+    }
+
+    function showEmpty() {
+      loadingStateEl.hidden = true;
+      emptyStateEl.hidden = false;
+      rankListEl.hidden = true;
+      rankListEl.innerHTML = '';
+    }
+
+    function syncRangeButtons() {
+      document.querySelectorAll('.segment-button').forEach(button => {
+        const isActive = button.dataset.range === selectedRange;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-selected', String(isActive));
+      });
+    }
+
+    function syncMonthLabel() {
+      monthTextEl.textContent = `${selectedDate.getMonth() + 1}月`;
+    }
+
+    function formatAverage(value) {
+      const number = Number(value || 0);
+
+      if (Number.isInteger(number)) {
+        return String(number);
+      }
+
+      return number.toFixed(1);
+    }
+
+    function showToast(message, type) {
+      window.clearTimeout(toastTimer);
+      toastEl.textContent = message;
+      toastEl.classList.toggle('error', type === 'error');
+      toastEl.classList.add('show');
+
+      toastTimer = window.setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, 2400);
+    }
+
+    async function parseJsonResponse(response) {
+      const text = await response.text();
+
+      try {
+        return JSON.parse(text || '{}');
+      } catch (error) {
+        return {
+          success: false,
+          error: text || 'Invalid API response'
+        };
+      }
+    }
+
+    function getTaipeiToday() {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Taipei',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(new Date());
+
+      const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+      return new Date(Number(values.year), Number(values.month) - 1, Number(values.day));
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      })[character]);
+    }
+
+    async function initLeaderboardPage() {
+      syncMonthLabel();
+
+      if (isLocalPreview) {
+        loadLeaderboard();
+        return;
+      }
+
+      if (!window.liff) {
+        showEmpty();
+        showToast('LINE LIFF 尚未載入，請重新開啟頁面。', 'error');
+        return;
+      }
+
+      try {
+        await liff.init({ liffId: LIFF_ID });
+
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: window.location.href });
+          return;
+        }
+
+        idToken = liff.getIDToken();
+
+        if (!idToken) {
+          throw new Error('Missing LINE idToken');
+        }
+
+        await loadLeaderboard();
+      } catch (error) {
+        showEmpty();
+        showToast('讀取排行榜失敗，請重新整理後再試一次。', 'error');
+      }
+    }
+
+    initLeaderboardPage();
+  </script>
+</body>
+</html>

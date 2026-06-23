@@ -295,6 +295,43 @@ function getHistoryPeriods(year, month, blessingType, todayParts = getTaipeiDate
   return [];
 }
 
+function getLeaderboardWeekPeriods(date = new Date()) {
+  const today = getTaipeiDateParts(date);
+  const weekStart = getSundayDateParts(today);
+  const periods = [];
+
+  for (let offset = 0; offset < 7; offset += 1) {
+    const dateParts = addDaysToDateParts(weekStart, offset);
+
+    if (compareDateParts(dateParts, today) > 0) {
+      continue;
+    }
+
+    if (isMorningPrayerDay(dateParts)) {
+      periods.push({
+        blessingType: 'morningPrayer',
+        periodType: 'day',
+        periodKey: formatDateKey(dateParts)
+      });
+    }
+  }
+
+  ['smallGroup', 'sunday'].forEach(blessingType => {
+    periods.push({
+      blessingType,
+      periodType: 'week',
+      periodKey: formatDateKey(weekStart)
+    });
+  });
+
+  return periods;
+}
+
+function getLeaderboardMonthPeriods(year, month, todayParts = getTaipeiDateParts(new Date())) {
+  return ['morningPrayer', 'smallGroup', 'sunday', 'tithe']
+    .flatMap(blessingType => getHistoryPeriods(year, month, blessingType, todayParts));
+}
+
 async function upsertLineUser(supabase, lineProfile) {
   const lineUserId = lineProfile.sub;
 
@@ -514,6 +551,8 @@ module.exports = {
   buildHistoryTaskNote,
   getCurrentTaskPeriods,
   getHistoryPeriods,
+  getLeaderboardMonthPeriods,
+  getLeaderboardWeekPeriods,
   getSupabaseClient,
   getTaskPeriod,
   getTeamWeeklyPeriodKeys,
