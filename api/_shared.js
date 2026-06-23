@@ -404,6 +404,7 @@ async function buildTeamSummary(supabase, userId) {
   }
 
   const memberTotals = new Map((members || []).map(member => [member.id, 0]));
+  const memberIds = new Set(memberTotals.keys());
   const periods = getTeamWeeklyPeriodKeys();
   const periodKeys = [...new Set(periods.map(period => period.periodKey))];
   const blessingTypes = [...new Set(periods.map(period => period.blessingType))];
@@ -429,6 +430,29 @@ async function buildTeamSummary(supabase, userId) {
     });
   }
 
+  const todayParts = getTaipeiDateParts(new Date());
+  const monthPeriods = getLeaderboardMonthPeriods(todayParts.year, todayParts.month, todayParts);
+  const monthPeriodKeys = [...new Set(monthPeriods.map(period => period.periodKey))];
+  const monthBlessingTypes = [...new Set(monthPeriods.map(period => period.blessingType))];
+  let monthlyTotal = 0;
+
+  if (monthPeriodKeys.length > 0 && monthBlessingTypes.length > 0) {
+    const { data: monthCheckins, error: monthCheckinsError } = await supabase
+      .from('checkins')
+      .select('user_id,blessing_type,period_key')
+      .eq('team_id', team.id)
+      .in('period_key', monthPeriodKeys)
+      .in('blessing_type', monthBlessingTypes);
+
+    if (monthCheckinsError) {
+      throw monthCheckinsError;
+    }
+
+    monthlyTotal = (monthCheckins || []).filter(checkin => (
+      checkin.user_id && memberIds.has(checkin.user_id)
+    )).length;
+  }
+
   const summaryMembers = (members || []).map(member => ({
     id: member.id,
     displayName: member.display_name || '小隊成員',
@@ -444,6 +468,8 @@ async function buildTeamSummary(supabase, userId) {
       inviteCode: team.invite_code
     },
     weeklyTotal: summaryMembers.reduce((sum, member) => sum + member.weeklyTotal, 0),
+    monthlyTotal,
+    monthlyLabel: `${todayParts.month}月`,
     members: summaryMembers
   };
 }
@@ -453,7 +479,11 @@ async function syncCurrentPeriodCheckinsToTeam(supabase, user) {
     return;
   }
 
-  const periods = getTeamWeeklyPeriodKeys();
+  const todayParts = getTaipeiDateParts(new Date());
+  const periods = [
+    ...getTeamWeeklyPeriodKeys(),
+    ...getLeaderboardMonthPeriods(todayParts.year, todayParts.month, todayParts)
+  ];
   const periodKeys = [...new Set(periods.map(period => period.periodKey))];
   const blessingTypes = [...new Set(periods.map(period => period.blessingType))];
 

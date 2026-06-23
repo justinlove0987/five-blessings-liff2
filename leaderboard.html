@@ -133,35 +133,6 @@
       padding: 18px 20px 0;
     }
 
-    .segmented-control {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      width: min(100%, 292px);
-      min-height: 44px;
-      margin: 0 auto;
-      padding: 3px;
-      border: 1px solid rgba(219, 225, 249, 0.92);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.7);
-      box-shadow: inset 0 1px 2px rgba(70, 82, 132, 0.05);
-    }
-
-    .segment-button {
-      border: 0;
-      border-radius: 999px;
-      color: #838ca7;
-      background: transparent;
-      font-size: 15px;
-      font-weight: 850;
-      cursor: pointer;
-    }
-
-    .segment-button.is-active {
-      color: #ffffff;
-      background: linear-gradient(135deg, #8d7af4, #6d80f8);
-      box-shadow: 0 8px 16px rgba(106, 125, 248, 0.24);
-    }
-
     .winner-card {
       position: relative;
       display: grid;
@@ -745,11 +716,6 @@
     </header>
 
     <main class="content">
-      <div class="segmented-control" role="tablist" aria-label="排行榜範圍">
-        <button class="segment-button" type="button" data-range="week" role="tab" aria-selected="false">週</button>
-        <button class="segment-button is-active" type="button" data-range="month" role="tab" aria-selected="true">月</button>
-      </div>
-
       <section class="winner-card" id="winnerCard" aria-label="本月勝利戰隊">
         <div class="tied-winner-header">
           <div class="tied-crown-badge" aria-hidden="true">
@@ -838,7 +804,6 @@
     const LEADERBOARD_API_URL = '/api/leaderboard';
 
     let idToken = null;
-    let selectedRange = 'month';
     let selectedDate = getTaipeiToday();
     let toastTimer = null;
     const isLocalPreview = ['localhost', '127.0.0.1'].includes(window.location.hostname)
@@ -857,14 +822,6 @@
     const winnerMembersEl = document.getElementById('winnerMembers');
     const winnerTotalEl = document.getElementById('winnerTotal');
     const toastEl = document.getElementById('toast');
-
-    document.querySelectorAll('.segment-button').forEach(button => {
-      button.addEventListener('click', () => {
-        selectedRange = button.dataset.range;
-        syncRangeButtons();
-        loadLeaderboard();
-      });
-    });
 
     prevMonthButton.addEventListener('click', () => {
       shiftSelectedMonth(-1);
@@ -903,7 +860,7 @@
           },
           body: JSON.stringify({
             idToken,
-            range: selectedRange,
+            range: 'month',
             year: selectedDate.getFullYear(),
             month: selectedDate.getMonth() + 1
           })
@@ -1129,10 +1086,10 @@
 
       return {
         success: true,
-        range: selectedRange,
+        range: 'month',
         year: selectedDate.getFullYear(),
         month: selectedDate.getMonth() + 1,
-        periodLabel: selectedRange === 'week' ? '本週' : `${selectedDate.getMonth() + 1}月`,
+        periodLabel: `${selectedDate.getMonth() + 1}月`,
         leaderboard: rows,
         winner: {
           ...rows[0],
@@ -1153,14 +1110,6 @@
       emptyStateEl.hidden = false;
       rankListEl.hidden = true;
       rankListEl.innerHTML = '';
-    }
-
-    function syncRangeButtons() {
-      document.querySelectorAll('.segment-button').forEach(button => {
-        const isActive = button.dataset.range === selectedRange;
-        button.classList.toggle('is-active', isActive);
-        button.setAttribute('aria-selected', String(isActive));
-      });
     }
 
     function syncMonthLabel() {

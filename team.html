@@ -378,6 +378,11 @@
       background: linear-gradient(90deg, transparent 0%, rgba(131, 143, 199, 0.28) 12%, rgba(131, 143, 199, 0.28) 88%, transparent 100%);
     }
 
+    .team-total-list {
+      display: grid;
+      gap: 14px;
+    }
+
     .team-summary-bottom {
       display: flex;
       align-items: center;
@@ -404,16 +409,16 @@
     .team-total-value {
       display: inline-flex;
       align-items: baseline;
-      gap: 8px;
+      gap: 7px;
       color: #52607c;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 850;
       white-space: nowrap;
     }
 
     .team-total-number {
       color: #6c64e8;
-      font-size: 42px;
+      font-size: 34px;
       line-height: 1;
     }
 
@@ -978,16 +983,31 @@
 
           <div class="team-divider" aria-hidden="true"></div>
 
-          <div class="team-summary-bottom">
-            <div class="team-total-label">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2.8 19c.9-3.1 2.7-4.8 5.2-4.8s4.3 1.7 5.2 4.8M13.8 14.5c.7-.2 1.4-.3 2.2-.3 2.5 0 4.3 1.7 5.2 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              </svg>
-              <span>本週小隊累積</span>
+          <div class="team-total-list">
+            <div class="team-summary-bottom">
+              <div class="team-total-label">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2.8 19c.9-3.1 2.7-4.8 5.2-4.8s4.3 1.7 5.2 4.8M13.8 14.5c.7-.2 1.4-.3 2.2-.3 2.5 0 4.3 1.7 5.2 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span><span id="joinedMonthlyLabel">本月</span>小隊累積</span>
+              </div>
+              <div class="team-total-value">
+                <span class="team-total-number" id="joinedMonthlyTotal">0</span>
+                <span>次</span>
+              </div>
             </div>
-            <div class="team-total-value">
-              <span class="team-total-number" id="joinedWeeklyTotal">0</span>
-              <span>次</span>
+
+            <div class="team-summary-bottom">
+              <div class="team-total-label">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2.8 19c.9-3.1 2.7-4.8 5.2-4.8s4.3 1.7 5.2 4.8M13.8 14.5c.7-.2 1.4-.3 2.2-.3 2.5 0 4.3 1.7 5.2 4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span>本週小隊累積</span>
+              </div>
+              <div class="team-total-value">
+                <span class="team-total-number" id="joinedWeeklyTotal">0</span>
+                <span>次</span>
+              </div>
             </div>
           </div>
         </article>
@@ -1168,6 +1188,8 @@
     const joinedTeamNameEl = document.getElementById('joinedTeamName');
     const joinedInviteCodeEl = document.getElementById('joinedInviteCode');
     const joinedWeeklyTotalEl = document.getElementById('joinedWeeklyTotal');
+    const joinedMonthlyTotalEl = document.getElementById('joinedMonthlyTotal');
+    const joinedMonthlyLabelEl = document.getElementById('joinedMonthlyLabel');
     const joinedMemberCountEl = document.getElementById('joinedMemberCount');
     const memberListEl = document.getElementById('memberList');
     const copyInviteButton = document.getElementById('copyInviteCode');
@@ -1364,6 +1386,8 @@
       joinedTeamNameEl.textContent = data.team.name || '我的小隊';
       joinedInviteCodeEl.textContent = currentInviteCode || '------';
       joinedWeeklyTotalEl.textContent = Number(data.weeklyTotal || 0);
+      joinedMonthlyTotalEl.textContent = Number(data.monthlyTotal || 0);
+      joinedMonthlyLabelEl.textContent = data.monthlyLabel || '本月';
 
       const members = Array.isArray(data.members) ? data.members : [];
       joinedMemberCountEl.textContent = `${members.length} 位成員`;
