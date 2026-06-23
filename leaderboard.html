@@ -160,10 +160,8 @@
     .winner-card {
       position: relative;
       display: grid;
-      grid-template-columns: 96px minmax(0, 1fr);
-      gap: 16px;
-      align-items: center;
-      min-height: 154px;
+      gap: 14px;
+      min-height: 148px;
       padding: 20px 18px;
       border: 1px solid rgba(255, 202, 92, 0.42);
       border-radius: 18px;
@@ -174,12 +172,21 @@
       overflow: hidden;
     }
 
+    .winner-hero {
+      display: grid;
+      grid-template-columns: 78px minmax(0, 1fr);
+      gap: 16px;
+      align-items: stretch;
+      min-width: 0;
+    }
+
     .winner-trophy {
       display: grid;
       place-items: center;
-      width: 88px;
-      height: 88px;
-      border-radius: 26px;
+      width: 78px;
+      height: 100%;
+      min-height: 78px;
+      border-radius: 22px;
       background: linear-gradient(145deg, #fff6dc, #ffd474);
       box-shadow: 0 14px 28px rgba(255, 184, 55, 0.24);
       color: #ffffff;
@@ -192,22 +199,24 @@
     }
 
     .winner-copy {
+      display: grid;
+      align-content: center;
+      gap: 7px;
       min-width: 0;
     }
 
     .winner-kicker {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
       color: #8b67ee;
       font-size: 15px;
       font-weight: 850;
+      line-height: 1.25;
     }
 
     .winner-name {
       min-width: 0;
-      margin: 0 0 12px;
+      margin: 0;
       overflow: hidden;
       color: #111827;
       font-size: 24px;
@@ -218,40 +227,45 @@
     }
 
     .winner-stats {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
-      border-radius: 13px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.72);
     }
 
     .winner-stat {
-      display: grid;
-      justify-content: center;
-      gap: 3px;
+      display: inline-flex;
+      align-items: baseline;
       min-width: 0;
-      min-height: 48px;
-      padding: 8px 6px 7px;
-      border-radius: 12px;
       color: #68728f;
-      background: rgba(255, 255, 255, 0.72);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 760;
-      line-height: 1.15;
-      text-align: center;
+      line-height: 1.2;
+      white-space: nowrap;
     }
 
     .winner-stat strong {
       color: #6d64ee;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 900;
       line-height: 1;
     }
 
     .winner-stat-label,
-    .winner-stat-sub {
+    .winner-stat-sub,
+    .winner-stat-line {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .winner-stat-line {
+      display: inline;
+      min-width: 0;
     }
 
     .section-header {
@@ -489,16 +503,15 @@
     }
 
     @media (max-width: 400px) {
-      .winner-card {
-        grid-template-columns: 78px minmax(0, 1fr);
+      .winner-hero {
+        grid-template-columns: 70px minmax(0, 1fr);
         gap: 12px;
-        padding: 18px 14px;
       }
 
       .winner-trophy {
-        width: 72px;
-        height: 72px;
-        border-radius: 22px;
+        width: 70px;
+        min-height: 70px;
+        border-radius: 20px;
       }
 
       .winner-trophy svg {
@@ -506,13 +519,18 @@
         height: 48px;
       }
 
-      .rank-card {
-        grid-template-columns: 50px minmax(0, 1fr) auto;
-        padding: 12px;
+      .winner-card {
+        padding: 18px 14px;
       }
 
       .winner-stats {
-        grid-template-columns: 1fr;
+        gap: 6px 10px;
+        padding: 9px 10px;
+      }
+
+      .rank-card {
+        grid-template-columns: 50px minmax(0, 1fr) auto;
+        padding: 12px;
       }
     }
   </style>
@@ -547,27 +565,29 @@
       </div>
 
       <section class="winner-card" id="winnerCard" aria-label="本月勝利戰隊">
-        <div class="winner-trophy" aria-hidden="true">
-          <svg viewBox="0 0 64 64" fill="none">
-            <path d="M21 13h22v9.5C43 34.4 37.8 40 32 40s-11-5.6-11-17.5V13Z" fill="#fff8dc" stroke="#f4a91f" stroke-width="3" />
-            <path d="M21 18h-7c0 8.2 3.9 13 10.1 14.7M43 18h7c0 8.2-3.9 13-10.1 14.7" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
-            <path d="M32 40v8M23 51h18M19 57h26" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
-            <path d="m32 19 2.5 5.1 5.6.8-4.1 4 1 5.6-5-2.6-5 2.6 1-5.6-4.1-4 5.6-.8L32 19Z" fill="#ffbd38" />
-          </svg>
+        <div class="winner-hero">
+          <div class="winner-trophy" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <path d="M21 13h22v9.5C43 34.4 37.8 40 32 40s-11-5.6-11-17.5V13Z" fill="#fff8dc" stroke="#f4a91f" stroke-width="3" />
+              <path d="M21 18h-7c0 8.2 3.9 13 10.1 14.7M43 18h7c0 8.2-3.9 13-10.1 14.7" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
+              <path d="M32 40v8M23 51h18M19 57h26" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
+              <path d="m32 19 2.5 5.1 5.6.8-4.1 4 1 5.6-5-2.6-5 2.6 1-5.6-4.1-4 5.6-.8L32 19Z" fill="#ffbd38" />
+            </svg>
+          </div>
+
+          <div class="winner-copy">
+            <div class="winner-kicker" id="winnerKicker">本月勝利戰隊</div>
+            <h1 class="winner-name" id="winnerName">讀取中...</h1>
+          </div>
         </div>
 
         <div class="winner-copy">
-          <div class="winner-kicker">♕ <span id="winnerKicker">本月勝利戰隊</span> ♕</div>
-          <h1 class="winner-name" id="winnerName">讀取中...</h1>
           <div class="winner-stats">
             <div class="winner-stat">
-              <span class="winner-stat-label">平均每人</span>
-              <strong id="winnerAverage">--</strong>
-              <span class="winner-stat-sub">次</span>
+              <span class="winner-stat-line">平均每人 <strong id="winnerAverage">--</strong> 次</span>
             </div>
             <div class="winner-stat">
-              <span class="winner-stat-label" id="winnerMembers">-- 人</span>
-              <span class="winner-stat-sub" id="winnerTotal">總次數 --</span>
+              <span class="winner-stat-line"><span id="winnerMembers">-- 人</span><span id="winnerTotal">總次數 --</span></span>
             </div>
           </div>
         </div>
