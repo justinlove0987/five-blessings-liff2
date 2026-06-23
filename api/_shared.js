@@ -434,6 +434,7 @@ async function buildTeamSummary(supabase, userId) {
   const monthPeriods = getLeaderboardMonthPeriods(todayParts.year, todayParts.month, todayParts);
   const monthPeriodKeys = [...new Set(monthPeriods.map(period => period.periodKey))];
   const monthBlessingTypes = [...new Set(monthPeriods.map(period => period.blessingType))];
+  const memberMonthlyTotals = new Map((members || []).map(member => [member.id, 0]));
   let monthlyTotal = 0;
 
   if (monthPeriodKeys.length > 0 && monthBlessingTypes.length > 0) {
@@ -448,16 +449,22 @@ async function buildTeamSummary(supabase, userId) {
       throw monthCheckinsError;
     }
 
-    monthlyTotal = (monthCheckins || []).filter(checkin => (
-      checkin.user_id && memberIds.has(checkin.user_id)
-    )).length;
+    (monthCheckins || []).forEach(checkin => {
+      if (!checkin.user_id || !memberIds.has(checkin.user_id)) {
+        return;
+      }
+
+      memberMonthlyTotals.set(checkin.user_id, memberMonthlyTotals.get(checkin.user_id) + 1);
+      monthlyTotal += 1;
+    });
   }
 
   const summaryMembers = (members || []).map(member => ({
     id: member.id,
     displayName: member.display_name || '小隊成員',
     pictureUrl: member.picture_url || null,
-    weeklyTotal: memberTotals.get(member.id) || 0
+    weeklyTotal: memberTotals.get(member.id) || 0,
+    monthlyTotal: memberMonthlyTotals.get(member.id) || 0
   }));
 
   return {

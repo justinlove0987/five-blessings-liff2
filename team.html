@@ -429,6 +429,33 @@
       gap: 12px;
     }
 
+    .member-period-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(232, 236, 248, 0.86);
+    }
+
+    .member-period-tab {
+      min-height: 36px;
+      border: 0;
+      border-radius: 999px;
+      color: #7a84a0;
+      background: transparent;
+      font-size: 14px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: background-color 0.16s ease, box-shadow 0.16s ease, color 0.16s ease;
+    }
+
+    .member-period-tab.is-active {
+      color: var(--primary-strong);
+      background: #ffffff;
+      box-shadow: 0 6px 16px rgba(84, 94, 142, 0.1);
+    }
+
     .members-title {
       margin: 0;
       color: #0f213d;
@@ -1012,6 +1039,11 @@
           </div>
         </article>
 
+        <div class="member-period-tabs" role="tablist" aria-label="成員累積區間">
+          <button class="member-period-tab is-active" type="button" data-member-period="week" role="tab" aria-selected="true">週</button>
+          <button class="member-period-tab" type="button" data-member-period="month" role="tab" aria-selected="false">月</button>
+        </div>
+
         <div class="members-header">
           <h2 class="members-title">小隊成員本週累積</h2>
           <div class="member-count">
@@ -1180,6 +1212,8 @@
     let keyboardUpdateFrame = null;
     let idToken = null;
     let currentInviteCode = '';
+    let currentMembers = [];
+    let selectedMemberPeriod = 'week';
     let toastTimer = null;
 
     const teamLoadingEl = document.getElementById('teamLoading');
@@ -1192,6 +1226,7 @@
     const joinedMonthlyLabelEl = document.getElementById('joinedMonthlyLabel');
     const joinedMemberCountEl = document.getElementById('joinedMemberCount');
     const memberListEl = document.getElementById('memberList');
+    const memberPeriodTabs = Array.from(document.querySelectorAll('[data-member-period]'));
     const copyInviteButton = document.getElementById('copyInviteCode');
     const copyInviteLabel = document.getElementById('copyInviteLabel');
     const leaveTeamButton = document.getElementById('leaveTeamButton');
@@ -1389,14 +1424,33 @@
       joinedMonthlyTotalEl.textContent = Number(data.monthlyTotal || 0);
       joinedMonthlyLabelEl.textContent = data.monthlyLabel || '本月';
 
-      const members = Array.isArray(data.members) ? data.members : [];
-      joinedMemberCountEl.textContent = `${members.length} 位成員`;
-      memberListEl.innerHTML = members.map((member, index) => renderMemberCard(member, index)).join('');
+      currentMembers = Array.isArray(data.members) ? data.members : [];
+      joinedMemberCountEl.textContent = `${currentMembers.length} 位成員`;
+      setMemberPeriod('week');
+    }
+
+    function setMemberPeriod(period) {
+      selectedMemberPeriod = period === 'month' ? 'month' : 'week';
+      memberPeriodTabs.forEach(tab => {
+        const isActive = tab.dataset.memberPeriod === selectedMemberPeriod;
+        tab.classList.toggle('is-active', isActive);
+        tab.setAttribute('aria-selected', String(isActive));
+      });
+      renderMemberList();
+    }
+
+    function renderMemberList() {
+      memberListEl.innerHTML = currentMembers
+        .map((member, index) => renderMemberCard(member, index))
+        .join('');
     }
 
     function renderMemberCard(member, index) {
       const displayName = escapeHtml(member.displayName || '小隊成員');
-      const total = Number(member.weeklyTotal || 0);
+      const total = selectedMemberPeriod === 'month'
+        ? Number(member.monthlyTotal || 0)
+        : Number(member.weeklyTotal || 0);
+      const periodLabel = selectedMemberPeriod === 'month' ? '本月累積' : '本週累積';
       const avatarSrc = member.pictureUrl || buildFallbackAvatar(member.id || displayName, index);
       const badge = index % 3 === 0 ? '<span class="member-badge" aria-hidden="true"></span>' : '';
 
@@ -1408,7 +1462,7 @@
           </div>
           <div class="member-name">${displayName}</div>
           <div class="member-total">
-            <span>本週累積</span>
+            <span>${periodLabel}</span>
             <span class="member-total-number">${total}</span>
             <span>次</span>
           </div>
@@ -1468,6 +1522,7 @@
       try {
         await requestTeam({ action: 'leave' });
         currentInviteCode = '';
+        currentMembers = [];
         memberListEl.innerHTML = '';
         showEmptyState();
         showToast('已退出小隊', 'success');
@@ -1566,6 +1621,9 @@
     sheetConfigs.join.submitButton.addEventListener('click', () => submitTeamAction('join'));
     copyInviteButton.addEventListener('click', copyInviteCode);
     leaveTeamButton.addEventListener('click', leaveTeam);
+    memberPeriodTabs.forEach(tab => {
+      tab.addEventListener('click', () => setMemberPeriod(tab.dataset.memberPeriod));
+    });
 
     document.querySelectorAll('[data-sheet-close]').forEach(element => {
       element.addEventListener('click', () => {

@@ -874,7 +874,12 @@
         renderLeaderboard(data);
       } catch (error) {
         showEmpty();
-        renderWinner(null);
+        winnerCardEl.hidden = isCurrentSelectedMonth();
+
+        if (!winnerCardEl.hidden) {
+          renderWinner(null);
+        }
+
         showToast('讀取排行榜失敗，請重新整理後再試一次。', 'error');
       }
     }
@@ -882,7 +887,13 @@
     function renderLeaderboard(data) {
       const rows = Array.isArray(data.leaderboard) ? data.leaderboard : [];
       rankingSubtitleEl.textContent = `${data.periodLabel || ''}前10戰隊`;
-      renderWinner(data.winner);
+
+      if (isCurrentSelectedMonth()) {
+        winnerCardEl.hidden = true;
+      } else {
+        winnerCardEl.hidden = false;
+        renderWinner(data.winner);
+      }
 
       if (!rows.length) {
         showEmpty();
@@ -1131,6 +1142,12 @@
       const todayMonthIndex = today.getFullYear() * 12 + today.getMonth();
 
       return selectedMonthIndex < todayMonthIndex;
+    }
+
+    function isCurrentSelectedMonth() {
+      const today = getTaipeiToday();
+      return selectedDate.getFullYear() === today.getFullYear()
+        && selectedDate.getMonth() === today.getMonth();
     }
 
     function formatAverage(value) {
