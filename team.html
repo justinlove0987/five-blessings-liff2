@@ -292,7 +292,13 @@
       white-space: nowrap;
     }
 
-    .leave-team-button {
+    .team-heading-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .team-icon-button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -307,16 +313,16 @@
       transition: transform 0.14s ease, background-color 0.14s ease, color 0.14s ease;
     }
 
-    .leave-team-button:active {
+    .team-icon-button:active {
       transform: scale(0.94);
     }
 
-    .leave-team-button:disabled {
+    .team-icon-button:disabled {
       cursor: default;
       opacity: 0.55;
     }
 
-    .leave-team-button svg {
+    .team-icon-button svg {
       display: block;
       width: 18px;
       height: 18px;
@@ -977,11 +983,19 @@
                 <img src="assets/five-blessings-icons/team.png" alt="" />
               </span>
               <h2 class="team-name" id="joinedTeamName">--</h2>
-              <button class="leave-team-button" type="button" id="leaveTeamButton" aria-label="退出小隊">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M10 6H6.5A2.5 2.5 0 0 0 4 8.5v7A2.5 2.5 0 0 0 6.5 18H10M15 8l4 4-4 4M9 12h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </button>
+              <div class="team-heading-actions">
+                <button class="team-icon-button" type="button" id="openEditTeamSheet" aria-label="修改戰隊名稱">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M4 20h4.6L19.3 9.3a2.1 2.1 0 0 0 0-3L17.7 4.7a2.1 2.1 0 0 0-3 0L4 15.4V20Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                    <path d="M13.5 5.9l4.6 4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  </svg>
+                </button>
+                <button class="team-icon-button" type="button" id="leaveTeamButton" aria-label="退出小隊">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M10 6H6.5A2.5 2.5 0 0 0 4 8.5v7A2.5 2.5 0 0 0 6.5 18H10M15 8l4 4-4 4M9 12h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div class="invite-row">
@@ -1123,6 +1137,48 @@
     </section>
   </div>
 
+  <div class="sheet-overlay" id="editTeamOverlay" hidden>
+    <button class="sheet-backdrop" type="button" aria-label="關閉修改戰隊名稱視窗" data-sheet-close="edit"></button>
+
+    <section
+      class="bottom-sheet"
+      id="editTeamSheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="editTeamTitle"
+    >
+      <div class="sheet-handle" aria-hidden="true"></div>
+
+      <div class="sheet-body">
+        <h2 class="sheet-title" id="editTeamTitle">修改戰隊名稱</h2>
+
+        <label class="sheet-label" for="editTeamNameInput">戰隊名稱</label>
+
+        <div class="sheet-input-wrap" id="editTeamNameInputWrap">
+          <span class="sheet-input-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3Zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z" />
+            </svg>
+          </span>
+          <input
+            class="sheet-input"
+            id="editTeamNameInput"
+            type="text"
+            placeholder="請輸入新的戰隊名稱"
+            autocomplete="off"
+            enterkeyhint="done"
+          />
+        </div>
+
+        <p class="sheet-helper" id="editTeamNameHelper">更新後小隊成員都會看到新名稱</p>
+      </div>
+
+      <div class="sheet-footer">
+        <button class="sheet-submit" type="button" id="editTeamSubmit">儲存名稱</button>
+      </div>
+    </section>
+  </div>
+
   <div class="sheet-overlay" id="joinTeamOverlay" hidden>
     <button class="sheet-backdrop" type="button" aria-label="關閉加入戰隊視窗" data-sheet-close="join"></button>
 
@@ -1184,6 +1240,17 @@
         loadingLabel: '建立中...',
         submitLabel: '建立戰隊'
       },
+      edit: {
+        overlay: document.getElementById('editTeamOverlay'),
+        sheet: document.getElementById('editTeamSheet'),
+        input: document.getElementById('editTeamNameInput'),
+        helper: document.getElementById('editTeamNameHelper'),
+        submitButton: document.getElementById('editTeamSubmit'),
+        openButton: document.getElementById('openEditTeamSheet'),
+        defaultHelper: '更新後小隊成員都會看到新名稱',
+        loadingLabel: '儲存中...',
+        submitLabel: '儲存名稱'
+      },
       join: {
         overlay: document.getElementById('joinTeamOverlay'),
         sheet: document.getElementById('joinTeamSheet'),
@@ -1201,6 +1268,7 @@
     let keyboardUpdateFrame = null;
     let idToken = null;
     let currentInviteCode = '';
+    let currentTeamName = '';
     let currentMembers = [];
     let selectedMemberPeriod = 'week';
     let toastTimer = null;
@@ -1241,6 +1309,9 @@
       resetSheetFeedback(config);
 
       activeSheetKey = key;
+      if (key === 'edit') {
+        config.input.value = currentTeamName;
+      }
       config.overlay.hidden = false;
       document.body.classList.add('sheet-open');
       void config.overlay.offsetHeight;
@@ -1289,19 +1360,16 @@
       const value = config.input.value.trim();
 
       if (!value) {
-        setSheetError(config, key === 'create' ? '請輸入戰隊名稱' : '請輸入邀請碼');
+        setSheetError(config, key === 'join' ? '請輸入邀請碼' : '請輸入戰隊名稱');
         return;
       }
 
       setSheetLoading(config, true);
       resetSheetFeedback(config);
-      showBlockingLoading(key === 'create' ? '建立戰隊中...' : '加入戰隊中...');
+      showBlockingLoading(getTeamActionLoadingMessage(key));
 
       try {
-        const payload = key === 'create'
-          ? { action: 'create', name: value }
-          : { action: 'join', inviteCode: value };
-        const data = await requestTeam(payload);
+        const data = await requestTeam(getTeamActionPayload(key, value));
 
         if (!data.team) {
           throw new Error('Missing team summary');
@@ -1312,16 +1380,53 @@
         hideTeamSheet(config);
         activeSheetKey = null;
         document.body.classList.remove('sheet-open');
-        showToast(key === 'create' ? '戰隊建立成功！' : '加入戰隊成功！', 'success');
+        showToast(getTeamActionSuccessMessage(key), 'success');
       } catch (error) {
-        const fallback = key === 'create'
-          ? '建立戰隊失敗，請再試一次。'
-          : '找不到這組邀請碼，請確認後再試一次。';
-        setSheetError(config, error.statusCode === 404 ? '找不到這組邀請碼' : fallback);
+        setSheetError(config, getTeamActionErrorMessage(key, error));
       } finally {
         setSheetLoading(config, false);
         hideBlockingLoading();
       }
+    }
+
+    function getTeamActionPayload(key, value) {
+      if (key === 'create') {
+        return { action: 'create', name: value };
+      }
+
+      if (key === 'edit') {
+        return { action: 'rename', name: value };
+      }
+
+      return { action: 'join', inviteCode: value };
+    }
+
+    function getTeamActionLoadingMessage(key) {
+      if (key === 'create') return '建立戰隊中...';
+      if (key === 'edit') return '儲存名稱中...';
+      return '加入戰隊中...';
+    }
+
+    function getTeamActionSuccessMessage(key) {
+      if (key === 'create') return '戰隊建立成功！';
+      if (key === 'edit') return '戰隊名稱已更新！';
+      return '加入戰隊成功！';
+    }
+
+    function getTeamActionErrorMessage(key, error) {
+      if (key === 'join' && error.statusCode === 404) {
+        return '找不到這組邀請碼';
+      }
+
+      if (key === 'create') {
+        return '建立戰隊失敗，請再試一次。';
+      }
+
+      if (key === 'edit') {
+        return '更新名稱失敗，請再試一次。';
+      }
+
+      return '找不到這組邀請碼，請確認後再試一次。';
     }
 
     async function requestTeam(payload) {
@@ -1399,16 +1504,18 @@
 
     function renderTeamSummary(data) {
       if (!data || !data.team) {
+        currentTeamName = '';
         showEmptyState();
         return;
       }
 
       currentInviteCode = data.team.inviteCode || '';
+      currentTeamName = data.team.name || '我的小隊';
       teamLoadingEl.hidden = true;
       emptyTeamStateEl.hidden = true;
       joinedTeamStateEl.hidden = false;
 
-      joinedTeamNameEl.textContent = data.team.name || '我的小隊';
+      joinedTeamNameEl.textContent = currentTeamName;
       joinedInviteCodeEl.textContent = currentInviteCode || '------';
       joinedWeeklyTotalEl.textContent = Number(data.weeklyTotal || 0);
       joinedMonthlyTotalEl.textContent = Number(data.monthlyTotal || 0);
@@ -1518,6 +1625,7 @@
       try {
         await requestTeam({ action: 'leave' });
         currentInviteCode = '';
+        currentTeamName = '';
         currentMembers = [];
         memberListEl.innerHTML = '';
         showEmptyState();
@@ -1612,8 +1720,10 @@
     }
 
     sheetConfigs.create.openButton.addEventListener('click', () => openTeamSheet('create'));
+    sheetConfigs.edit.openButton.addEventListener('click', () => openTeamSheet('edit'));
     sheetConfigs.join.openButton.addEventListener('click', () => openTeamSheet('join'));
     sheetConfigs.create.submitButton.addEventListener('click', () => submitTeamAction('create'));
+    sheetConfigs.edit.submitButton.addEventListener('click', () => submitTeamAction('edit'));
     sheetConfigs.join.submitButton.addEventListener('click', () => submitTeamAction('join'));
     copyInviteButton.addEventListener('click', copyInviteCode);
     leaveTeamButton.addEventListener('click', leaveTeam);

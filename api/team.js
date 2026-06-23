@@ -51,6 +51,11 @@ module.exports = async function handler(req, res) {
       return sendJson(res, 200, await buildTeamSummary(supabase, updatedUser.id));
     }
 
+    if (action === 'rename') {
+      await renameTeam(supabase, user, body.name);
+      return sendJson(res, 200, await buildTeamSummary(supabase, user.id));
+    }
+
     if (action === 'leave') {
       await leaveTeam(supabase, user.id);
       return sendJson(res, 200, {
@@ -155,6 +160,27 @@ async function joinTeam(supabase, user, rawInviteCode) {
     ...user,
     team_id: team.id
   };
+}
+
+async function renameTeam(supabase, user, rawName) {
+  const name = String(rawName || '').trim();
+
+  if (!name) {
+    throw createHttpError(400, 'Missing team name');
+  }
+
+  if (!user.team_id) {
+    throw createHttpError(400, 'User is not in a team');
+  }
+
+  const { error } = await supabase
+    .from('teams')
+    .update({ name })
+    .eq('id', user.team_id);
+
+  if (error) {
+    throw error;
+  }
 }
 
 async function leaveTeam(supabase, userId) {
