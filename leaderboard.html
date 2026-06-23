@@ -271,6 +271,179 @@
       min-width: 0;
     }
 
+    .winner-card.is-tied {
+      gap: 14px;
+      padding: 18px;
+    }
+
+    .tied-winner-header {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .tied-crown-badge {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      color: #f0a319;
+      background: linear-gradient(145deg, #fff8e7, #ffe4a8);
+      box-shadow: 0 10px 20px rgba(255, 184, 55, 0.18);
+    }
+
+    .tied-crown-badge svg {
+      width: 27px;
+      height: 27px;
+    }
+
+    .tied-title {
+      margin: 0 0 2px;
+      color: #111827;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .tied-count {
+      color: #74809d;
+      font-size: 13px;
+      font-weight: 760;
+      line-height: 1.25;
+    }
+
+    .tied-scroll-wrap {
+      position: relative;
+      min-width: 0;
+      margin: 0 -18px;
+      overflow: hidden;
+    }
+
+    .tied-team-list {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 0 18px 4px;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tied-team-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tied-team-card {
+      display: grid;
+      justify-items: center;
+      align-content: start;
+      flex: 0 0 118px;
+      min-height: 168px;
+      padding: 13px 10px 11px;
+      border: 1px solid rgba(255, 202, 92, 0.36);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 10px 20px rgba(113, 91, 156, 0.08);
+      scroll-snap-align: start;
+    }
+
+    .tied-card-trophy {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      margin-bottom: 8px;
+      border-radius: 18px;
+      color: #f0a319;
+      background: linear-gradient(145deg, #fff8dc, #ffd474);
+    }
+
+    .tied-card-trophy svg {
+      width: 38px;
+      height: 38px;
+    }
+
+    .tied-team-name {
+      width: 100%;
+      margin-bottom: 4px;
+      overflow: hidden;
+      color: #111827;
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1.25;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tied-team-average {
+      margin-bottom: 8px;
+      color: #6d64ee;
+      font-size: 13px;
+      font-weight: 850;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    .tied-team-average strong {
+      font-size: 21px;
+      font-weight: 950;
+      line-height: 1;
+    }
+
+    .tied-team-pill {
+      max-width: 100%;
+      padding: 6px 9px;
+      border-radius: 999px;
+      overflow: hidden;
+      color: #68728f;
+      background: rgba(245, 247, 255, 0.92);
+      font-size: 12px;
+      font-weight: 760;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tied-more-pill {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      color: #5d6682;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 22px rgba(83, 95, 143, 0.13);
+      font-size: 15px;
+      font-weight: 900;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .tied-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      min-height: 8px;
+    }
+
+    .tied-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #d8deec;
+    }
+
+    .tied-dot.is-active {
+      background: #7f7af6;
+    }
+
     .section-header {
       display: flex;
       align-items: baseline;
@@ -531,6 +704,22 @@
         padding: 8px 9px;
       }
 
+      .winner-card.is-tied {
+        padding: 16px 14px;
+      }
+
+      .tied-scroll-wrap {
+        margin: 0 -14px;
+      }
+
+      .tied-team-list {
+        padding: 0 14px 4px;
+      }
+
+      .tied-team-card {
+        flex-basis: 112px;
+      }
+
       .rank-card {
         grid-template-columns: 50px minmax(0, 1fr) auto;
         padding: 12px;
@@ -653,6 +842,7 @@
     const monthTextEl = document.getElementById('monthText');
     const prevMonthButton = document.getElementById('prevMonth');
     const nextMonthButton = document.getElementById('nextMonth');
+    const winnerCardEl = document.getElementById('winnerCard');
     const loadingStateEl = document.getElementById('loadingState');
     const emptyStateEl = document.getElementById('emptyState');
     const rankListEl = document.getElementById('rankList');
@@ -741,20 +931,133 @@
     }
 
     function renderWinner(winner) {
-      winnerKickerEl.textContent = `${selectedDate.getMonth() + 1}月勝利戰隊`;
-
       if (!winner) {
-        winnerNameEl.textContent = '尚無勝利戰隊';
-        winnerAverageEl.textContent = '--';
-        winnerMembersEl.textContent = '-- 人';
-        winnerTotalEl.textContent = '總次數 --';
+        renderSingleWinner(null);
         return;
       }
 
-      winnerNameEl.textContent = winner.teamName || '未命名戰隊';
-      winnerAverageEl.textContent = formatAverage(winner.average);
-      winnerMembersEl.textContent = `${Number(winner.memberCount || 0)} 人`;
-      winnerTotalEl.textContent = `總次數 ${Number(winner.total || 0)}`;
+      const tiedTeams = Array.isArray(winner.tiedTeams) ? winner.tiedTeams : [winner];
+
+      if (tiedTeams.length > 1) {
+        renderTiedWinners(tiedTeams);
+        return;
+      }
+
+      renderSingleWinner(winner);
+    }
+
+    function renderSingleWinner(winner) {
+      winnerCardEl.classList.remove('is-tied');
+      winnerCardEl.innerHTML = `
+        <div class="winner-kicker" id="winnerKicker">${selectedDate.getMonth() + 1}月勝利戰隊</div>
+
+        <div class="winner-hero">
+          <div class="winner-trophy" aria-hidden="true">
+            ${renderTrophySvg()}
+          </div>
+
+          <div class="winner-copy">
+            <h1 class="winner-name" id="winnerName">${escapeHtml(winner ? (winner.teamName || '未命名戰隊') : '尚無勝利戰隊')}</h1>
+
+            <div class="winner-stats">
+              <div class="winner-stat">
+                <span class="winner-stat-line">平均每人 <strong id="winnerAverage">${winner ? formatAverage(winner.average) : '--'}</strong> 次</span>
+              </div>
+              <div class="winner-stat">
+                <span class="winner-stat-line"><span id="winnerMembers">${winner ? Number(winner.memberCount || 0) : '--'} 人</span><span id="winnerTotal">總次數 ${winner ? Number(winner.total || 0) : '--'}</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTiedWinners(teams) {
+      const visibleCount = 3;
+      const moreCount = Math.max(0, teams.length - visibleCount);
+      const dotCount = Math.max(1, Math.ceil(teams.length / visibleCount));
+
+      winnerCardEl.classList.add('is-tied');
+      winnerCardEl.innerHTML = `
+        <div class="tied-winner-header">
+          <div class="tied-crown-badge" aria-hidden="true">
+            ${renderCrownSvg()}
+          </div>
+          <div>
+            <h1 class="tied-title">本月並列第一戰隊</h1>
+            <div class="tied-count">共 ${teams.length} 隊</div>
+          </div>
+        </div>
+
+        <div class="tied-scroll-wrap">
+          <div class="tied-team-list" aria-label="本月並列第一戰隊列表">
+            ${teams.map(renderTiedWinnerCard).join('')}
+          </div>
+          ${moreCount > 0 ? `<div class="tied-more-pill" aria-hidden="true">+${moreCount}</div>` : ''}
+        </div>
+
+        <div class="tied-dots" aria-hidden="true">
+          ${Array.from({ length: dotCount }, (_, index) => {
+            return `<span class="tied-dot${index === 0 ? ' is-active' : ''}"></span>`;
+          }).join('')}
+        </div>
+      `;
+
+      setupTiedWinnerDots();
+    }
+
+    function setupTiedWinnerDots() {
+      const list = winnerCardEl.querySelector('.tied-team-list');
+      const dots = Array.from(winnerCardEl.querySelectorAll('.tied-dot'));
+
+      if (!list || dots.length <= 1) {
+        return;
+      }
+
+      list.addEventListener('scroll', () => {
+        const maxScroll = Math.max(1, list.scrollWidth - list.clientWidth);
+        const activeIndex = Math.min(
+          dots.length - 1,
+          Math.round((list.scrollLeft / maxScroll) * (dots.length - 1))
+        );
+
+        dots.forEach((dot, index) => {
+          dot.classList.toggle('is-active', index === activeIndex);
+        });
+      }, { passive: true });
+    }
+
+    function renderTiedWinnerCard(team) {
+      return `
+        <article class="tied-team-card">
+          <div class="tied-card-trophy" aria-hidden="true">
+            ${renderTrophySvg()}
+          </div>
+          <div class="tied-team-name">${escapeHtml(team.teamName || '未命名戰隊')}</div>
+          <div class="tied-team-average">平均每人 <strong>${formatAverage(team.average)}</strong> 次</div>
+          <div class="tied-team-pill">${Number(team.memberCount || 0)} 人 / 總次數 ${Number(team.total || 0)}</div>
+        </article>
+      `;
+    }
+
+    function renderTrophySvg() {
+      return `
+        <svg viewBox="0 0 64 64" fill="none">
+          <path d="M21 13h22v9.5C43 34.4 37.8 40 32 40s-11-5.6-11-17.5V13Z" fill="#fff8dc" stroke="#f4a91f" stroke-width="3" />
+          <path d="M21 18h-7c0 8.2 3.9 13 10.1 14.7M43 18h7c0 8.2-3.9 13-10.1 14.7" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
+          <path d="M32 40v8M23 51h18M19 57h26" stroke="#f4a91f" stroke-width="3" stroke-linecap="round" />
+          <path d="m32 19 2.5 5.1 5.6.8-4.1 4 1 5.6-5-2.6-5 2.6 1-5.6-4.1-4 5.6-.8L32 19Z" fill="#ffbd38" />
+        </svg>
+      `;
+    }
+
+    function renderCrownSvg() {
+      return `
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="m4 8 4.1 3.4L12 5l3.9 6.4L20 8l-1.7 9.5H5.7L4 8Z" fill="#ffbd38" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+          <path d="M6.5 20h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      `;
     }
 
     function renderRankCard(row) {
@@ -779,9 +1082,9 @@
     function buildPreviewData() {
       const baseRows = [
         ['五重戰隊 A', 2, 70],
-        ['五重戰隊 B', 3, 96],
-        ['五重戰隊 C', 4, 120],
-        ['五重戰隊 D', 2, 56],
+        ['五重戰隊 B', 4, 140],
+        ['五重戰隊 C', 3, 105],
+        ['五重戰隊 D', 5, 175],
         ['五重戰隊 E', 5, 130],
         ['五重戰隊 F', 4, 92],
         ['五重戰隊 G', 6, 132],
@@ -812,7 +1115,10 @@
         month: selectedDate.getMonth() + 1,
         periodLabel: selectedRange === 'week' ? '本週' : `${selectedDate.getMonth() + 1}月`,
         leaderboard: rows,
-        winner: rows[0]
+        winner: {
+          ...rows[0],
+          tiedTeams: rows.filter(row => row.average === rows[0].average)
+        }
       };
     }
 

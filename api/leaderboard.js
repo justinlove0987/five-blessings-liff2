@@ -83,9 +83,12 @@ async function buildMonthlyWinner(supabase, year, month, today) {
     return null;
   }
 
+  const topAverage = rows[0].average;
+
   return {
     year,
     month,
+    tiedTeams: rows.filter(row => row.average === topAverage),
     ...rows[0]
   };
 }
