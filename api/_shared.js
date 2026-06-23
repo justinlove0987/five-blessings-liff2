@@ -411,6 +411,34 @@ async function buildTeamSummary(supabase, userId) {
   };
 }
 
+async function syncCurrentPeriodCheckinsToTeam(supabase, user) {
+  if (!user || !user.id || !user.team_id || !user.line_user_id) {
+    return;
+  }
+
+  const periods = getTeamWeeklyPeriodKeys();
+  const periodKeys = [...new Set(periods.map(period => period.periodKey))];
+  const blessingTypes = [...new Set(periods.map(period => period.blessingType))];
+
+  if (periodKeys.length === 0 || blessingTypes.length === 0) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from('checkins')
+    .update({
+      user_id: user.id,
+      team_id: user.team_id
+    })
+    .eq('line_user_id', user.line_user_id)
+    .in('period_key', periodKeys)
+    .in('blessing_type', blessingTypes);
+
+  if (error) {
+    throw error;
+  }
+}
+
 function generateInviteCode() {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
@@ -498,6 +526,7 @@ module.exports = {
   buildTeamSummary,
   createHttpError,
   generateInviteCode,
+  syncCurrentPeriodCheckinsToTeam,
   upsertLineUser,
   verifyLineIdToken
 };

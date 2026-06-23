@@ -6,6 +6,7 @@ const {
   parseBody,
   sendError,
   sendJson,
+  syncCurrentPeriodCheckinsToTeam,
   upsertLineUser,
   verifyLineIdToken
 } = require('./_shared');
@@ -39,13 +40,15 @@ module.exports = async function handler(req, res) {
     }
 
     if (action === 'create') {
-      await createTeam(supabase, user.id, body.name);
-      return sendJson(res, 200, await buildTeamSummary(supabase, user.id));
+      const updatedUser = await createTeam(supabase, user, body.name);
+      await syncCurrentPeriodCheckinsToTeam(supabase, updatedUser);
+      return sendJson(res, 200, await buildTeamSummary(supabase, updatedUser.id));
     }
 
     if (action === 'join') {
-      await joinTeam(supabase, user.id, body.inviteCode);
-      return sendJson(res, 200, await buildTeamSummary(supabase, user.id));
+      const updatedUser = await joinTeam(supabase, user, body.inviteCode);
+      await syncCurrentPeriodCheckinsToTeam(supabase, updatedUser);
+      return sendJson(res, 200, await buildTeamSummary(supabase, updatedUser.id));
     }
 
     if (action === 'leave') {
@@ -65,7 +68,7 @@ module.exports = async function handler(req, res) {
   }
 };
 
-async function createTeam(supabase, userId, rawName) {
+async function createTeam(supabase, user, rawName) {
   const name = String(rawName || '').trim();
 
   if (!name) {
@@ -82,7 +85,7 @@ async function createTeam(supabase, userId, rawName) {
       .insert({
         name,
         invite_code: inviteCode,
-        created_by_user_id: userId
+        created_by_user_id: user.id
       })
       .select('id')
       .single();
@@ -106,14 +109,19 @@ async function createTeam(supabase, userId, rawName) {
   const { error: updateError } = await supabase
     .from('users')
     .update({ team_id: team.id })
-    .eq('id', userId);
+    .eq('id', user.id);
 
   if (updateError) {
     throw updateError;
   }
+
+  return {
+    ...user,
+    team_id: team.id
+  };
 }
 
-async function joinTeam(supabase, userId, rawInviteCode) {
+async function joinTeam(supabase, user, rawInviteCode) {
   const inviteCode = String(rawInviteCode || '').trim().toUpperCase();
 
   if (!inviteCode) {
@@ -137,11 +145,16 @@ async function joinTeam(supabase, userId, rawInviteCode) {
   const { error: updateError } = await supabase
     .from('users')
     .update({ team_id: team.id })
-    .eq('id', userId);
+    .eq('id', user.id);
 
   if (updateError) {
     throw updateError;
   }
+
+  return {
+    ...user,
+    team_id: team.id
+  };
 }
 
 async function leaveTeam(supabase, userId) {
