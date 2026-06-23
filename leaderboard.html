@@ -112,6 +112,11 @@
       cursor: pointer;
     }
 
+    .month-step:disabled {
+      opacity: 0.34;
+      cursor: default;
+    }
+
     .month-step svg {
       width: 17px;
       height: 17px;
@@ -328,7 +333,7 @@
       display: grid;
       justify-items: center;
       align-content: start;
-      flex: 0 0 126px;
+      flex: 0 0 136px;
       min-height: 168px;
       padding: 13px 10px 11px;
       border: 1px solid rgba(255, 202, 92, 0.36);
@@ -706,7 +711,7 @@
       }
 
       .tied-team-card {
-        flex-basis: 120px;
+        flex-basis: 128px;
       }
 
       .rank-card {
@@ -720,7 +725,7 @@
   <div class="app-shell">
     <header class="app-header">
       <div class="brand">
-        <span>五重戰隊</span>
+        <span>五重排行</span>
         <span class="brand-icon" aria-hidden="true">✨</span>
       </div>
 
@@ -862,12 +867,16 @@
     });
 
     prevMonthButton.addEventListener('click', () => {
-      selectedDate.setMonth(selectedDate.getMonth() - 1);
+      shiftSelectedMonth(-1);
       loadLeaderboard();
     });
 
     nextMonthButton.addEventListener('click', () => {
-      selectedDate.setMonth(selectedDate.getMonth() + 1);
+      if (nextMonthButton.disabled) {
+        return;
+      }
+
+      shiftSelectedMonth(1);
       loadLeaderboard();
     });
 
@@ -1156,6 +1165,23 @@
 
     function syncMonthLabel() {
       monthTextEl.textContent = `${selectedDate.getMonth() + 1}月`;
+      nextMonthButton.disabled = !canMoveToNextMonth();
+    }
+
+    function shiftSelectedMonth(offset) {
+      selectedDate = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth() + offset,
+        1
+      );
+    }
+
+    function canMoveToNextMonth() {
+      const today = getTaipeiToday();
+      const selectedMonthIndex = selectedDate.getFullYear() * 12 + selectedDate.getMonth();
+      const todayMonthIndex = today.getFullYear() * 12 + today.getMonth();
+
+      return selectedMonthIndex < todayMonthIndex;
     }
 
     function formatAverage(value) {
