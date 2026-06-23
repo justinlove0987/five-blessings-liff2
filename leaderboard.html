@@ -219,32 +219,39 @@
 
     .winner-stats {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-      gap: 1px;
-      min-height: 44px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
       border-radius: 13px;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.72);
     }
 
     .winner-stat {
-      display: flex;
-      align-items: baseline;
+      display: grid;
       justify-content: center;
-      gap: 4px;
-      padding: 8px 6px;
+      gap: 3px;
+      min-width: 0;
+      min-height: 48px;
+      padding: 8px 6px 7px;
+      border-radius: 12px;
       color: #68728f;
-      background: rgba(255, 255, 255, 0.68);
-      font-size: 13px;
+      background: rgba(255, 255, 255, 0.72);
+      font-size: 12px;
       font-weight: 760;
-      white-space: nowrap;
+      line-height: 1.15;
+      text-align: center;
     }
 
     .winner-stat strong {
       color: #6d64ee;
-      font-size: 23px;
+      font-size: 22px;
       font-weight: 900;
       line-height: 1;
+    }
+
+    .winner-stat-label,
+    .winner-stat-sub {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .section-header {
@@ -481,7 +488,7 @@
       }
     }
 
-    @media (max-width: 360px) {
+    @media (max-width: 400px) {
       .winner-card {
         grid-template-columns: 78px minmax(0, 1fr);
         gap: 12px;
@@ -502,6 +509,10 @@
       .rank-card {
         grid-template-columns: 50px minmax(0, 1fr) auto;
         padding: 12px;
+      }
+
+      .winner-stats {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -549,8 +560,15 @@
           <div class="winner-kicker">♕ <span id="winnerKicker">本月勝利戰隊</span> ♕</div>
           <h1 class="winner-name" id="winnerName">讀取中...</h1>
           <div class="winner-stats">
-            <div class="winner-stat">平均每人 <strong id="winnerAverage">--</strong> 次</div>
-            <div class="winner-stat"><span id="winnerMembers">-- 人</span> / <span id="winnerTotal">總次數 --</span></div>
+            <div class="winner-stat">
+              <span class="winner-stat-label">平均每人</span>
+              <strong id="winnerAverage">--</strong>
+              <span class="winner-stat-sub">次</span>
+            </div>
+            <div class="winner-stat">
+              <span class="winner-stat-label" id="winnerMembers">-- 人</span>
+              <span class="winner-stat-sub" id="winnerTotal">總次數 --</span>
+            </div>
           </div>
         </div>
       </section>
@@ -686,7 +704,7 @@
 
     function renderLeaderboard(data) {
       const rows = Array.isArray(data.leaderboard) ? data.leaderboard : [];
-      rankingSubtitleEl.textContent = `${data.periodLabel || ''} 前 10 戰隊`;
+      rankingSubtitleEl.textContent = `${data.periodLabel || ''}前10戰隊`;
       renderWinner(data.winner);
 
       if (!rows.length) {
