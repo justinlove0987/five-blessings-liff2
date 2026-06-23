@@ -506,17 +506,6 @@
       object-fit: cover;
     }
 
-    .member-badge {
-      position: absolute;
-      right: -1px;
-      bottom: -1px;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #ffffff;
-      border-radius: 50%;
-      background: #47d49a;
-    }
-
     .member-name {
       min-width: 0;
       overflow: hidden;
@@ -1456,13 +1445,11 @@
         : Number(member.weeklyTotal || 0);
       const periodLabel = selectedMemberPeriod === 'month' ? '本月累積' : '本週累積';
       const avatarSrc = member.pictureUrl || buildFallbackAvatar(member.id || displayName, index);
-      const badge = index % 3 === 0 ? '<span class="member-badge" aria-hidden="true"></span>' : '';
 
       return `
         <article class="member-card">
           <div class="member-avatar" aria-hidden="true">
             <img src="${escapeAttribute(avatarSrc)}" alt="" />
-            ${badge}
           </div>
           <div class="member-name">${displayName}</div>
           <div class="member-total">
@@ -1517,6 +1504,11 @@
 
     async function leaveTeam() {
       if (!idToken || leaveTeamButton.disabled) {
+        return;
+      }
+
+      const confirmed = window.confirm('確定要退出目前的小隊嗎？');
+      if (!confirmed) {
         return;
       }
 
