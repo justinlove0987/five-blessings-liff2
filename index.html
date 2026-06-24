@@ -215,6 +215,11 @@
       padding-bottom: 0;
     }
 
+    body.is-auth-loading .app-header {
+      position: relative;
+      z-index: 2;
+    }
+
     body.is-auth-loading .content {
       display: none;
     }
@@ -724,8 +729,8 @@
   </style>
 </head>
 
-<body>
-  <section class="auth-screen" id="authScreen" aria-live="polite">
+<body class="is-auth-loading">
+  <section class="auth-screen is-loading" id="authScreen" aria-live="polite">
     <div class="auth-card">
       <h1 class="auth-title">五重祝福打卡</h1>
       <p class="auth-desc" id="authDesc">正在初始化 LINE 登入...</p>
@@ -734,7 +739,7 @@
     </div>
   </section>
 
-  <main class="app-shell" id="appShell" hidden>
+  <main class="app-shell" id="appShell">
     <header class="app-header">
       <div class="brand" aria-label="五重祝福">
         <span>五重祝福</span>
@@ -847,7 +852,7 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <nav class="tab-bar" id="tabBar" aria-label="主要導覽" hidden>
+  <nav class="tab-bar" id="tabBar" aria-label="主要導覽">
     <a class="tab-item is-active" href="index.html" aria-current="page">
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4.5 10.2 12 4.5l7.5 5.7V20a1 1 0 0 1-1 1h-5v-6H10.5v6h-5a1 1 0 0 1-1-1v-9.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
