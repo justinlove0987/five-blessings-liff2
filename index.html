@@ -7,16 +7,16 @@
 
   <style>
     :root {
-      --page-bg: #fffaf0;
-      --card: #fffef9;
-      --ink: #30251a;
-      --muted: #8d7b66;
-      --line: #f3dfbd;
-      --primary: #f3b34f;
-      --primary-strong: #d8872b;
-      --success: #efb24f;
-      --success-soft: #fff7e7;
-      --shadow: 0 10px 28px rgba(174, 116, 45, 0.12);
+      --page-bg: #fff8ea;
+      --card: #fffdf7;
+      --ink: #25211c;
+      --muted: #807363;
+      --line: #f6ddb2;
+      --primary: #ff9f1c;
+      --primary-strong: #f18a00;
+      --success: #ffad2e;
+      --success-soft: #fff6df;
+      --shadow: 0 10px 28px rgba(185, 117, 32, 0.12);
       --tab-height: 72px;
     }
 
@@ -35,9 +35,9 @@
       color: var(--ink);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
       background:
-        radial-gradient(circle at 10% 14%, rgba(255, 229, 181, 0.68), transparent 34%),
-        radial-gradient(circle at 90% 5%, rgba(255, 244, 209, 0.58), transparent 30%),
-        linear-gradient(180deg, #fff4df 0%, #fff9ed 42%, #fffef9 100%);
+        radial-gradient(circle at 10% 14%, rgba(255, 225, 166, 0.68), transparent 34%),
+        radial-gradient(circle at 90% 5%, rgba(255, 243, 205, 0.58), transparent 30%),
+        linear-gradient(180deg, #fff3dc 0%, #fffaf3 42%, #fffdf7 100%);
     }
 
     button {
@@ -65,7 +65,7 @@
       min-height: 64px;
       padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
       background: rgba(255, 254, 249, 0.72);
-      border-bottom: 1px solid rgba(243, 223, 189, 0.72);
+      border-bottom: 1px solid rgba(246, 221, 178, 0.72);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
     }
@@ -96,10 +96,10 @@
       width: 40px;
       height: 40px;
       padding: 0;
-      border: 1px solid rgba(243, 179, 79, 0.14);
+      border: 1px solid rgba(255, 159, 28, 0.14);
       border-radius: 50%;
-      background: linear-gradient(135deg, #ffedc7, #fff2d6);
-      box-shadow: 0 6px 16px rgba(174, 116, 45, 0.13);
+      background: linear-gradient(135deg, #ffe4ac, #fff1d2);
+      box-shadow: 0 6px 16px rgba(185, 117, 32, 0.13);
       overflow: hidden;
       cursor: pointer;
     }
@@ -125,9 +125,9 @@
       gap: 4px;
       min-height: 36px;
       padding: 0 12px;
-      border: 1px solid rgba(243, 179, 79, 0.12);
+      border: 1px solid rgba(255, 159, 28, 0.12);
       border-radius: 999px;
-      color: #614a31;
+      color: #4e3d2b;
       background: rgba(255, 254, 249, 0.58);
       font-size: 15px;
       font-weight: 760;
@@ -172,15 +172,15 @@
       width: 34px;
       height: 34px;
       border-radius: 50%;
-      color: #735f49;
+      color: #756553;
       font-size: 15px;
       font-weight: 700;
       line-height: 1;
     }
 
     .day.outline .date {
-      border: 1.5px solid rgba(243, 179, 79, 0.72);
-      color: #d98b2f;
+      border: 1.5px solid rgba(255, 159, 28, 0.72);
+      color: #f18a00;
       background: rgba(255, 254, 249, 0.62);
     }
 
@@ -189,9 +189,9 @@
     }
 
     .day.selected .date {
-      color: #fffef9;
-      background: linear-gradient(135deg, #f7c46b, #f2b551);
-      box-shadow: 0 8px 16px rgba(243, 179, 79, 0.27);
+      color: #fffdf7;
+      background: linear-gradient(135deg, #ffb547, #ffa927);
+      box-shadow: 0 8px 16px rgba(255, 159, 28, 0.27);
     }
 
     .task-section {
@@ -221,9 +221,9 @@
       width: 28px;
       height: 28px;
       border-radius: 9px;
-      color: #fffef9;
-      background: linear-gradient(135deg, #f0ad43, #f7c46b);
-      box-shadow: 0 8px 16px rgba(95, 120, 244, 0.22);
+      color: #fffdf7;
+      background: linear-gradient(135deg, #ffa21d, #ffb547);
+      box-shadow: 0 8px 16px rgba(255, 159, 28, 0.22);
     }
 
     .view-all {
@@ -233,7 +233,7 @@
       min-height: 36px;
       padding: 0;
       border: 0;
-      color: #a18d73;
+      color: var(--primary-strong);
       background: transparent;
       font-size: 14px;
       font-weight: 650;
@@ -263,9 +263,9 @@
       width: 28px;
       height: 28px;
       border-radius: 9px;
-      color: #fffef9;
-      background: linear-gradient(135deg, #f0ad43, #f7c46b);
-      box-shadow: 0 8px 16px rgba(95, 120, 244, 0.22);
+      color: #fffdf7;
+      background: linear-gradient(135deg, #ffa21d, #ffb547);
+      box-shadow: 0 8px 16px rgba(255, 159, 28, 0.22);
     }
 
     .view-all {
@@ -275,7 +275,7 @@
       min-height: 36px;
       padding: 0;
       border: 0;
-      color: #a18d73;
+      color: var(--primary-strong);
       background: transparent;
       font-size: 14px;
       font-weight: 650;
@@ -305,9 +305,9 @@
       width: 28px;
       height: 28px;
       border-radius: 9px;
-      color: #fffef9;
-      background: linear-gradient(135deg, #f0ad43, #f7c46b);
-      box-shadow: 0 8px 16px rgba(95, 120, 244, 0.22);
+      color: #fffdf7;
+      background: linear-gradient(135deg, #ffa21d, #ffb547);
+      box-shadow: 0 8px 16px rgba(255, 159, 28, 0.22);
     }
 
     .view-all {
@@ -317,7 +317,7 @@
       min-height: 36px;
       padding: 0;
       border: 0;
-      color: #a18d73;
+      color: var(--primary-strong);
       background: transparent;
       font-size: 14px;
       font-weight: 650;
@@ -337,15 +337,15 @@
       align-items: center;
       min-height: 108px;
       padding: 16px;
-      border: 1px solid rgba(243, 223, 189, 0.82);
+      border: 1px solid rgba(246, 221, 178, 0.82);
       border-radius: 18px;
       background: var(--card);
       box-shadow: var(--shadow);
     }
 
     .task-card.is-done {
-      border-color: rgba(239, 178, 79, 0.12);
-      background: linear-gradient(135deg, var(--success-soft), #fffef9 76%);
+      border-color: rgba(255, 173, 46, 0.12);
+      background: linear-gradient(135deg, var(--success-soft), #fffdf7 76%);
     }
 
     .icon-tile {
@@ -380,7 +380,7 @@
 
     .task-date {
       margin-bottom: 5px;
-      color: #947b5e;
+      color: #8d7a61;
       font-size: 13.5px;
       font-weight: 650;
       line-height: 1.25;
@@ -389,7 +389,7 @@
 
     .task-name {
       margin-bottom: 5px;
-      color: #30251a;
+      color: #25211c;
       font-size: 19px;
       font-weight: 800;
       line-height: 1.2;
@@ -412,8 +412,8 @@
       padding: 0 18px;
       border: 0;
       border-radius: 999px;
-      color: #fffef9;
-      background: linear-gradient(135deg, #f2b551, #e3a044);
+      color: #fffdf7;
+      background: linear-gradient(135deg, #ffa927, #f29a12);
       font-size: 16px;
       font-weight: 760;
       white-space: nowrap;
@@ -454,8 +454,8 @@
     .checkin-button.is-loading .spinner {
       width: 22px;
       height: 22px;
-      border-color: rgba(243, 179, 79, 0.18);
-      border-top-color: #f3b34f;
+      border-color: rgba(255, 159, 28, 0.18);
+      border-top-color: #ff9f1c;
     }
 
     .done-pill {
@@ -464,9 +464,9 @@
       width: 44px;
       height: 44px;
       padding: 0;
-      border: 1.5px solid rgba(239, 178, 79, 0.42);
+      border: 1.5px solid rgba(255, 173, 46, 0.42);
       border-radius: 50%;
-      color: #e39a38;
+      color: #f29200;
       background: rgba(255, 254, 249, 0.82);
       flex: 0 0 auto;
     }
@@ -483,7 +483,7 @@
       width: 16px;
       height: 16px;
       border: 2px solid rgba(255, 254, 249, 0.45);
-      border-top-color: #fffef9;
+      border-top-color: #fffdf7;
       border-radius: 50%;
       animation: spin 0.75s linear infinite;
     }
@@ -500,9 +500,9 @@
       justify-content: center;
       padding: 12px 16px;
       border-radius: 16px;
-      color: #fffef9;
-      background: rgba(38, 45, 70, 0.92);
-      box-shadow: 0 16px 36px rgba(38, 45, 70, 0.24);
+      color: #fffdf7;
+      background: rgba(69, 51, 32, 0.92);
+      box-shadow: 0 16px 36px rgba(69, 51, 32, 0.24);
       font-size: 14px;
       font-weight: 650;
       text-align: center;
@@ -550,12 +550,12 @@
       grid-template-columns: repeat(3, 1fr);
       min-height: var(--tab-height);
       padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
-      border-top: 1px solid rgba(243, 223, 189, 0.9);
+      border-top: 1px solid rgba(246, 221, 178, 0.9);
       border-radius: 24px 24px 0 0;
       background: rgba(255, 254, 249, 0.88);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-      box-shadow: 0 -10px 30px rgba(174, 116, 45, 0.08);
+      box-shadow: 0 -10px 30px rgba(185, 117, 32, 0.08);
     }
 
     .tab-item {
@@ -566,7 +566,7 @@
       gap: 4px;
       min-height: 54px;
       padding-top: 6px;
-      color: #b29a7a;
+      color: #a89576;
       text-decoration: none;
       font-size: 11px;
       font-weight: 700;
@@ -590,7 +590,7 @@
       width: 28px;
       height: 3px;
       border-radius: 999px;
-      background: linear-gradient(90deg, #f7c46b, #eba84b);
+      background: linear-gradient(90deg, #ffb547, #ffac2f);
       transform: translateX(-50%);
     }
 
@@ -780,13 +780,13 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
         <defs>
           <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-            <stop stop-color="#f3c36b"/>
-            <stop offset="1" stop-color="#ffe0a8"/>
+            <stop stop-color="#ffc15a"/>
+            <stop offset="1" stop-color="#ffd98b"/>
           </linearGradient>
         </defs>
         <rect width="80" height="80" fill="url(#g)"/>
-        <circle cx="40" cy="32" r="14" fill="#fffef9" opacity=".86"/>
-        <path d="M17 70c4-15 14-23 23-23s19 8 23 23" fill="#fffef9" opacity=".86"/>
+        <circle cx="40" cy="32" r="14" fill="#fffdf7" opacity=".86"/>
+        <path d="M17 70c4-15 14-23 23-23s19 8 23 23" fill="#fffdf7" opacity=".86"/>
       </svg>
     `);
 

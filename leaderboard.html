@@ -7,15 +7,15 @@
 
   <style>
     :root {
-      --page-bg: #fffaf0;
-      --card: #fffef9;
-      --ink: #30251a;
-      --muted: #8d7b66;
-      --line: #f3dfbd;
-      --primary: #f3b34f;
-      --primary-strong: #d8872b;
-      --gold: #f3b34f;
-      --shadow: 0 10px 28px rgba(174, 116, 45, 0.12);
+      --page-bg: #fff8ea;
+      --card: #fffdf7;
+      --ink: #25211c;
+      --muted: #807363;
+      --line: #f6ddb2;
+      --primary: #ff9f1c;
+      --primary-strong: #f18a00;
+      --gold: #ff9f1c;
+      --shadow: 0 10px 28px rgba(185, 117, 32, 0.12);
       --tab-height: 72px;
     }
 
@@ -34,9 +34,9 @@
       color: var(--ink);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
       background:
-        radial-gradient(circle at 10% 14%, rgba(255, 229, 181, 0.68), transparent 34%),
-        radial-gradient(circle at 90% 5%, rgba(255, 244, 209, 0.58), transparent 30%),
-        linear-gradient(180deg, #fff4df 0%, #fff9ed 42%, #fffef9 100%);
+        radial-gradient(circle at 10% 14%, rgba(255, 225, 166, 0.68), transparent 34%),
+        radial-gradient(circle at 90% 5%, rgba(255, 243, 205, 0.58), transparent 30%),
+        linear-gradient(180deg, #fff3dc 0%, #fffaf3 42%, #fffdf7 100%);
     }
 
     button {
@@ -64,7 +64,7 @@
       min-height: 64px;
       padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
       background: rgba(255, 254, 249, 0.72);
-      border-bottom: 1px solid rgba(243, 223, 189, 0.72);
+      border-bottom: 1px solid rgba(246, 221, 178, 0.72);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
     }
@@ -90,9 +90,9 @@
       gap: 4px;
       min-height: 36px;
       padding: 0 8px;
-      border: 1px solid rgba(243, 179, 79, 0.12);
+      border: 1px solid rgba(255, 159, 28, 0.12);
       border-radius: 999px;
-      color: #614a31;
+      color: #4e3d2b;
       background: rgba(255, 254, 249, 0.58);
       font-size: 15px;
       font-weight: 760;
@@ -143,8 +143,8 @@
       border-radius: 18px;
       background:
         radial-gradient(circle at 22% 30%, rgba(255, 207, 94, 0.24), transparent 34%),
-        linear-gradient(135deg, rgba(255, 254, 249, 0.96), rgba(250, 246, 255, 0.94));
-      box-shadow: 0 16px 40px rgba(174, 116, 45, 0.14);
+        linear-gradient(135deg, rgba(255, 254, 249, 0.96), rgba(255, 248, 235, 0.94));
+      box-shadow: 0 16px 40px rgba(185, 117, 32, 0.14);
       overflow: hidden;
     }
 
@@ -182,7 +182,7 @@
       min-width: 0;
       margin: 0;
       overflow: hidden;
-      color: #30251a;
+      color: #25211c;
       font-size: 24px;
       font-weight: 900;
       line-height: 1.2;
@@ -205,7 +205,7 @@
       display: inline-flex;
       align-items: baseline;
       min-width: 0;
-      color: #846d53;
+      color: #806d58;
       font-size: 13px;
       font-weight: 760;
       line-height: 1.2;
@@ -213,7 +213,7 @@
     }
 
     .winner-stat strong {
-      color: #e59d3f;
+      color: #f59a13;
       font-size: 24px;
       font-weight: 900;
       line-height: 1;
@@ -251,8 +251,8 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      color: #f0a319;
-      background: linear-gradient(145deg, #fff8e7, #ffe4a8);
+      color: #f79a00;
+      background: linear-gradient(145deg, #fff4db, #ffd98a);
       box-shadow: 0 10px 20px rgba(255, 184, 55, 0.18);
     }
 
@@ -264,14 +264,14 @@
 
     .tied-title {
       margin: 0 0 2px;
-      color: #30251a;
+      color: #25211c;
       font-size: 18px;
       font-weight: 900;
       line-height: 1.25;
     }
 
     .tied-count {
-      color: #92795d;
+      color: #8b7760;
       font-size: 13px;
       font-weight: 760;
       line-height: 1.25;
@@ -308,7 +308,7 @@
       border: 1px solid rgba(255, 202, 92, 0.36);
       border-radius: 16px;
       background: rgba(255, 254, 249, 0.82);
-      box-shadow: 0 10px 20px rgba(174, 116, 45, 0.08);
+      box-shadow: 0 10px 20px rgba(185, 117, 32, 0.08);
       scroll-snap-align: start;
     }
 
@@ -330,7 +330,7 @@
       width: 100%;
       margin-bottom: 4px;
       overflow: hidden;
-      color: #30251a;
+      color: #25211c;
       font-size: 15px;
       font-weight: 900;
       line-height: 1.25;
@@ -341,7 +341,7 @@
 
     .tied-team-average {
       margin-bottom: 8px;
-      color: #e59d3f;
+      color: #f59a13;
       font-size: 13px;
       font-weight: 850;
       line-height: 1.25;
@@ -359,8 +359,8 @@
       padding: 6px 9px;
       border-radius: 999px;
       overflow: hidden;
-      color: #846d53;
-      background: rgba(245, 247, 255, 0.92);
+      color: #806d58;
+      background: rgba(255, 248, 234, 0.92);
       font-size: 12px;
       font-weight: 760;
       line-height: 1.2;
@@ -377,9 +377,9 @@
       width: 42px;
       height: 42px;
       border-radius: 50%;
-      color: #80694f;
+      color: #7f6d58;
       background: rgba(255, 254, 249, 0.9);
-      box-shadow: 0 10px 22px rgba(174, 116, 45, 0.13);
+      box-shadow: 0 10px 22px rgba(185, 117, 32, 0.13);
       font-size: 15px;
       font-weight: 900;
       transform: translateY(-50%);
@@ -397,11 +397,11 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #efd9b8;
+      background: #efd8b3;
     }
 
     .tied-dot.is-active {
-      background: #efaa42;
+      background: #ffa21d;
     }
 
     .section-header {
@@ -413,14 +413,14 @@
 
     .section-title {
       margin: 0;
-      color: #30251a;
+      color: #25211c;
       font-size: 20px;
       font-weight: 900;
       line-height: 1.25;
     }
 
     .section-subtitle {
-      color: #a18d73;
+      color: #9a8b78;
       font-size: 14px;
       font-weight: 750;
     }
@@ -438,10 +438,10 @@
       align-items: center;
       min-height: 82px;
       padding: 12px 14px;
-      border: 1px solid rgba(243, 223, 189, 0.82);
+      border: 1px solid rgba(246, 221, 178, 0.82);
       border-radius: 14px;
       background: rgba(255, 254, 249, 0.94);
-      box-shadow: 0 8px 20px rgba(174, 116, 45, 0.08);
+      box-shadow: 0 8px 20px rgba(185, 117, 32, 0.08);
     }
 
     .rank-card.rank-1 {
@@ -449,7 +449,7 @@
     }
 
     .rank-card.rank-2 {
-      border-color: rgba(186, 208, 234, 0.78);
+      border-color: rgba(229, 201, 158, 0.78);
     }
 
     .rank-card.rank-3 {
@@ -462,24 +462,24 @@
       width: 46px;
       height: 46px;
       border-radius: 50%;
-      color: #ad9678;
-      background: #fff5df;
+      color: #a89271;
+      background: #fff3dc;
       font-size: 19px;
       font-weight: 900;
     }
 
     .rank-1 .rank-badge {
-      color: #f2a313;
+      color: #f79a00;
       background: transparent;
     }
 
     .rank-2 .rank-badge {
-      color: #92795d;
+      color: #8b7760;
       background: transparent;
     }
 
     .rank-3 .rank-badge {
-      color: #e87a3c;
+      color: #f38a32;
       background: transparent;
     }
 
@@ -498,7 +498,7 @@
       min-width: 0;
       margin-bottom: 5px;
       overflow: hidden;
-      color: #30251a;
+      color: #25211c;
       font-size: 18px;
       font-weight: 900;
       line-height: 1.22;
@@ -507,7 +507,7 @@
     }
 
     .rank-meta {
-      color: #92795d;
+      color: #8b7760;
       font-size: 13.5px;
       font-weight: 720;
       line-height: 1.35;
@@ -517,14 +517,14 @@
       display: grid;
       justify-items: end;
       gap: 2px;
-      color: #92795d;
+      color: #8b7760;
       font-size: 13px;
       font-weight: 750;
       white-space: nowrap;
     }
 
     .rank-score strong {
-      color: #e59d3f;
+      color: #f59a13;
       font-size: 24px;
       font-weight: 900;
       line-height: 1;
@@ -550,7 +550,7 @@
     .spinner {
       width: 34px;
       height: 34px;
-      border: 3px solid rgba(243, 179, 79, 0.18);
+      border: 3px solid rgba(255, 159, 28, 0.18);
       border-top-color: var(--primary-strong);
       border-radius: 50%;
       animation: spin 0.78s linear infinite;
@@ -567,12 +567,12 @@
       grid-template-columns: repeat(3, 1fr);
       min-height: var(--tab-height);
       padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
-      border-top: 1px solid rgba(243, 223, 189, 0.9);
+      border-top: 1px solid rgba(246, 221, 178, 0.9);
       border-radius: 24px 24px 0 0;
       background: rgba(255, 254, 249, 0.88);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-      box-shadow: 0 -10px 30px rgba(174, 116, 45, 0.08);
+      box-shadow: 0 -10px 30px rgba(185, 117, 32, 0.08);
     }
 
     .tab-item {
@@ -583,7 +583,7 @@
       gap: 4px;
       min-height: 54px;
       padding-top: 6px;
-      color: #b29a7a;
+      color: #a89576;
       text-decoration: none;
       font-size: 11px;
       font-weight: 700;
@@ -607,7 +607,7 @@
       width: 28px;
       height: 3px;
       border-radius: 999px;
-      background: linear-gradient(90deg, #f7c46b, #eba84b);
+      background: linear-gradient(90deg, #ffb547, #ffac2f);
       transform: translateX(-50%);
     }
 
@@ -619,9 +619,9 @@
       max-width: calc(100% - 40px);
       padding: 11px 16px;
       border-radius: 999px;
-      color: #fffef9;
-      background: rgba(39, 47, 77, 0.92);
-      box-shadow: 0 12px 28px rgba(39, 47, 77, 0.18);
+      color: #fffdf7;
+      background: rgba(69, 51, 32, 0.92);
+      box-shadow: 0 12px 28px rgba(69, 51, 32, 0.18);
       font-size: 14px;
       font-weight: 750;
       line-height: 1.35;
