@@ -7,15 +7,15 @@
 
   <style>
     :root {
-      --page-bg: #fff8ea;
-      --card: #fffdf7;
+      --page-bg: #fffdf8;
+      --card: #ffffff;
       --ink: #25211c;
       --muted: #807363;
       --line: #f6ddb2;
       --primary: #ff9f1c;
       --primary-strong: #f18a00;
       --success: #ffad2e;
-      --success-soft: #fff6df;
+      --success-soft: #fffdf8;
       --shadow: 0 10px 28px rgba(185, 117, 32, 0.08);
     }
 
@@ -34,9 +34,9 @@
       color: var(--ink);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
       background:
-        radial-gradient(circle at 10% 14%, rgba(255, 225, 166, 0.68), transparent 34%),
-        radial-gradient(circle at 90% 5%, rgba(255, 243, 205, 0.58), transparent 30%),
-        linear-gradient(180deg, #fff3dc 0%, #fffaf3 42%, #fffdf7 100%);
+        radial-gradient(circle at 10% 14%, rgba(255, 225, 166, 0.32), transparent 34%),
+        radial-gradient(circle at 90% 5%, rgba(255, 243, 205, 0.28), transparent 30%),
+        linear-gradient(180deg, #fffaf0 0%, #fffdf8 42%, #ffffff 100%);
     }
 
     button {
@@ -64,7 +64,7 @@
       align-items: center;
       min-height: 64px;
       padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
-      background: rgba(255, 254, 249, 0.72);
+      background: rgba(255, 255, 253, 0.84);
       border-bottom: 1px solid rgba(246, 221, 178, 0.72);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
@@ -109,7 +109,7 @@
       border: 1px solid rgba(255, 159, 28, 0.12);
       border-radius: 999px;
       color: #4e3d2b;
-      background: rgba(255, 254, 249, 0.72);
+      background: rgba(255, 255, 253, 0.84);
       font-size: 16px;
       font-weight: 760;
       white-space: nowrap;
@@ -159,7 +159,7 @@
       border: 1px solid rgba(246, 221, 178, 0.92);
       border-radius: 16px;
       color: #756553;
-      background: rgba(255, 254, 249, 0.72);
+      background: rgba(255, 255, 253, 0.84);
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
@@ -206,15 +206,15 @@
       align-items: center;
       min-height: 108px;
       padding: 16px;
-      border: 1px solid rgba(246, 221, 178, 0.58);
+      border: 1px solid rgba(246, 221, 178, 0.44);
       border-radius: 18px;
-      background: #fffffb;
+      background: #ffffff;
       box-shadow: var(--shadow);
     }
 
     .task-card.is-done {
-      border-color: rgba(255, 173, 46, 0.12);
-      background: linear-gradient(135deg, var(--success-soft), #fffdf7 76%);
+      border-color: rgba(255, 173, 46, 0.22);
+      background: linear-gradient(135deg, #ffffff 0%, #fffdf8 100%);
     }
 
     .icon-tile {
@@ -280,7 +280,7 @@
       padding: 0 18px;
       border: 0;
       border-radius: 999px;
-      color: #fffdf7;
+      color: #ffffff;
       background: linear-gradient(135deg, #ffa927, #f29a12);
       box-shadow: 0 9px 18px rgba(242, 154, 18, 0.26);
       font-size: 16px;
@@ -336,7 +336,7 @@
       border: 1.5px solid rgba(255, 173, 46, 0.42);
       border-radius: 50%;
       color: #f29200;
-      background: rgba(255, 254, 249, 0.82);
+      background: rgba(255, 255, 253, 0.9);
       flex: 0 0 auto;
     }
 
@@ -350,7 +350,7 @@
       border: 1px solid rgba(128, 115, 99, 0.18);
       border-radius: 999px;
       color: #9a8b78;
-      background: rgba(255, 254, 249, 0.72);
+      background: rgba(255, 255, 253, 0.84);
       font-size: 14px;
       font-weight: 700;
       white-space: nowrap;
@@ -367,7 +367,7 @@
       width: 16px;
       height: 16px;
       border: 2px solid rgba(255, 254, 249, 0.45);
-      border-top-color: #fffdf7;
+      border-top-color: #ffffff;
       border-radius: 50%;
       animation: spin 0.75s linear infinite;
     }
@@ -412,7 +412,7 @@
       justify-content: center;
       padding: 12px 16px;
       border-radius: 16px;
-      color: #fffdf7;
+      color: #ffffff;
       background: rgba(69, 51, 32, 0.92);
       box-shadow: 0 16px 36px rgba(69, 51, 32, 0.24);
       font-size: 14px;
