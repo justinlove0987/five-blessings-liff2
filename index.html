@@ -66,8 +66,8 @@
 
     .auth-screen.is-loading {
       align-items: start;
-      min-height: calc(100vh - var(--tab-height) - env(safe-area-inset-bottom));
-      padding-top: calc(190px + env(safe-area-inset-top));
+      min-height: calc(100vh - 64px - var(--tab-height) - env(safe-area-inset-bottom));
+      padding-top: 126px;
       padding-bottom: calc(var(--tab-height) + 24px + env(safe-area-inset-bottom));
     }
 
@@ -208,6 +208,15 @@
 
     .content {
       padding: 18px 20px 0;
+    }
+
+    body.is-auth-loading .app-shell {
+      min-height: auto;
+      padding-bottom: 0;
+    }
+
+    body.is-auth-loading .content {
+      display: none;
     }
 
     .header-month {
@@ -1099,9 +1108,10 @@
     }
 
     function showAuthLoading() {
+      document.body.classList.add('is-auth-loading');
       authScreenEl.hidden = false;
       authScreenEl.classList.add('is-loading');
-      appShellEl.hidden = true;
+      appShellEl.hidden = false;
       tabBarEl.hidden = false;
       authDescEl.textContent = '正在初始化 LINE 登入...';
       authSpinnerEl.hidden = false;
@@ -1109,6 +1119,7 @@
     }
 
     function showLoginState(message = '請先使用 LINE 登入後開始打卡') {
+      document.body.classList.remove('is-auth-loading');
       authScreenEl.hidden = false;
       authScreenEl.classList.remove('is-loading');
       appShellEl.hidden = true;
@@ -1119,6 +1130,7 @@
     }
 
     function showAppState() {
+      document.body.classList.remove('is-auth-loading');
       authScreenEl.hidden = true;
       authScreenEl.classList.remove('is-loading');
       appShellEl.hidden = false;
