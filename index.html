@@ -1069,6 +1069,14 @@
       return `${date.getMonth() + 1}/${date.getDate()}（${formatWeekdayZh(date)}）`;
     }
 
+    function getLiffRedirectUri() {
+      const url = new URL(window.location.href);
+      ['code', 'state', 'liff.state', 'liff.referrer'].forEach(param => {
+        url.searchParams.delete(param);
+      });
+      return url.toString();
+    }
+
     async function loadLiffAvatar() {
       if (!window.liff) {
         setPendingButtonsUnavailable();
@@ -1078,7 +1086,7 @@
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) {
-          liff.login();
+          liff.login({ redirectUri: getLiffRedirectUri() });
           return;
         }
 
