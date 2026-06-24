@@ -547,6 +547,19 @@
       gap: 14px;
     }
 
+    .auth-login-button {
+      min-height: 46px;
+      margin-top: 16px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 999px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #ffb547, #ff9f1c);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
     .spinner {
       width: 34px;
       height: 34px;
@@ -1130,8 +1143,29 @@
       rankingHeaderEl.hidden = false;
       loadingStateEl.hidden = true;
       emptyStateEl.hidden = false;
+      emptyStateEl.textContent = '目前還沒有可排名的戰隊';
       rankListEl.hidden = true;
       rankListEl.innerHTML = '';
+    }
+
+    function showAuthLoginState(message) {
+      winnerCardEl.hidden = true;
+      rankingHeaderEl.hidden = true;
+      loadingStateEl.hidden = true;
+      emptyStateEl.hidden = false;
+      rankListEl.hidden = true;
+      rankListEl.innerHTML = '';
+      emptyStateEl.innerHTML = `
+        <div>
+          <div>${escapeHtml(message)}</div>
+          <button class="auth-login-button" type="button" id="lineLoginButton">使用 LINE 登入</button>
+        </div>
+      `;
+
+      const loginButton = document.getElementById('lineLoginButton');
+      if (loginButton) {
+        loginButton.addEventListener('click', startLineLogin);
+      }
     }
 
     function syncMonthLabel() {
@@ -1225,6 +1259,15 @@
       return url.toString();
     }
 
+    function startLineLogin() {
+      if (!window.liff) {
+        showAuthLoginState('LINE 登入初始化失敗，請重新整理後再試。');
+        return;
+      }
+
+      liff.login({ redirectUri: getLiffRedirectUri() });
+    }
+
     async function initLeaderboardPage() {
       syncMonthLabel();
 
@@ -1234,29 +1277,29 @@
       }
 
       if (!window.liff) {
-        showEmpty();
-        showToast('LINE LIFF 尚未載入，請重新開啟頁面。', 'error');
+        showAuthLoginState('LINE 登入初始化失敗，請重新整理後再試。');
         return;
       }
 
       try {
-        await liff.init({ liffId: LIFF_ID });
+        await liff.init({ liffId: LIFF_ID, withLoginOnExternalBrowser: false });
 
         if (!liff.isLoggedIn()) {
-          liff.login({ redirectUri: getLiffRedirectUri() });
+          showAuthLoginState('需要 LINE 登入後才能查看排行榜。');
           return;
         }
 
         idToken = liff.getIDToken();
 
         if (!idToken) {
-          throw new Error('Missing LINE idToken');
+          showAuthLoginState('LINE 登入權限不足，請重新登入。');
+          return;
         }
 
         await loadLeaderboard();
       } catch (error) {
-        showEmpty();
-        showToast('讀取排行榜失敗，請重新整理後再試一次。', 'error');
+        console.error('LIFF initialization failed', error);
+        showAuthLoginState('LINE 登入初始化失敗，請重新整理後再試。');
       }
     }
 
