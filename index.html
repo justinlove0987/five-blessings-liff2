@@ -65,10 +65,17 @@
     }
 
     .auth-screen.is-loading {
+      position: fixed;
+      top: calc(64px + env(safe-area-inset-top));
+      left: 50%;
+      z-index: 1;
       align-items: start;
+      width: min(100%, 480px);
       min-height: calc(100vh - 64px - var(--tab-height) - env(safe-area-inset-bottom));
+      transform: translateX(-50%);
       padding-top: 126px;
       padding-bottom: calc(var(--tab-height) + 24px + env(safe-area-inset-bottom));
+      pointer-events: none;
     }
 
     .auth-card {
@@ -216,8 +223,9 @@
     }
 
     body.is-auth-loading .app-header {
-      position: relative;
-      z-index: 2;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     body.is-auth-loading .content {
