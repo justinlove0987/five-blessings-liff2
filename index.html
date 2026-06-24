@@ -56,83 +56,61 @@
     }
 
     .auth-screen {
+      display: grid;
+      place-items: center;
       width: min(100%, 480px);
       min-height: 100vh;
       margin: 0 auto;
-      display: grid;
-      place-items: center;
-      padding: 32px 24px calc(32px + env(safe-area-inset-bottom));
+      padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
     }
 
     .auth-card {
       width: 100%;
-      display: grid;
-      justify-items: center;
-      gap: 16px;
-      padding: 34px 24px 28px;
-      border: 1px solid rgba(246, 221, 178, 0.58);
+      padding: 30px 24px;
+      border: 1px solid rgba(246, 221, 178, 0.74);
       border-radius: 28px;
-      background: rgba(255, 255, 253, 0.94);
-      box-shadow: 0 18px 42px rgba(185, 117, 32, 0.1);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
       text-align: center;
     }
 
-    .auth-mark {
-      display: grid;
-      place-items: center;
-      width: 58px;
-      height: 58px;
-      border-radius: 20px;
-      color: #ffffff;
-      background: linear-gradient(135deg, #ffb547, #ff9f1c);
-      box-shadow: 0 12px 24px rgba(255, 159, 28, 0.24);
-    }
-
-    .auth-mark svg {
-      width: 28px;
-      height: 28px;
-    }
-
     .auth-title {
-      margin: 0;
+      margin: 0 0 10px;
       color: var(--ink);
-      font-size: 25px;
-      font-weight: 850;
-      line-height: 1.25;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0;
     }
 
     .auth-desc {
-      margin: 0;
-      max-width: 280px;
+      margin: 0 0 20px;
       color: var(--muted);
       font-size: 15px;
-      font-weight: 620;
-      line-height: 1.6;
+      font-weight: 600;
+      line-height: 1.55;
+    }
+
+    .auth-spinner {
+      width: 34px;
+      height: 34px;
+      margin: 4px auto 0;
+      border: 3px solid rgba(255, 159, 28, 0.18);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
 
     .auth-login-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 180px;
+      width: 100%;
       min-height: 52px;
-      margin-top: 6px;
-      padding: 0 22px;
       border: 0;
       border-radius: 999px;
       color: #ffffff;
-      background: linear-gradient(135deg, #ffb547, #ff9f1c);
-      box-shadow: 0 12px 24px rgba(255, 159, 28, 0.24);
-      font-size: 16px;
-      font-weight: 850;
+      background: linear-gradient(135deg, #ffb547, #ffa927);
+      box-shadow: 0 12px 22px rgba(255, 159, 28, 0.24);
+      font-size: 17px;
+      font-weight: 800;
       cursor: pointer;
-    }
-
-    .auth-card .spinner {
-      width: 24px;
-      height: 24px;
-      border-color: rgba(255, 159, 28, 0.18);
-      border-top-color: var(--primary);
     }
 
     .app-header {
@@ -707,15 +685,10 @@
 <body>
   <section class="auth-screen" id="authScreen" aria-live="polite">
     <div class="auth-card">
-      <div class="auth-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M7 3v3M17 3v3M4.5 9.2h15M6.5 5h11A2.5 2.5 0 0 1 20 7.5v10A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5v-10A2.5 2.5 0 0 1 6.5 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        </svg>
-      </div>
-      <h1 class="auth-title" id="authTitle">五重祝福打卡</h1>
+      <h1 class="auth-title">五重祝福打卡</h1>
       <p class="auth-desc" id="authDesc">正在初始化 LINE 登入...</p>
+      <div class="auth-spinner" id="authSpinner" aria-label="載入中"></div>
       <button class="auth-login-button" type="button" id="lineLoginButton" hidden>使用 LINE 登入</button>
-      <span class="spinner" id="authSpinner" aria-hidden="true"></span>
     </div>
   </section>
 
@@ -887,20 +860,21 @@
     let toastTimer = null;
     let idToken = null;
 
+    const avatarEl = document.getElementById('avatar');
+    const toastEl = document.getElementById('toast');
+    const currentMonthEl = document.getElementById('currentMonth');
+    const weekSelectorEl = document.getElementById('weekSelector');
     const authScreenEl = document.getElementById('authScreen');
     const authDescEl = document.getElementById('authDesc');
     const authSpinnerEl = document.getElementById('authSpinner');
     const lineLoginButton = document.getElementById('lineLoginButton');
     const appShellEl = document.getElementById('appShell');
     const tabBarEl = document.getElementById('tabBar');
-    const avatarEl = document.getElementById('avatar');
-    const toastEl = document.getElementById('toast');
-    const currentMonthEl = document.getElementById('currentMonth');
-    const weekSelectorEl = document.getElementById('weekSelector');
     const checkinButtons = Array.from(document.querySelectorAll('.checkin-button'));
 
     avatarEl.src = fallbackAvatar;
-    showAuthLoading();
+    renderCurrentDates();
+    setPendingButtonsLoading(true);
 
     checkinButtons.forEach(button => {
       button.addEventListener('click', () => {
@@ -937,6 +911,11 @@
 
         const data = await parseJsonResponse(response);
 
+        if (isExpiredTokenResponse(response, data)) {
+          handleAuthExpired();
+          return;
+        }
+
         if (!response.ok || !data.success) {
           throw new Error(data.error || 'Checkin failed');
         }
@@ -952,8 +931,7 @@
 
     async function loadTaskStatus() {
       if (!idToken) {
-        setPendingButtonsUnavailable();
-        showToast('尚未完成 LINE 登入，請重新開啟頁面。', 'error');
+        handleAuthExpired();
         return;
       }
 
@@ -972,11 +950,12 @@
 
         const data = await parseJsonResponse(response);
 
+        if (isExpiredTokenResponse(response, data)) {
+          handleAuthExpired();
+          return;
+        }
+
         if (!response.ok || !data.success || !data.tasks) {
-          console.error('[status failed]', {
-            httpStatus: response.status,
-            data
-          });
           throw new Error(data.error || 'Status failed');
         }
 
@@ -1024,37 +1003,12 @@
     function setPendingButtonsUnavailable() {
       document.querySelectorAll('.checkin-button').forEach(button => {
         const label = button.querySelector('.button-label');
+        if (!label) return;
         button.disabled = true;
         button.classList.remove('is-loading');
         label.textContent = '請重試';
         button.removeAttribute('aria-label');
       });
-    }
-
-    function showAuthLoading() {
-      authScreenEl.hidden = false;
-      appShellEl.hidden = true;
-      tabBarEl.hidden = true;
-      authDescEl.textContent = '正在初始化 LINE 登入...';
-      authSpinnerEl.hidden = false;
-      lineLoginButton.hidden = true;
-    }
-
-    function showLoginState(message) {
-      authScreenEl.hidden = false;
-      appShellEl.hidden = true;
-      tabBarEl.hidden = true;
-      authDescEl.textContent = message;
-      authSpinnerEl.hidden = true;
-      lineLoginButton.hidden = false;
-    }
-
-    function showAppState() {
-      authScreenEl.hidden = true;
-      appShellEl.hidden = false;
-      tabBarEl.hidden = false;
-      authSpinnerEl.hidden = true;
-      lineLoginButton.hidden = true;
     }
 
     function setButtonLoading(button, isLoading) {
@@ -1109,6 +1063,73 @@
           error: text || 'Invalid API response'
         };
       }
+    }
+
+    function showAuthLoading() {
+      authScreenEl.hidden = false;
+      appShellEl.hidden = true;
+      tabBarEl.hidden = true;
+      authDescEl.textContent = '正在初始化 LINE 登入...';
+      authSpinnerEl.hidden = false;
+      lineLoginButton.hidden = true;
+    }
+
+    function showLoginState(message = '請先使用 LINE 登入後開始打卡') {
+      authScreenEl.hidden = false;
+      appShellEl.hidden = true;
+      tabBarEl.hidden = true;
+      authDescEl.textContent = message;
+      authSpinnerEl.hidden = true;
+      lineLoginButton.hidden = false;
+    }
+
+    function showAppState() {
+      authScreenEl.hidden = true;
+      appShellEl.hidden = false;
+      tabBarEl.hidden = false;
+    }
+
+    function isExpiredTokenResponse(response, data) {
+      return response.status === 401
+        && (
+          data.code === 'ID_TOKEN_EXPIRED'
+          || /idtoken expired|id token expired|expired/i.test(data.error || '')
+        );
+    }
+
+    function isDecodedIdTokenExpired(decodedToken) {
+      if (!decodedToken || !decodedToken.exp) {
+        return true;
+      }
+
+      const expiresAtMs = Number(decodedToken.exp) * 1000;
+      const refreshBufferMs = 30 * 1000;
+      return !Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now() + refreshBufferMs;
+    }
+
+    function getValidIdToken() {
+      const token = liff.getIDToken();
+      const decodedToken = liff.getDecodedIDToken();
+
+      if (!token || isDecodedIdTokenExpired(decodedToken)) {
+        return null;
+      }
+
+      return token;
+    }
+
+    function handleAuthExpired() {
+      idToken = null;
+
+      try {
+        if (window.liff && liff.isLoggedIn()) {
+          liff.logout();
+        }
+      } catch (error) {
+        console.error('LIFF logout failed', error);
+      }
+
+      showLoginState('請先使用 LINE 登入後開始打卡');
     }
 
     function renderCurrentDates() {
@@ -1228,16 +1249,17 @@
       try {
         showAuthLoading();
         await liff.init({ liffId: LIFF_ID, withLoginOnExternalBrowser: false });
+
         if (!liff.isLoggedIn()) {
           showLoginState('請先使用 LINE 登入後開始打卡');
           return;
         }
 
         const profile = await liff.getProfile();
-        idToken = liff.getIDToken();
+        idToken = getValidIdToken();
 
         if (!idToken) {
-          showLoginState('LINE 登入權限不足，請重新登入。');
+          handleAuthExpired();
           return;
         }
 
@@ -1245,8 +1267,6 @@
           avatarEl.src = profile.pictureUrl;
         }
 
-        renderCurrentDates();
-        setPendingButtonsLoading(true);
         showAppState();
         await loadTaskStatus();
       } catch (error) {

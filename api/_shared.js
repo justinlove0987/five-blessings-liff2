@@ -56,7 +56,13 @@ async function verifyLineIdToken(idToken) {
   const text = await response.text();
 
   if (!response.ok) {
-    throw createHttpError(401, `LINE verify failed: ${text}`);
+    const error = createHttpError(401, `LINE verify failed: ${text}`);
+
+    if (/expired/i.test(text)) {
+      error.code = 'ID_TOKEN_EXPIRED';
+    }
+
+    throw error;
   }
 
   const profile = JSON.parse(text);
@@ -571,10 +577,16 @@ function sendJson(res, statusCode, data) {
 }
 
 function sendError(res, error) {
-  sendJson(res, error.statusCode || 500, {
+  const payload = {
     success: false,
     error: String(error.message || error)
-  });
+  };
+
+  if (error.code) {
+    payload.code = error.code;
+  }
+
+  sendJson(res, error.statusCode || 500, payload);
 }
 
 function createHttpError(statusCode, message) {
