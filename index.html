@@ -64,6 +64,11 @@
       padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
     }
 
+    .auth-screen.is-loading {
+      align-items: start;
+      padding-top: calc(190px + env(safe-area-inset-top));
+    }
+
     .auth-card {
       width: 100%;
       padding: 30px 24px;
@@ -74,12 +79,27 @@
       text-align: center;
     }
 
+    .auth-screen.is-loading .auth-card {
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
     .auth-title {
       margin: 0 0 10px;
       color: var(--ink);
       font-size: 24px;
       font-weight: 800;
       letter-spacing: 0;
+    }
+
+    .auth-screen.is-loading .auth-title {
+      display: none;
     }
 
     .auth-desc {
@@ -90,6 +110,11 @@
       line-height: 1.55;
     }
 
+    .auth-screen.is-loading .auth-desc {
+      margin: 0;
+      font-weight: 700;
+    }
+
     .auth-spinner {
       width: 34px;
       height: 34px;
@@ -98,6 +123,12 @@
       border-top-color: var(--primary);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
+    }
+
+    .auth-screen.is-loading .auth-spinner {
+      margin: 0;
+      border-top-color: var(--primary-strong);
+      animation-duration: 0.78s;
     }
 
     .auth-login-button {
@@ -1067,6 +1098,7 @@
 
     function showAuthLoading() {
       authScreenEl.hidden = false;
+      authScreenEl.classList.add('is-loading');
       appShellEl.hidden = true;
       tabBarEl.hidden = true;
       authDescEl.textContent = '正在初始化 LINE 登入...';
@@ -1076,6 +1108,7 @@
 
     function showLoginState(message = '請先使用 LINE 登入後開始打卡') {
       authScreenEl.hidden = false;
+      authScreenEl.classList.remove('is-loading');
       appShellEl.hidden = true;
       tabBarEl.hidden = true;
       authDescEl.textContent = message;
@@ -1085,6 +1118,7 @@
 
     function showAppState() {
       authScreenEl.hidden = true;
+      authScreenEl.classList.remove('is-loading');
       appShellEl.hidden = false;
       tabBarEl.hidden = false;
     }
