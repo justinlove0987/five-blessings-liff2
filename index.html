@@ -973,6 +973,10 @@
         const data = await parseJsonResponse(response);
 
         if (!response.ok || !data.success || !data.tasks) {
+          console.error('[status failed]', {
+            httpStatus: response.status,
+            data
+          });
           throw new Error(data.error || 'Status failed');
         }
 
