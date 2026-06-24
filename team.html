@@ -694,6 +694,17 @@
       will-change: transform;
     }
 
+    .bottom-sheet::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(-1 * var(--sheet-keyboard-offset, 0px));
+      height: var(--sheet-keyboard-offset, 0px);
+      background: inherit;
+      pointer-events: none;
+    }
+
     .bottom-sheet.is-keyboard-open {
       max-height: min(40vh, 360px);
       overscroll-behavior: none;
