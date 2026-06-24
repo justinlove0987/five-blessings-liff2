@@ -792,6 +792,7 @@
 
     let toastTimer = null;
     let idToken = null;
+    let isLoginRequired = false;
 
     const avatarEl = document.getElementById('avatar');
     const toastEl = document.getElementById('toast');
@@ -811,6 +812,11 @@
 
     async function submitCheckin(button) {
       if (button.disabled) return;
+
+      if (isLoginRequired) {
+        startLineLogin();
+        return;
+      }
 
       const type = button.dataset.type;
       const label = taskLabels[type] || '任務';
@@ -922,6 +928,21 @@
         label.textContent = '請重試';
         button.removeAttribute('aria-label');
       });
+    }
+
+    function setPendingButtonsLoginRequired(message) {
+      isLoginRequired = true;
+      document.querySelectorAll('.checkin-button').forEach(button => {
+        const label = button.querySelector('.button-label');
+        button.disabled = false;
+        button.classList.remove('is-loading');
+        label.textContent = 'LINE登入';
+        button.setAttribute('aria-label', '使用 LINE 登入');
+      });
+
+      if (message) {
+        showToast(message, 'error');
+      }
     }
 
     function setButtonLoading(button, isLoading) {
@@ -1077,16 +1098,26 @@
       return url.toString();
     }
 
-    async function loadLiffAvatar() {
+    function startLineLogin() {
       if (!window.liff) {
         setPendingButtonsUnavailable();
+        showToast('LINE 登入初始化失敗，請重新整理後再試。', 'error');
+        return;
+      }
+
+      liff.login({ redirectUri: getLiffRedirectUri() });
+    }
+
+    async function loadLiffAvatar() {
+      if (!window.liff) {
+        setPendingButtonsLoginRequired('LINE 登入初始化失敗，請重新整理後再試。');
         return;
       }
 
       try {
-        await liff.init({ liffId: LIFF_ID });
+        await liff.init({ liffId: LIFF_ID, withLoginOnExternalBrowser: false });
         if (!liff.isLoggedIn()) {
-          liff.login({ redirectUri: getLiffRedirectUri() });
+          setPendingButtonsLoginRequired('需要 LINE 登入後才能讀取打卡資料。');
           return;
         }
 
@@ -1094,8 +1125,11 @@
         idToken = liff.getIDToken();
 
         if (!idToken) {
-          throw new Error('Missing LINE idToken');
+          setPendingButtonsLoginRequired('LINE 登入權限不足，請重新登入。');
+          return;
         }
+
+        isLoginRequired = false;
 
         if (profile.pictureUrl) {
           avatarEl.src = profile.pictureUrl;
@@ -1104,7 +1138,7 @@
         await loadTaskStatus();
       } catch (error) {
         avatarEl.src = fallbackAvatar;
-        setPendingButtonsUnavailable();
+        setPendingButtonsLoginRequired('LINE 登入初始化失敗，請重新整理後再試。');
       }
     }
 

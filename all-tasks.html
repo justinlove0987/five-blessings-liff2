@@ -400,6 +400,19 @@
       line-height: 1.6;
     }
 
+    .auth-login-button {
+      min-height: 46px;
+      margin-top: 16px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 999px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #ffb547, #ff9f1c);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
     .toast {
       position: fixed;
       left: 50%;
@@ -839,36 +852,56 @@
       return url.toString();
     }
 
+    function startLineLogin() {
+      if (!window.liff) {
+        showAuthLoginState('LINE 登入初始化失敗，請重新整理後再試。');
+        return;
+      }
+
+      liff.login({ redirectUri: getLiffRedirectUri() });
+    }
+
+    function showAuthLoginState(message) {
+      taskListEl.innerHTML = `
+        <div class="empty-state">
+          <div>${message}</div>
+          <button class="auth-login-button" type="button" id="lineLoginButton">使用 LINE 登入</button>
+        </div>
+      `;
+
+      const loginButton = document.getElementById('lineLoginButton');
+      if (loginButton) {
+        loginButton.addEventListener('click', startLineLogin);
+      }
+    }
+
     async function initLiff() {
       updateMonthControls();
       showListLoading();
 
       if (!window.liff) {
-        taskListEl.innerHTML = `
-          <div class="empty-state">無法初始化 LINE 登入，請重新開啟頁面。</div>
-        `;
+        showAuthLoginState('LINE 登入初始化失敗，請重新整理後再試。');
         return;
       }
 
       try {
-        await liff.init({ liffId: LIFF_ID });
+        await liff.init({ liffId: LIFF_ID, withLoginOnExternalBrowser: false });
 
         if (!liff.isLoggedIn()) {
-          liff.login({ redirectUri: getLiffRedirectUri() });
+          showAuthLoginState('需要 LINE 登入後才能查看任務紀錄。');
           return;
         }
 
         idToken = liff.getIDToken();
 
         if (!idToken) {
-          throw new Error('Missing LINE idToken');
+          showAuthLoginState('LINE 登入權限不足，請重新登入。');
+          return;
         }
 
         await loadHistory();
       } catch (error) {
-        taskListEl.innerHTML = `
-          <div class="empty-state">登入失敗，請重新開啟頁面。</div>
-        `;
+        showAuthLoginState('LINE 登入初始化失敗，請重新整理後再試。');
       }
     }
 
