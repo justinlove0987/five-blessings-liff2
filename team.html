@@ -1513,35 +1513,6 @@
       joinedTeamStateEl.hidden = true;
     }
 
-    function showAuthLoginState(message) {
-      teamLoadingEl.hidden = true;
-      emptyTeamStateEl.hidden = false;
-      joinedTeamStateEl.hidden = true;
-
-      const panel = emptyTeamStateEl.querySelector('.team-panel');
-      if (!panel) return;
-
-      panel.innerHTML = `
-        <h2 class="empty-title">需要 LINE 登入</h2>
-        <p class="empty-desc">${escapeHtml(message)}</p>
-        <div class="team-actions">
-          <button class="team-button primary" type="button" id="lineLoginButton">
-            <span class="team-button-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </span>
-            <span class="team-button-label">使用 LINE 登入</span>
-          </button>
-        </div>
-      `;
-
-      const loginButton = document.getElementById('lineLoginButton');
-      if (loginButton) {
-        loginButton.addEventListener('click', startLineLogin);
-      }
-    }
-
     function renderTeamSummary(data) {
       if (!data || !data.team) {
         currentTeamName = '';
@@ -1801,48 +1772,34 @@
       return url.toString();
     }
 
-    function startLineLogin() {
-      if (!window.liff) {
-        showAuthLoginState('LINE 登入初始化失敗，請重新整理後再試。');
-        return;
-      }
-
-      liff.login({ redirectUri: getLiffRedirectUri() });
-    }
-
     async function initTeamPage() {
       showLoadingState();
 
       if (!window.liff) {
-        showAuthLoginState('LINE 登入初始化失敗，請重新整理後再試。');
+        showEmptyState();
+        showToast('LINE LIFF 尚未載入，請重新開啟頁面。', 'error');
         return;
       }
 
       try {
-        await liff.init({ liffId: LIFF_ID, withLoginOnExternalBrowser: false });
+        await liff.init({ liffId: LIFF_ID });
 
         if (!liff.isLoggedIn()) {
-          showAuthLoginState('需要 LINE 登入後才能查看小隊資料。');
+          liff.login({ redirectUri: getLiffRedirectUri() });
           return;
         }
 
         idToken = liff.getIDToken();
 
         if (!idToken) {
-          showAuthLoginState('LINE 登入權限不足，請重新登入。');
-          return;
+          throw new Error('Missing LINE idToken');
         }
 
         const data = await requestTeam({ action: 'summary' });
         renderTeamSummary(data);
       } catch (error) {
-        if (idToken) {
-          showEmptyState();
-          showToast('讀取小隊資料失敗，請重新整理後再試一次。', 'error');
-          return;
-        }
-
-        showAuthLoginState('LINE 登入初始化失敗，請重新整理後再試。');
+        showEmptyState();
+        showToast('讀取小隊資料失敗，請重新整理後再試一次。', 'error');
       }
     }
 
