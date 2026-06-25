@@ -1081,6 +1081,7 @@
     const LIFF_ID = '2010462217-tVZRATTG';
     const CHECKIN_API_URL = '/api/checkin';
     const STATUS_API_URL = '/api/status';
+    const TEAM_API_URL = '/api/team';
 
     const taskLabels = {
       morningPrayer: '晨禱',
@@ -1105,6 +1106,7 @@
 
     let toastTimer = null;
     let idToken = null;
+    let currentNickname = '';
 
     const avatarEl = document.getElementById('avatar');
     const avatarButton = document.querySelector('.avatar-button');
@@ -1122,6 +1124,7 @@
     const nicknameSheetButton = document.getElementById('nicknameSheetButton');
     const lineLogoutButton = document.getElementById('lineLogoutButton');
     const nicknameSaveButton = document.getElementById('nicknameSaveButton');
+    const nicknameInput = document.getElementById('nicknameInput');
     const checkinButtons = Array.from(document.querySelectorAll('.checkin-button'));
 
     avatarEl.src = fallbackAvatar;
@@ -1138,10 +1141,7 @@
     avatarButton.addEventListener('click', openProfileSettings);
     nicknameSheetButton.addEventListener('click', openNicknameSheet);
     lineLogoutButton.addEventListener('click', logoutLineAccount);
-    nicknameSaveButton.addEventListener('click', () => {
-      closeSettingsOverlay(nicknameOverlay);
-      showToast('暱稱功能尚未開放', 'success');
-    });
+    nicknameSaveButton.addEventListener('click', saveNickname);
     [profileSettingsOverlay, nicknameOverlay].forEach(overlay => {
       overlay.addEventListener('click', event => {
         if (event.target === overlay) {
@@ -1354,16 +1354,77 @@
     }
 
     function openNicknameSheet() {
+      nicknameInput.value = currentNickname;
       closeSettingsOverlay(profileSettingsOverlay);
-      window.setTimeout(() => {
-        openSettingsOverlay(nicknameOverlay);
-      }, 120);
+      openSettingsOverlay(nicknameOverlay);
+      nicknameInput.focus({ preventScroll: true });
+      nicknameInput.select();
+    }
+
+    async function saveNickname() {
+      if (!idToken || nicknameSaveButton.disabled) {
+        return;
+      }
+
+      const nickname = nicknameInput.value.trim();
+
+      if (!nickname) {
+        showToast('請輸入暱稱', 'error');
+        nicknameInput.focus();
+        return;
+      }
+
+      if (nickname.length > 30) {
+        showToast('暱稱最多 30 個字', 'error');
+        nicknameInput.focus();
+        return;
+      }
+
+      nicknameSaveButton.disabled = true;
+
+      try {
+        const response = await fetch(TEAM_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            idToken,
+            action: 'updateNickname',
+            nickname
+          })
+        });
+
+        const data = await parseJsonResponse(response);
+
+        if (isExpiredTokenResponse(response, data)) {
+          handleAuthExpired();
+          return;
+        }
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Nickname update failed');
+        }
+
+        currentNickname = data.profile && data.profile.nickname
+          ? data.profile.nickname
+          : nickname;
+        closeSettingsOverlay(nicknameOverlay);
+        showToast('暱稱已更新', 'success');
+      } catch (error) {
+        console.error('Nickname update failed', error);
+        showToast('暱稱更新失敗，請稍後再試。', 'error');
+      } finally {
+        nicknameSaveButton.disabled = false;
+      }
     }
 
     function logoutLineAccount() {
       closeSettingsOverlay(profileSettingsOverlay);
       closeSettingsOverlay(nicknameOverlay);
       idToken = null;
+      currentNickname = '';
+      nicknameInput.value = '';
       avatarEl.src = fallbackAvatar;
 
       try {
@@ -1376,6 +1437,43 @@
 
       showLoginState('請先使用 LINE 登入後開始打卡');
       showToast('已登出 LINE 帳號', 'success');
+    }
+
+    async function loadUserProfile() {
+      try {
+        const response = await fetch(TEAM_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            idToken,
+            action: 'profile'
+          })
+        });
+
+        const data = await parseJsonResponse(response);
+
+        if (isExpiredTokenResponse(response, data)) {
+          handleAuthExpired();
+          return false;
+        }
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Profile failed');
+        }
+
+        if (data.profile && data.profile.nickname) {
+          currentNickname = data.profile.nickname;
+        } else if (data.profile && data.profile.displayName) {
+          currentNickname = data.profile.displayName;
+        }
+
+        return true;
+      } catch (error) {
+        console.error('Profile API failed', error);
+        return true;
+      }
     }
 
     async function parseJsonResponse(response) {
@@ -1597,6 +1695,13 @@
 
         if (profile.pictureUrl) {
           avatarEl.src = profile.pictureUrl;
+        }
+
+        currentNickname = profile.displayName || '';
+        const profileLoaded = await loadUserProfile();
+
+        if (!profileLoaded) {
+          return;
         }
 
         showAppState();

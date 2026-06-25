@@ -354,7 +354,7 @@ async function upsertLineUser(supabase, lineProfile) {
     }, {
       onConflict: 'line_user_id'
     })
-    .select('id,line_user_id,display_name,picture_url,team_id')
+    .select('id,line_user_id,display_name,nickname,picture_url,team_id')
     .single();
 
   if (error) {
@@ -401,7 +401,7 @@ async function buildTeamSummary(supabase, userId) {
 
   const { data: members, error: membersError } = await supabase
     .from('users')
-    .select('id,display_name,picture_url,created_at')
+    .select('id,display_name,nickname,picture_url,created_at')
     .eq('team_id', team.id)
     .order('created_at', { ascending: true });
 
@@ -467,7 +467,7 @@ async function buildTeamSummary(supabase, userId) {
 
   const summaryMembers = (members || []).map(member => ({
     id: member.id,
-    displayName: member.display_name || '小隊成員',
+    displayName: member.nickname || member.display_name || '小隊成員',
     pictureUrl: member.picture_url || null,
     weeklyTotal: memberTotals.get(member.id) || 0,
     monthlyTotal: memberMonthlyTotals.get(member.id) || 0

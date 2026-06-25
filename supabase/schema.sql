@@ -135,11 +135,15 @@ create table if not exists public.users (
   id uuid primary key default gen_random_uuid(),
   line_user_id text not null unique,
   display_name text not null,
+  nickname text,
   picture_url text,
   team_id uuid references public.teams(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.users
+  add column if not exists nickname text;
 
 create index if not exists users_team_id_idx
   on public.users (team_id);

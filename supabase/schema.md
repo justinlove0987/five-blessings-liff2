@@ -34,6 +34,7 @@ MVP 使用三張資料表：
 | `id` | `uuid` | 否 | 主鍵，預設 `gen_random_uuid()`。 |
 | `line_user_id` | `text` | 否 | LINE 使用者唯一識別，unique。 |
 | `display_name` | `text` | 否 | LINE 顯示名稱。 |
+| `nickname` | `text` | 是 | 使用者自訂暱稱；小隊成員列表優先顯示此欄位。 |
 | `picture_url` | `text` | 是 | LINE 頭像 URL。 |
 | `team_id` | `uuid` | 是 | 目前所在小隊，FK → `teams(id)`。 |
 | `created_at` | `timestamptz` | 否 | 建立時間，預設 `now()`。 |

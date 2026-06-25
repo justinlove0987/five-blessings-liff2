@@ -39,6 +39,16 @@ module.exports = async function handler(req, res) {
       return sendJson(res, 200, await buildTeamSummary(supabase, user.id));
     }
 
+    if (action === 'profile') {
+      return sendJson(res, 200, {
+        success: true,
+        profile: {
+          displayName: user.display_name || '',
+          nickname: user.nickname || ''
+        }
+      });
+    }
+
     if (action === 'create') {
       const updatedUser = await createTeam(supabase, user, body.name);
       await syncCurrentPeriodCheckinsToTeam(supabase, updatedUser);
@@ -54,6 +64,16 @@ module.exports = async function handler(req, res) {
     if (action === 'rename') {
       await renameTeam(supabase, user, body.name);
       return sendJson(res, 200, await buildTeamSummary(supabase, user.id));
+    }
+
+    if (action === 'updateNickname') {
+      const nickname = await updateNickname(supabase, user.id, body.nickname);
+      return sendJson(res, 200, {
+        success: true,
+        profile: {
+          nickname
+        }
+      });
     }
 
     if (action === 'leave') {
@@ -181,6 +201,29 @@ async function renameTeam(supabase, user, rawName) {
   if (error) {
     throw error;
   }
+}
+
+async function updateNickname(supabase, userId, rawNickname) {
+  const nickname = String(rawNickname || '').trim();
+
+  if (!nickname) {
+    throw createHttpError(400, 'Missing nickname');
+  }
+
+  if (nickname.length > 30) {
+    throw createHttpError(400, 'Nickname is too long');
+  }
+
+  const { error } = await supabase
+    .from('users')
+    .update({ nickname })
+    .eq('id', userId);
+
+  if (error) {
+    throw error;
+  }
+
+  return nickname;
 }
 
 async function leaveTeam(supabase, userId) {
