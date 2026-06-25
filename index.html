@@ -654,17 +654,35 @@
     }
 
     .settings-sheet {
+      position: relative;
       width: min(100%, 480px);
       padding: 8px 20px calc(18px + env(safe-area-inset-bottom));
       border-radius: 32px 32px 0 0;
       background: rgba(255, 253, 248, 0.98);
       box-shadow: 0 -18px 44px rgba(69, 51, 32, 0.16);
-      transform: translateY(100%);
-      transition: transform 0.24s ease;
+      transform: translate3d(0, calc(100% - var(--settings-keyboard-offset, 0px)), 0);
+      transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
     }
 
     .settings-overlay.is-open .settings-sheet {
-      transform: translateY(0);
+      transform: translate3d(0, calc(-1 * var(--settings-keyboard-offset, 0px)), 0);
+    }
+
+    .settings-sheet::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(-1 * var(--settings-keyboard-offset, 0px));
+      height: var(--settings-keyboard-offset, 0px);
+      background: inherit;
+      pointer-events: none;
+    }
+
+    .settings-sheet.is-keyboard-open {
+      overscroll-behavior: none;
+      touch-action: none;
     }
 
     .settings-handle {
@@ -1107,6 +1125,8 @@
     let toastTimer = null;
     let idToken = null;
     let currentNickname = '';
+    let activeSettingsOverlay = null;
+    let settingsKeyboardUpdateFrame = null;
 
     const avatarEl = document.getElementById('avatar');
     const avatarButton = document.querySelector('.avatar-button');
@@ -1155,6 +1175,11 @@
         closeSettingsOverlay(profileSettingsOverlay);
       }
     });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', scheduleSettingsKeyboardOffsetUpdate);
+      window.visualViewport.addEventListener('scroll', scheduleSettingsKeyboardOffsetUpdate);
+    }
+    window.addEventListener('resize', scheduleSettingsKeyboardOffsetUpdate);
 
     async function submitCheckin(button) {
       if (button.disabled) return;
@@ -1325,14 +1350,22 @@
     }
 
     function openSettingsOverlay(overlay) {
+      activeSettingsOverlay = overlay;
       overlay.hidden = false;
       void overlay.offsetHeight;
+      updateSettingsKeyboardOffset();
       overlay.classList.add('is-open');
     }
 
     function closeSettingsOverlay(overlay) {
       if (overlay.hidden) return;
       overlay.classList.remove('is-open');
+      resetSettingsKeyboardOffset(overlay);
+
+      if (activeSettingsOverlay === overlay) {
+        activeSettingsOverlay = null;
+      }
+
       window.setTimeout(() => {
         if (!overlay.classList.contains('is-open')) {
           overlay.hidden = true;
@@ -1359,6 +1392,66 @@
       openSettingsOverlay(nicknameOverlay);
       nicknameInput.focus({ preventScroll: true });
       nicknameInput.select();
+      requestAnimationFrame(() => {
+        nicknameInput.focus({ preventScroll: true });
+        updateSettingsKeyboardOffset();
+      });
+    }
+
+    function getSettingsSheet(overlay) {
+      return overlay ? overlay.querySelector('.settings-sheet') : null;
+    }
+
+    function resetSettingsKeyboardOffset(overlay) {
+      const sheet = getSettingsSheet(overlay);
+      if (!sheet) return;
+      sheet.classList.remove('is-keyboard-open');
+      sheet.style.removeProperty('--settings-keyboard-offset');
+    }
+
+    function updateSettingsKeyboardOffset() {
+      if (!activeSettingsOverlay || activeSettingsOverlay.hidden || !window.visualViewport) {
+        return;
+      }
+
+      if (activeSettingsOverlay !== nicknameOverlay) {
+        return;
+      }
+
+      const sheet = getSettingsSheet(activeSettingsOverlay);
+      if (!sheet) {
+        return;
+      }
+
+      const viewport = window.visualViewport;
+      const keyboardOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      const isKeyboardOpen = keyboardOffset > 80;
+      const wasKeyboardOpen = sheet.classList.contains('is-keyboard-open');
+
+      sheet.classList.toggle('is-keyboard-open', isKeyboardOpen);
+
+      if (isKeyboardOpen) {
+        sheet.style.setProperty('--settings-keyboard-offset', `${keyboardOffset}px`);
+        return;
+      }
+
+      if (wasKeyboardOpen && activeSettingsOverlay === nicknameOverlay) {
+        closeSettingsOverlay(nicknameOverlay);
+        return;
+      }
+
+      sheet.style.removeProperty('--settings-keyboard-offset');
+    }
+
+    function scheduleSettingsKeyboardOffsetUpdate() {
+      if (settingsKeyboardUpdateFrame) {
+        cancelAnimationFrame(settingsKeyboardUpdateFrame);
+      }
+
+      settingsKeyboardUpdateFrame = requestAnimationFrame(() => {
+        settingsKeyboardUpdateFrame = null;
+        updateSettingsKeyboardOffset();
+      });
     }
 
     async function saveNickname() {
