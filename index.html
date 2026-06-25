@@ -573,6 +573,34 @@
       border-top-color: #ff9f1c;
     }
 
+    .checkin-button.is-done {
+      min-width: 44px;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 50%;
+      color: #f29200;
+      background: rgba(255, 255, 253, 0.9);
+      border: 1.5px solid rgba(255, 173, 46, 0.42);
+      box-shadow: none;
+    }
+
+    .checkin-button.is-done:not(.is-loading):active {
+      transform: scale(0.97);
+    }
+
+    .checkin-button.is-done.is-loading {
+      min-width: 44px;
+      padding: 0 10px;
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .checkin-button.is-done.is-loading .spinner {
+      border-color: rgba(255, 159, 28, 0.18);
+      border-top-color: #ff9f1c;
+    }
+
     .done-pill {
       display: inline-grid;
       place-items: center;
@@ -965,7 +993,7 @@
                 <div class="task-name">晨禱</div>
                 <div class="task-note">今日可打卡</div>
               </div>
-              <button class="checkin-button is-loading" type="button" data-type="morningPrayer" disabled aria-label="載入中">
+              <button class="checkin-button is-loading" type="button" data-type="morningPrayer" data-state="pending" disabled aria-label="載入中">
                 <span class="button-label"><span class="spinner" aria-hidden="true"></span></span>
               </button>
             </div>
@@ -981,7 +1009,7 @@
                 <div class="task-name">小家</div>
                 <div class="task-note">本週完成一次</div>
               </div>
-              <button class="checkin-button is-loading" type="button" data-type="smallGroup" disabled aria-label="載入中">
+              <button class="checkin-button is-loading" type="button" data-type="smallGroup" data-state="pending" disabled aria-label="載入中">
                 <span class="button-label"><span class="spinner" aria-hidden="true"></span></span>
               </button>
             </div>
@@ -997,7 +1025,7 @@
                 <div class="task-name">主日</div>
                 <div class="task-note">本週完成一次</div>
               </div>
-              <button class="checkin-button is-loading" type="button" data-type="sunday" disabled aria-label="載入中">
+              <button class="checkin-button is-loading" type="button" data-type="sunday" data-state="pending" disabled aria-label="載入中">
                 <span class="button-label"><span class="spinner" aria-hidden="true"></span></span>
               </button>
             </div>
@@ -1013,7 +1041,7 @@
                 <div class="task-name">十一奉獻</div>
                 <div class="task-note">本月完成一次</div>
               </div>
-              <button class="checkin-button is-loading" type="button" data-type="tithe" disabled aria-label="載入中">
+              <button class="checkin-button is-loading" type="button" data-type="tithe" data-state="pending" disabled aria-label="載入中">
                 <span class="button-label"><span class="spinner" aria-hidden="true"></span></span>
               </button>
             </div>
@@ -1098,6 +1126,7 @@
   <script>
     const LIFF_ID = '2010462217-tVZRATTG';
     const CHECKIN_API_URL = '/api/checkin';
+    const UNCHECKIN_API_URL = '/api/uncheckin';
     const STATUS_API_URL = '/api/status';
     const TEAM_API_URL = '/api/team';
 
@@ -1145,16 +1174,22 @@
     const lineLogoutButton = document.getElementById('lineLogoutButton');
     const nicknameSaveButton = document.getElementById('nicknameSaveButton');
     const nicknameInput = document.getElementById('nicknameInput');
-    const checkinButtons = Array.from(document.querySelectorAll('.checkin-button'));
+    const taskListEl = document.querySelector('.task-list');
 
     avatarEl.src = fallbackAvatar;
     renderCurrentDates();
     setPendingButtonsLoading(true);
 
-    checkinButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        submitCheckin(button);
-      });
+    taskListEl.addEventListener('click', event => {
+      const button = event.target.closest('.checkin-button');
+      if (!button || button.disabled) return;
+
+      if (button.dataset.state === 'done') {
+        submitUncheckin(button);
+        return;
+      }
+
+      submitCheckin(button);
     });
 
     lineLoginButton.addEventListener('click', startLineLogin);
@@ -1180,6 +1215,55 @@
       window.visualViewport.addEventListener('scroll', scheduleSettingsKeyboardOffsetUpdate);
     }
     window.addEventListener('resize', scheduleSettingsKeyboardOffsetUpdate);
+
+    async function submitUncheckin(button) {
+      if (button.disabled) return;
+
+      const type = button.dataset.type;
+      const label = taskLabels[type] || '任務';
+
+      if (!idToken) {
+        showToast('尚未完成 LINE 登入，請重新開啟頁面。', 'error');
+        return;
+      }
+
+      if (!window.confirm(`確定要取消「${label}」打卡嗎？`)) {
+        return;
+      }
+
+      setButtonLoading(button, true);
+
+      try {
+        const response = await fetch(UNCHECKIN_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            idToken,
+            blessingType: type
+          })
+        });
+
+        const data = await parseJsonResponse(response);
+
+        if (isExpiredTokenResponse(response, data)) {
+          handleAuthExpired();
+          return;
+        }
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Uncheckin failed');
+        }
+
+        markTaskPending(type);
+        showToast(`「${label}」已取消打卡`, 'success');
+      } catch (error) {
+        console.error('Uncheckin failed', error);
+        setButtonLoading(button, false);
+        showToast('取消打卡失敗，請重新整理後再試一次。', 'error');
+      }
+    }
 
     async function submitCheckin(button) {
       if (button.disabled) return;
@@ -1281,8 +1365,12 @@
       });
     }
 
+    function getTaskButton(type) {
+      return document.querySelector(`.checkin-button[data-type="${type}"]`);
+    }
+
     function setPendingButtonsLoading(isLoading) {
-      document.querySelectorAll('.checkin-button').forEach(button => {
+      document.querySelectorAll('.checkin-button:not(.is-done)').forEach(button => {
         const label = button.querySelector('.button-label');
         button.disabled = isLoading;
         button.classList.toggle('is-loading', isLoading);
@@ -1298,7 +1386,7 @@
     }
 
     function setPendingButtonsUnavailable() {
-      document.querySelectorAll('.checkin-button').forEach(button => {
+      document.querySelectorAll('.checkin-button:not(.is-done)').forEach(button => {
         const label = button.querySelector('.button-label');
         if (!label) return;
         button.disabled = true;
@@ -1316,6 +1404,13 @@
       if (isLoading) {
         label.innerHTML = '<span class="spinner" aria-hidden="true"></span>';
         button.setAttribute('aria-label', '送出中');
+      } else if (button.dataset.state === 'done') {
+        label.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        `;
+        button.setAttribute('aria-label', '已完成，點擊可取消打卡');
       } else {
         label.textContent = '打卡';
         button.removeAttribute('aria-label');
@@ -1324,18 +1419,37 @@
 
     function markTaskDone(type) {
       const card = document.querySelector(`[data-task-card="${type}"]`);
-      const button = document.querySelector(`.checkin-button[data-type="${type}"]`);
+      const button = getTaskButton(type);
 
       if (!card || !button) return;
 
       card.classList.add('is-done');
-      button.outerHTML = `
-        <div class="done-pill" aria-label="已完成">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      button.dataset.state = 'done';
+      button.classList.remove('is-loading');
+      button.classList.add('is-done');
+      button.disabled = false;
+      button.setAttribute('aria-label', '已完成，點擊可取消打卡');
+      button.innerHTML = `
+        <span class="button-label" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
             <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-        </div>
+        </span>
       `;
+    }
+
+    function markTaskPending(type) {
+      const card = document.querySelector(`[data-task-card="${type}"]`);
+      const button = getTaskButton(type);
+
+      if (!card || !button) return;
+
+      card.classList.remove('is-done');
+      button.dataset.state = 'pending';
+      button.classList.remove('is-done', 'is-loading');
+      button.disabled = false;
+      button.removeAttribute('aria-label');
+      button.innerHTML = '<span class="button-label">打卡</span>';
     }
 
     function showToast(message, type) {
