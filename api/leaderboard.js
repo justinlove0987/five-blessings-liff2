@@ -10,6 +10,9 @@ const {
   verifyLineIdToken
 } = require('./_shared');
 
+const MIN_LEADERBOARD_MEMBERS = 3;
+const MAX_LEADERBOARD_MEMBERS = 6;
+
 module.exports = async function handler(req, res) {
   try {
     if (req.method !== 'POST') {
@@ -165,7 +168,11 @@ async function buildLeaderboard(supabase, periods) {
   }
 
   const sortedRows = [...teamStats.values()]
-    .filter(stats => stats.memberCount > 0 && stats.total > 0)
+    .filter(stats => (
+      stats.memberCount >= MIN_LEADERBOARD_MEMBERS
+      && stats.memberCount <= MAX_LEADERBOARD_MEMBERS
+      && stats.total > 0
+    ))
     .map(stats => ({
       ...stats,
       average: Number((stats.total / stats.memberCount).toFixed(1))
