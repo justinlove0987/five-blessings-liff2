@@ -340,6 +340,33 @@
       flex: 0 0 auto;
     }
 
+    .done-pill-button {
+      cursor: pointer;
+      transition: transform 0.14s ease, opacity 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    .done-pill-button:active {
+      transform: scale(0.97);
+    }
+
+    .done-pill-button:disabled {
+      cursor: wait;
+      opacity: 0.72;
+      transform: none;
+    }
+
+    .done-pill-button.is-loading {
+      border-color: rgba(255, 159, 28, 0.2);
+      background: transparent;
+    }
+
+    .done-pill-button.is-loading .spinner {
+      width: 22px;
+      height: 22px;
+      border-color: rgba(255, 159, 28, 0.18);
+      border-top-color: #ff9f1c;
+    }
+
     .missed-pill {
       display: inline-flex;
       align-items: center;
@@ -558,6 +585,7 @@
   <script>
     const LIFF_ID = '2010462217-tVZRATTG';
     const CHECKIN_API_URL = '/api/checkin';
+    const UNCHECKIN_API_URL = '/api/uncheckin';
     const HISTORY_API_URL = '/api/history';
     const EARLIEST_YEAR = 2026;
     const EARLIEST_MONTH = 6;
@@ -586,6 +614,8 @@
       sunday: 'assets/five-blessings-icons/sunday.png',
       tithe: 'assets/five-blessings-icons/tithe.png'
     };
+
+    const cancellableCompletedTypes = new Set(['smallGroup', 'sunday', 'tithe']);
 
     let toastTimer = null;
     let idToken = null;
@@ -738,10 +768,28 @@
           submitCheckin(button);
         });
       });
+
+      taskListEl.querySelectorAll('.done-pill-button').forEach(button => {
+        button.addEventListener('click', () => {
+          submitUncheckin(button);
+        });
+      });
     }
 
     function buildActionHtml(item) {
       if (item.completed) {
+        if (canCancelCompletedItem(item)) {
+          return `
+            <button class="done-pill done-pill-button" type="button" data-type="${item.blessingType}" data-period-key="${item.periodKey}" aria-label="已完成，點擊可取消打卡">
+              <span class="button-label" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </button>
+          `;
+        }
+
         return `
           <div class="done-pill" aria-label="已完成">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -762,6 +810,61 @@
       return `
         <div class="missed-pill" aria-label="未完成">未完成</div>
       `;
+    }
+
+    function canCancelCompletedItem(item) {
+      return cancellableCompletedTypes.has(item.blessingType) && isSelectedCurrentMonth();
+    }
+
+    function isSelectedCurrentMonth() {
+      return selectedYear === today.getFullYear() && selectedMonth === today.getMonth() + 1;
+    }
+
+    async function submitUncheckin(button) {
+      if (button.disabled || isLoading) {
+        return;
+      }
+
+      const type = button.dataset.type;
+      const label = getTaskDisplayLabel(type, button.dataset.periodKey);
+      const periodKey = button.dataset.periodKey || '';
+
+      if (!idToken) {
+        showToast('尚未完成 LINE 登入，請重新開啟頁面。', 'error');
+        return;
+      }
+
+      if (!window.confirm(`確定要取消「${label}」打卡嗎？`)) {
+        return;
+      }
+
+      setDoneButtonLoading(button, true);
+
+      try {
+        const response = await fetch(UNCHECKIN_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            idToken,
+            blessingType: type,
+            periodKey
+          })
+        });
+
+        const data = await parseJsonResponse(response);
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Uncheckin failed');
+        }
+
+        showToast(`「${label}」已取消打卡`, 'success');
+        await loadHistory();
+      } catch (error) {
+        setDoneButtonLoading(button, false);
+        showToast('取消打卡失敗，請重新整理後再試一次。', 'error');
+      }
     }
 
     async function submitCheckin(button) {
@@ -804,6 +907,24 @@
       } catch (error) {
         setButtonLoading(button, false);
         showToast('打卡失敗，請重新整理後再試一次。', 'error');
+      }
+    }
+
+    function setDoneButtonLoading(button, isLoading) {
+      const label = button.querySelector('.button-label');
+      button.disabled = isLoading;
+      button.classList.toggle('is-loading', isLoading);
+
+      if (isLoading) {
+        label.innerHTML = '<span class="spinner" aria-hidden="true"></span>';
+        button.setAttribute('aria-label', '送出中');
+      } else {
+        label.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        `;
+        button.setAttribute('aria-label', '已完成，點擊可取消打卡');
       }
     }
 
