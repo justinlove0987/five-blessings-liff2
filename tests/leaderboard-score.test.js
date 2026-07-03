@@ -63,10 +63,10 @@ assert.equal(
 assert.equal(
   round(calculateTeamScore({
     memberCount: 1,
-    weightedTotal: 65,
-    userCompletionCounts: [26],
-    maxWeightedTotalPerMember: 65,
-    maxCompletionCountPerMember: 26
+    weightedTotal: 70,
+    userCompletionCounts: [27],
+    maxWeightedTotalPerMember: 70,
+    maxCompletionCountPerMember: 27
   })),
   1000
 );

@@ -1,9 +1,9 @@
 const {
   getSupabaseClient,
   getTaskPeriod,
-  isMonthlyTwiceTask,
+  isMonthlyOccurrenceTask,
   parseBody,
-  parseMonthlyTwicePeriodKey,
+  parseMonthlyOccurrencePeriodKey,
   resolveTaskPeriod,
   sendError,
   sendJson,
@@ -56,8 +56,8 @@ module.exports = async function handler(req, res) {
     const lineUserId = lineProfile.sub;
     const displayName = lineProfile.name || '';
 
-    if (isMonthlyTwiceTask(blessingType)) {
-      await ensureMonthlyTwiceSequence(supabase, {
+    if (isMonthlyOccurrenceTask(blessingType)) {
+      await ensureMonthlyOccurrenceSequence(supabase, {
         lineUserId,
         blessingType,
         periodKey
@@ -140,28 +140,30 @@ module.exports = async function handler(req, res) {
   }
 };
 
-async function ensureMonthlyTwiceSequence(supabase, params) {
-  const parsed = parseMonthlyTwicePeriodKey(params.periodKey);
+async function ensureMonthlyOccurrenceSequence(supabase, params) {
+  const parsed = parseMonthlyOccurrencePeriodKey(params.periodKey);
 
-  if (!parsed || parsed.occurrence !== 2) {
+  if (!parsed || parsed.occurrence <= 1) {
     return;
   }
 
-  const firstPeriodKey = `${parsed.year}-${String(parsed.month).padStart(2, '0')}#1`;
+  const previousPeriodKeys = Array.from(
+    { length: parsed.occurrence - 1 },
+    (_, index) => `${parsed.year}-${String(parsed.month).padStart(2, '0')}#${index + 1}`
+  );
   const { data, error } = await supabase
     .from('checkins')
     .select('id')
     .eq('line_user_id', params.lineUserId)
     .eq('blessing_type', params.blessingType)
-    .eq('period_key', firstPeriodKey)
-    .maybeSingle();
+    .in('period_key', previousPeriodKeys);
 
   if (error) {
     throw error;
   }
 
-  if (!data) {
-    const error = new Error('First monthly check-in is required before second');
+  if ((data || []).length !== previousPeriodKeys.length) {
+    const error = new Error('Previous monthly check-in is required before this occurrence');
     error.statusCode = 400;
     throw error;
   }

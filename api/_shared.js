@@ -6,11 +6,14 @@ const TAIPEI_TIME_ZONE = 'Asia/Taipei';
 const taskPeriodMap = {
   morningPrayer: 'day',
   smallGroup: 'month',
-  sunday: 'week',
+  sunday: 'month',
   tithe: 'month'
 };
 
-const monthlyTwiceTaskTypes = new Set(['smallGroup']);
+const monthlyOccurrenceCounts = {
+  smallGroup: 2,
+  sunday: 4
+};
 
 let supabaseClient = null;
 
@@ -81,7 +84,15 @@ function getTaskPeriod(blessingType) {
 }
 
 function isMonthlyTwiceTask(blessingType) {
-  return monthlyTwiceTaskTypes.has(blessingType);
+  return getMonthlyOccurrenceCount(blessingType) === 2;
+}
+
+function isMonthlyOccurrenceTask(blessingType) {
+  return getMonthlyOccurrenceCount(blessingType) > 0;
+}
+
+function getMonthlyOccurrenceCount(blessingType) {
+  return monthlyOccurrenceCounts[blessingType] || 0;
 }
 
 function getCurrentTaskPeriods(date = new Date()) {
@@ -94,10 +105,8 @@ function getCurrentTaskPeriods(date = new Date()) {
       {
         visible: visibleTasks.includes(blessingType),
         periodType,
-        periodKey: isMonthlyTwiceTask(blessingType)
-          ? getMonthlyTwicePeriodKey(today.year, today.month, 1)
-          : blessingType === 'sunday'
-            ? formatDateKey(getSaturdayDateParts(today))
+        periodKey: isMonthlyOccurrenceTask(blessingType)
+          ? getMonthlyOccurrencePeriodKey(today.year, today.month, 1)
           : getPeriodKey(periodType, today)
       }
     ])
@@ -108,8 +117,8 @@ function getTeamWeeklyPeriodKeys(date = new Date()) {
   const periods = getCurrentTaskPeriods(date);
 
   return Object.entries(periods).flatMap(([blessingType, period]) => {
-    if (isMonthlyTwiceTask(blessingType)) {
-      return getCurrentMonthlyTwicePeriods(blessingType, date);
+    if (isMonthlyOccurrenceTask(blessingType)) {
+      return getCurrentMonthlyOccurrencePeriods(blessingType, date);
     }
 
     return [{
@@ -164,12 +173,16 @@ function getMonthKey(year, month) {
   return `${year}-${String(month).padStart(2, '0')}`;
 }
 
-function getMonthlyTwicePeriodKey(year, month, occurrence) {
+function getMonthlyOccurrencePeriodKey(year, month, occurrence) {
   return `${getMonthKey(year, month)}#${occurrence}`;
 }
 
-function parseMonthlyTwicePeriodKey(periodKey) {
-  const match = String(periodKey || '').match(/^(\d{4})-(\d{2})#([12])$/);
+function getMonthlyTwicePeriodKey(year, month, occurrence) {
+  return getMonthlyOccurrencePeriodKey(year, month, occurrence);
+}
+
+function parseMonthlyOccurrencePeriodKey(periodKey) {
+  const match = String(periodKey || '').match(/^(\d{4})-(\d{2})#([1-9]\d*)$/);
 
   if (!match) {
     return null;
@@ -182,8 +195,20 @@ function parseMonthlyTwicePeriodKey(periodKey) {
   };
 }
 
-function getMonthlyTwicePeriods(year, month, blessingType, todayParts = getTaipeiDateParts(new Date())) {
-  if (!isMonthlyTwiceTask(blessingType)) {
+function parseMonthlyTwicePeriodKey(periodKey) {
+  const parsed = parseMonthlyOccurrencePeriodKey(periodKey);
+
+  if (!parsed || parsed.occurrence > 2) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function getMonthlyOccurrencePeriods(year, month, blessingType, todayParts = getTaipeiDateParts(new Date())) {
+  const occurrenceCount = getMonthlyOccurrenceCount(blessingType);
+
+  if (!occurrenceCount) {
     return [];
   }
 
@@ -191,22 +216,30 @@ function getMonthlyTwicePeriods(year, month, blessingType, todayParts = getTaipe
     return [];
   }
 
-  return [1, 2].map(occurrence => ({
+  return Array.from({ length: occurrenceCount }, (_, index) => index + 1).map(occurrence => ({
     blessingType,
     periodType: 'month',
-    periodKey: getMonthlyTwicePeriodKey(year, month, occurrence),
+    periodKey: getMonthlyOccurrencePeriodKey(year, month, occurrence),
     occurrence,
     sortKey: `${getMonthKey(year, month)}#${occurrence}`
   }));
 }
 
-function getCurrentMonthlyTwicePeriods(blessingType, date = new Date()) {
-  const today = getTaipeiDateParts(date);
-  return getMonthlyTwicePeriods(today.year, today.month, blessingType, today);
+function getMonthlyTwicePeriods(year, month, blessingType, todayParts = getTaipeiDateParts(new Date())) {
+  return getMonthlyOccurrencePeriods(year, month, blessingType, todayParts);
 }
 
-function selectCurrentMonthlyTwicePeriod(blessingType, completedPeriodKeys, date = new Date()) {
-  const periods = getCurrentMonthlyTwicePeriods(blessingType, date);
+function getCurrentMonthlyOccurrencePeriods(blessingType, date = new Date()) {
+  const today = getTaipeiDateParts(date);
+  return getMonthlyOccurrencePeriods(today.year, today.month, blessingType, today);
+}
+
+function getCurrentMonthlyTwicePeriods(blessingType, date = new Date()) {
+  return getCurrentMonthlyOccurrencePeriods(blessingType, date);
+}
+
+function selectCurrentMonthlyOccurrencePeriod(blessingType, completedPeriodKeys, date = new Date()) {
+  const periods = getCurrentMonthlyOccurrencePeriods(blessingType, date);
   const completedSet = completedPeriodKeys instanceof Set
     ? completedPeriodKeys
     : new Set(completedPeriodKeys || []);
@@ -215,10 +248,12 @@ function selectCurrentMonthlyTwicePeriod(blessingType, completedPeriodKeys, date
     return null;
   }
 
-  const first = periods[0];
-  const second = periods[1];
+  const firstIncomplete = periods.find(period => !completedSet.has(period.periodKey));
+  return firstIncomplete || periods[periods.length - 1];
+}
 
-  return completedSet.has(first.periodKey) ? second : first;
+function selectCurrentMonthlyTwicePeriod(blessingType, completedPeriodKeys, date = new Date()) {
+  return selectCurrentMonthlyOccurrencePeriod(blessingType, completedPeriodKeys, date);
 }
 
 function resolveTaskPeriod(blessingType, requestedPeriodKey, date = new Date()) {
@@ -229,8 +264,8 @@ function resolveTaskPeriod(blessingType, requestedPeriodKey, date = new Date()) 
     return null;
   }
 
-  if (isMonthlyTwiceTask(blessingType)) {
-    const periods = getMonthlyTwicePeriods(today.year, today.month, blessingType, today);
+  if (isMonthlyOccurrenceTask(blessingType)) {
+    const periods = getMonthlyOccurrencePeriods(today.year, today.month, blessingType, today);
 
     if (requestedPeriodKey) {
       return periods.find(period => period.periodKey === requestedPeriodKey) || null;
@@ -243,9 +278,7 @@ function resolveTaskPeriod(blessingType, requestedPeriodKey, date = new Date()) 
     blessingType,
     visible: getVisibleTaskTypes(today).includes(blessingType),
     periodType,
-    periodKey: blessingType === 'sunday'
-      ? formatDateKey(getSaturdayDateParts(today))
-      : getPeriodKey(periodType, today)
+    periodKey: getPeriodKey(periodType, today)
   };
 
   if (requestedPeriodKey && requestedPeriodKey !== period.periodKey) {
@@ -259,19 +292,6 @@ function getSundayDateParts(today) {
   const date = getUtcDateFromParts(today);
   const dayOfWeek = date.getUTCDay();
   date.setUTCDate(date.getUTCDate() - dayOfWeek);
-
-  return {
-    year: date.getUTCFullYear(),
-    month: date.getUTCMonth() + 1,
-    day: date.getUTCDate()
-  };
-}
-
-function getSaturdayDateParts(today) {
-  const date = getUtcDateFromParts(today);
-  const dayOfWeek = date.getUTCDay();
-  const daysSinceSaturday = (dayOfWeek + 1) % 7;
-  date.setUTCDate(date.getUTCDate() - daysSinceSaturday);
 
   return {
     year: date.getUTCFullYear(),
@@ -386,33 +406,6 @@ function getWeekPeriodsInMonth(year, month, blessingType, todayParts) {
   return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
 }
 
-function getSaturdayWeekPeriodsInMonth(year, month, blessingType, todayParts, options = {}) {
-  const monthEnd = { year, month, day: getDaysInMonth(year, month) };
-  const items = [];
-  let saturday = getSaturdayDateParts({ year, month, day: 1 });
-
-  while (saturday.month !== month) {
-    saturday = addDaysToDateParts(saturday, 7);
-  }
-
-  while (compareDateParts(saturday, monthEnd) <= 0) {
-    if (options.includeFuture || compareDateParts(saturday, todayParts) <= 0) {
-      const periodKey = formatDateKey(saturday);
-
-      items.push({
-        blessingType,
-        periodType: 'week',
-        periodKey,
-        sortKey: periodKey
-      });
-    }
-
-    saturday = addDaysToDateParts(saturday, 7);
-  }
-
-  return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
-}
-
 function getTithePeriodInMonth(year, month, todayParts) {
   if (compareYearMonth(year, month, todayParts.year, todayParts.month) > 0) {
     return [];
@@ -441,12 +434,8 @@ function getHistoryPeriods(year, month, blessingType, todayParts = getTaipeiDate
     return getMorningPrayerPeriodsInMonth(year, month, todayParts);
   }
 
-  if (isMonthlyTwiceTask(blessingType)) {
-    return getMonthlyTwicePeriods(year, month, blessingType, todayParts);
-  }
-
-  if (blessingType === 'sunday') {
-    return getSaturdayWeekPeriodsInMonth(year, month, blessingType, todayParts);
+  if (isMonthlyOccurrenceTask(blessingType)) {
+    return getMonthlyOccurrencePeriods(year, month, blessingType, todayParts);
   }
 
   if (blessingType === 'tithe') {
@@ -477,14 +466,10 @@ function getLeaderboardWeekPeriods(date = new Date()) {
     }
   }
 
-  getCurrentMonthlyTwicePeriods('smallGroup', date).forEach(period => {
-    periods.push(period);
-  });
-
-  periods.push({
-    blessingType: 'sunday',
-    periodType: 'week',
-    periodKey: formatDateKey(getSaturdayDateParts(today))
+  ['smallGroup', 'sunday'].forEach(blessingType => {
+    getCurrentMonthlyOccurrencePeriods(blessingType, date).forEach(period => {
+      periods.push(period);
+    });
   });
 
   return periods;
@@ -492,15 +477,7 @@ function getLeaderboardWeekPeriods(date = new Date()) {
 
 function getLeaderboardMonthPeriods(year, month, todayParts = getTaipeiDateParts(new Date())) {
   return ['morningPrayer', 'smallGroup', 'sunday', 'tithe']
-    .flatMap(blessingType => {
-      if (blessingType === 'sunday') {
-        return getSaturdayWeekPeriodsInMonth(year, month, blessingType, todayParts, {
-          includeFuture: true
-        });
-      }
-
-      return getHistoryPeriods(year, month, blessingType, todayParts);
-    });
+    .flatMap(blessingType => getHistoryPeriods(year, month, blessingType, todayParts));
 }
 
 async function upsertLineUser(supabase, lineProfile) {
@@ -704,22 +681,12 @@ function buildHistoryDateLabel(blessingType, periodKey) {
     return `${month}/${day}（${weekday}）`;
   }
 
-  if (isMonthlyTwiceTask(blessingType)) {
-    const parsed = parseMonthlyTwicePeriodKey(periodKey);
+  if (isMonthlyOccurrenceTask(blessingType)) {
+    const parsed = parseMonthlyOccurrencePeriodKey(periodKey);
 
     if (parsed) {
       return `${parsed.month}月第${parsed.occurrence}次`;
     }
-  }
-
-  if (blessingType === 'sunday') {
-    const [year, month, day] = periodKey.split('-').map(Number);
-    const start = { year, month, day };
-    const end = addDaysToDateParts(start, 6);
-    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-    const startWeekday = weekdays[getUtcDateFromParts(start).getUTCDay()];
-    const endWeekday = weekdays[getUtcDateFromParts(end).getUTCDay()];
-    return `${start.month}/${start.day}（${startWeekday}） - ${end.month}/${end.day}（${endWeekday}）`;
   }
 
   const [year, month] = periodKey.split('-').map(Number);
@@ -733,12 +700,8 @@ function buildHistoryTaskNote(blessingType, periodKey, currentPeriodKey) {
     return isCurrent ? '今日可打卡' : '每日可打卡一次';
   }
 
-  if (isMonthlyTwiceTask(blessingType)) {
-    return isCurrent ? '本月可完成' : '本月完成兩次';
-  }
-
-  if (blessingType === 'sunday') {
-    return isCurrent ? '本週完成一次' : '每週完成一次';
+  if (isMonthlyOccurrenceTask(blessingType)) {
+    return isCurrent ? '本月可完成' : `本月完成${getMonthlyOccurrenceCount(blessingType)}次`;
   }
 
   return isCurrent ? '本月完成一次' : '每月完成一次';
@@ -778,10 +741,14 @@ module.exports = {
   getLeaderboardWeekPeriods,
   getSupabaseClient,
   getTaskPeriod,
+  getMonthlyOccurrencePeriods,
   getMonthlyTwicePeriods,
+  isMonthlyOccurrenceTask,
   isMonthlyTwiceTask,
+  parseMonthlyOccurrencePeriodKey,
   parseMonthlyTwicePeriodKey,
   resolveTaskPeriod,
+  selectCurrentMonthlyOccurrencePeriod,
   selectCurrentMonthlyTwicePeriod,
   getTeamWeeklyPeriodKeys,
   getTaipeiDateParts,

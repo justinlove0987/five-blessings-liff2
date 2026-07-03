@@ -7,9 +7,9 @@ const {
   getTaipeiDateParts,
   getVisibleTaskTypes,
   HISTORY_EARLIEST,
-  isMonthlyTwiceTask,
+  isMonthlyOccurrenceTask,
   parseBody,
-  selectCurrentMonthlyTwicePeriod,
+  selectCurrentMonthlyOccurrencePeriod,
   sendError,
   sendJson,
   verifyLineIdToken
@@ -70,8 +70,8 @@ module.exports = async function handler(req, res) {
 
     const completedPeriodKeys = new Set(rows.map(row => row.period_key));
     const currentPeriods = getCurrentTaskPeriods();
-    const currentPeriod = isMonthlyTwiceTask(blessingType)
-      ? selectCurrentMonthlyTwicePeriod(blessingType, completedPeriodKeys)
+    const currentPeriod = isMonthlyOccurrenceTask(blessingType)
+      ? selectCurrentMonthlyOccurrencePeriod(blessingType, completedPeriodKeys)
       : currentPeriods[blessingType];
     const currentPeriodKey = currentPeriod ? currentPeriod.periodKey : null;
 

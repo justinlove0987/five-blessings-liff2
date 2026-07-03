@@ -1060,7 +1060,7 @@
             </tr>
           </tbody>
         </table>
-        <p>每人本月可完成分數會依當月可計入任務動態計算。主日依週六到週五為一個週期，並歸屬於週六所在月份。</p>
+        <p>每人本月可完成分數會依當月可計入任務動態計算。主日每月固定 4 次，每次 5 分。</p>
         <div class="score-formula">完成率 = 全隊完成分數 ÷ 全隊可完成分數
 
 完成積分 = 完成率 × 900</div>
@@ -1397,8 +1397,8 @@
         ['五重戰隊 I', 5, 90, 230],
         ['五重戰隊 J', 4, 68, 150]
       ];
-      const previewMaxWeightedTotalPerMember = 65;
-      const previewMaxCompletionCountPerMember = 26;
+      const previewMaxWeightedTotalPerMember = 70;
+      const previewMaxCompletionCountPerMember = 27;
       const rows = baseRows
         .map(([teamName, memberCount, total, weightedTotal], index) => {
           const userCompletionCounts = distributePreviewCounts(total, memberCount);

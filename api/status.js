@@ -4,10 +4,10 @@ const {
   getCurrentTaskPeriods,
   getSupabaseClient,
   getTaipeiDateParts,
-  getMonthlyTwicePeriods,
-  isMonthlyTwiceTask,
+  getMonthlyOccurrencePeriods,
+  isMonthlyOccurrenceTask,
   parseBody,
-  selectCurrentMonthlyTwicePeriod,
+  selectCurrentMonthlyOccurrencePeriod,
   sendError,
   sendJson,
   verifyLineIdToken
@@ -40,8 +40,8 @@ module.exports = async function handler(req, res) {
       Object.entries(periods).filter(([, period]) => period.visible)
     );
     const queryPeriods = Object.entries(visiblePeriods).flatMap(([blessingType, period]) => {
-      if (isMonthlyTwiceTask(blessingType)) {
-        return getMonthlyTwicePeriods(todayParts.year, todayParts.month, blessingType, todayParts);
+      if (isMonthlyOccurrenceTask(blessingType)) {
+        return getMonthlyOccurrencePeriods(todayParts.year, todayParts.month, blessingType, todayParts);
       }
 
       return [period];
@@ -63,8 +63,8 @@ module.exports = async function handler(req, res) {
         const completedKeys = new Set((data || [])
           .filter(item => item.blessing_type === blessingType)
           .map(item => item.period_key));
-        const currentPeriod = isMonthlyTwiceTask(blessingType)
-          ? selectCurrentMonthlyTwicePeriod(blessingType, completedKeys)
+        const currentPeriod = isMonthlyOccurrenceTask(blessingType)
+          ? selectCurrentMonthlyOccurrencePeriod(blessingType, completedKeys)
           : period;
         if (!currentPeriod) {
           return [blessingType, null];
