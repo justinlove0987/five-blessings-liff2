@@ -410,11 +410,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 8px;
       padding: 12px 16px;
       border-radius: 16px;
       color: #ffffff;
-      background: rgba(69, 51, 32, 0.92);
-      box-shadow: 0 16px 36px rgba(69, 51, 32, 0.24);
+      background: rgba(30, 140, 86, 0.94);
+      box-shadow: 0 16px 36px rgba(30, 140, 86, 0.24);
       font-size: 14px;
       font-weight: 650;
       text-align: center;
@@ -424,6 +425,11 @@
       transition: opacity 0.18s ease, transform 0.18s ease;
     }
 
+    .toast.neutral {
+      background: rgba(69, 51, 32, 0.92);
+      box-shadow: 0 16px 36px rgba(69, 51, 32, 0.24);
+    }
+
     .toast.show {
       opacity: 1;
       transform: translate(-50%, 0);
@@ -431,6 +437,13 @@
 
     .toast.error {
       background: rgba(190, 67, 83, 0.94);
+      box-shadow: 0 16px 36px rgba(190, 67, 83, 0.22);
+    }
+
+    .toast svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
     }
 
     @keyframes spin {
@@ -555,6 +568,17 @@
       sunday: '主日',
       tithe: '十一奉獻'
     };
+
+    function getTaskDisplayLabel(type, periodKey) {
+      const label = taskLabels[type] || '任務';
+
+      if (type !== 'smallGroup' && type !== 'sunday') {
+        return label;
+      }
+
+      const match = String(periodKey || '').match(/#([1-9]\d*)$/);
+      return match ? `${label}${match[1]}` : label;
+    }
 
     const taskIconSrc = {
       morningPrayer: 'assets/five-blessings-icons/morning_prayer.png',
@@ -688,7 +712,7 @@
       }
 
       taskListEl.innerHTML = items.map(item => {
-        const label = taskLabels[item.blessingType];
+        const label = getTaskDisplayLabel(item.blessingType, item.periodKey);
         const actionHtml = buildActionHtml(item);
         const iconSrc = taskIconSrc[item.blessingType];
 
@@ -799,8 +823,23 @@
 
     function showToast(message, type) {
       window.clearTimeout(toastTimer);
-      toastEl.textContent = message;
+      toastEl.textContent = '';
+      toastEl.classList.toggle('neutral', type !== 'success' && type !== 'error');
       toastEl.classList.toggle('error', type === 'error');
+
+      if (type === 'success') {
+        toastEl.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" stroke="currentColor" stroke-width="2" />
+            <path d="m8 12.2 2.4 2.4L16.4 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span></span>
+        `;
+        toastEl.querySelector('span').textContent = message;
+      } else {
+        toastEl.textContent = message;
+      }
+
       toastEl.classList.add('show');
 
       toastTimer = window.setTimeout(() => {
