@@ -235,6 +235,27 @@
       padding: 18px;
     }
 
+    .winner-title-header {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .winner-title-crown {
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      flex: 0 0 auto;
+    }
+
+    .winner-title-crown img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+
     .tied-winner-header {
       display: grid;
       grid-template-columns: 48px minmax(0, 1fr);
@@ -911,12 +932,13 @@
 
     <main class="content">
       <section class="winner-card" id="winnerCard" aria-label="本月勝利戰隊" hidden>
-        <div class="tied-winner-header">
-          <div class="tied-crown-badge" aria-hidden="true">
+        <div class="winner-title-header">
+          <div class="winner-title-crown" aria-hidden="true">
             <img src="assets/five-blessings-icons/crown.png" alt="" />
           </div>
-          <div>
-            <h1 class="tied-title">本月勝利戰隊</h1>
+          <h1 class="tied-title">本月勝利戰隊</h1>
+          <div class="winner-title-crown" aria-hidden="true">
+            <img src="assets/five-blessings-icons/crown.png" alt="" />
           </div>
         </div>
 
@@ -1211,12 +1233,13 @@
     function renderSingleWinner(winner) {
       winnerCardEl.classList.remove('is-tied');
       winnerCardEl.innerHTML = `
-        <div class="tied-winner-header">
-          <div class="tied-crown-badge" aria-hidden="true">
+        <div class="winner-title-header">
+          <div class="winner-title-crown" aria-hidden="true">
             ${renderCrownImage()}
           </div>
-          <div>
-            <h1 class="tied-title">${selectedDate.getMonth() + 1}月勝利戰隊</h1>
+          <h1 class="tied-title">${selectedDate.getMonth() + 1}月勝利戰隊</h1>
+          <div class="winner-title-crown" aria-hidden="true">
+            ${renderCrownImage()}
           </div>
         </div>
 
