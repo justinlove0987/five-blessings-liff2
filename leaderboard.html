@@ -411,12 +411,43 @@
       padding: 0 2px;
     }
 
+    .section-title-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+
     .section-title {
       margin: 0;
       color: #25211c;
       font-size: 20px;
       font-weight: 900;
       line-height: 1.25;
+    }
+
+    .info-button {
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      border: 1px solid rgba(255, 159, 28, 0.26);
+      border-radius: 50%;
+      color: #f18a00;
+      background: rgba(255, 255, 253, 0.86);
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(185, 117, 32, 0.08);
+      transition: transform 0.14s ease, background 0.14s ease;
+    }
+
+    .info-button:active {
+      transform: scale(0.94);
+    }
+
+    .info-button svg {
+      width: 15px;
+      height: 15px;
     }
 
     .section-subtitle {
@@ -640,6 +671,168 @@
       background: rgba(198, 70, 91, 0.94);
     }
 
+    body.score-info-open {
+      overflow: hidden;
+    }
+
+    .score-info-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: grid;
+      place-items: center;
+      padding: calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));
+      background: rgba(37, 33, 28, 0);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease, background 0.18s ease;
+    }
+
+    .score-info-overlay.is-open {
+      background: rgba(37, 33, 28, 0.42);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .score-info-modal {
+      width: min(calc(100vw - 40px), 420px);
+      max-height: min(70vh, 620px);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      overflow: hidden;
+      border: 1px solid rgba(246, 221, 178, 0.88);
+      border-radius: 20px;
+      background: #fffdf8;
+      box-shadow: 0 24px 64px rgba(69, 51, 32, 0.24);
+      transform: translateY(14px) scale(0.98);
+      transition: transform 0.18s ease;
+    }
+
+    .score-info-overlay.is-open .score-info-modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .score-info-header {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) 34px;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 14px 10px;
+      background: rgba(255, 253, 248, 0.96);
+      border-bottom: 1px solid rgba(246, 221, 178, 0.62);
+    }
+
+    .score-info-close {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 0;
+      border-radius: 10px;
+      color: #6f5f4d;
+      background: rgba(255, 248, 234, 0.86);
+      cursor: pointer;
+    }
+
+    .score-info-close svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .score-info-title {
+      margin: 0;
+      color: #25211c;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.25;
+      text-align: center;
+    }
+
+    .score-info-body {
+      overflow-y: auto;
+      padding: 16px 18px 18px;
+      color: #6f5f4d;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .score-info-body h3 {
+      margin: 20px 0 8px;
+      color: #25211c;
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .score-info-body h3:first-child {
+      margin-top: 0;
+    }
+
+    .score-info-body p {
+      margin: 0 0 10px;
+      font-size: 14px;
+      font-weight: 650;
+      line-height: 1.65;
+    }
+
+    .score-info-body strong {
+      color: #f18a00;
+      font-weight: 900;
+    }
+
+    .score-formula {
+      margin: 10px 0 14px;
+      padding: 11px 12px;
+      border: 1px solid rgba(255, 202, 92, 0.42);
+      border-radius: 12px;
+      color: #5f4e3b;
+      background: rgba(255, 248, 234, 0.86);
+      font-size: 13px;
+      font-weight: 760;
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    .score-table {
+      width: 100%;
+      margin: 10px 0 14px;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid rgba(246, 221, 178, 0.82);
+      border-radius: 12px;
+      background: rgba(255, 255, 253, 0.9);
+    }
+
+    .score-table th,
+    .score-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(246, 221, 178, 0.62);
+      color: #6f5f4d;
+      font-size: 14px;
+      font-weight: 760;
+      text-align: left;
+    }
+
+    .score-table th:last-child,
+    .score-table td:last-child {
+      text-align: right;
+    }
+
+    .score-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .score-disclaimer {
+      margin-top: 16px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      color: #9b6b39;
+      background: rgba(255, 243, 213, 0.9);
+      font-size: 13px;
+      font-weight: 760;
+      line-height: 1.55;
+    }
+
     @keyframes spin {
       to {
         transform: rotate(360deg);
@@ -750,7 +943,16 @@
 
       <section>
         <div class="section-header" id="rankingHeader" hidden>
-          <h2 class="section-title">排行榜</h2>
+          <div class="section-title-row">
+            <h2 class="section-title">排行榜</h2>
+            <button class="info-button" id="scoreInfoButton" type="button" aria-label="查看戰隊分數說明">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                <path d="M12 10.5V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M12 7.2h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
           <span class="section-subtitle" id="rankingSubtitle">前 10 戰隊</span>
         </div>
         <div class="loading-state" id="loadingState">
@@ -791,6 +993,77 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <div class="score-info-overlay" id="scoreInfoOverlay" hidden>
+    <section class="score-info-modal" role="dialog" aria-modal="true" aria-labelledby="scoreInfoTitle">
+      <div class="score-info-header">
+        <button class="score-info-close" id="scoreInfoClose" type="button" aria-label="關閉戰隊分數說明">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+        </button>
+        <h2 class="score-info-title" id="scoreInfoTitle">戰隊分數說明</h2>
+        <span aria-hidden="true"></span>
+      </div>
+
+      <div class="score-info-body">
+        <p>戰隊最高 <strong>1000 分</strong>。</p>
+        <div class="score-formula">戰隊積分 = 完成積分 + 參與積分</div>
+
+        <h3>1. 完成積分，最高 900 分</h3>
+        <p>完成積分看全隊完成了多少任務分數。</p>
+        <table class="score-table">
+          <thead>
+            <tr>
+              <th>任務</th>
+              <th>分數</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>晨禱</td>
+              <td>1 分</td>
+            </tr>
+            <tr>
+              <td>小家</td>
+              <td>5 分</td>
+            </tr>
+            <tr>
+              <td>主日</td>
+              <td>5 分</td>
+            </tr>
+            <tr>
+              <td>十一奉獻</td>
+              <td>20 分</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>每人本月最高可完成 <strong>60 分</strong>。</p>
+        <div class="score-formula">完成率 = 全隊完成分數 ÷ 全隊可完成分數
+
+完成積分 = 完成率 × 900</div>
+
+        <h3>2. 參與積分，最高 100 分</h3>
+        <p>參與積分看的是有多少隊員一起參與。每完成 1 次任務，都算參與 1 次。</p>
+        <p>每人本月最多可參與 <strong>25 次</strong>。</p>
+        <div class="score-formula">個人參與值 = (個人完成次數 ÷ 25) ^ 0.7
+
+戰隊參與度 = 全隊個人參與值平均
+
+參與積分 = 戰隊參與度 × 100</div>
+
+        <h3>3. 最終分數</h3>
+        <div class="score-formula">戰隊積分 = 完成積分 + 參與積分</div>
+        <p>畫面顯示時會四捨五入為整數。</p>
+
+        <h3>簡單來說</h3>
+        <div class="score-formula">完成積分看任務分數。
+參與積分看大家有沒有一起參與。</div>
+
+        <div class="score-disclaimer">大會保留隨時調整排行榜規則與分數計算方式之權利。</div>
+      </div>
+    </section>
+  </div>
+
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <script>
@@ -800,6 +1073,7 @@
     let idToken = null;
     let selectedDate = getTaipeiToday();
     let toastTimer = null;
+    let scoreInfoCloseTimer = null;
     const isLocalPreview = ['localhost', '127.0.0.1'].includes(window.location.hostname)
       && new URLSearchParams(window.location.search).get('preview') === '1';
 
@@ -817,6 +1091,23 @@
     const winnerMembersEl = document.getElementById('winnerMembers');
     const winnerTotalEl = document.getElementById('winnerTotal');
     const toastEl = document.getElementById('toast');
+    const scoreInfoButton = document.getElementById('scoreInfoButton');
+    const scoreInfoOverlay = document.getElementById('scoreInfoOverlay');
+    const scoreInfoClose = document.getElementById('scoreInfoClose');
+
+    scoreInfoButton.addEventListener('click', openScoreInfoModal);
+    scoreInfoClose.addEventListener('click', () => closeScoreInfoModal({ restoreFocus: true }));
+    scoreInfoOverlay.addEventListener('click', event => {
+      if (event.target === scoreInfoOverlay) {
+        closeScoreInfoModal({ restoreFocus: true });
+      }
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && scoreInfoOverlay.classList.contains('is-open')) {
+        closeScoreInfoModal({ restoreFocus: true });
+      }
+    });
 
     prevMonthButton.addEventListener('click', () => {
       shiftSelectedMonth(-1);
@@ -1203,6 +1494,31 @@
       }
 
       return String(Math.round(Number(row.score || 0)));
+    }
+
+    function openScoreInfoModal() {
+      window.clearTimeout(scoreInfoCloseTimer);
+      scoreInfoOverlay.hidden = false;
+      document.body.classList.add('score-info-open');
+
+      requestAnimationFrame(() => {
+        scoreInfoOverlay.classList.add('is-open');
+        scoreInfoClose.focus();
+      });
+    }
+
+    function closeScoreInfoModal(options = {}) {
+      scoreInfoOverlay.classList.remove('is-open');
+      document.body.classList.remove('score-info-open');
+      window.clearTimeout(scoreInfoCloseTimer);
+
+      scoreInfoCloseTimer = window.setTimeout(() => {
+        scoreInfoOverlay.hidden = true;
+
+        if (options.restoreFocus) {
+          scoreInfoButton.focus();
+        }
+      }, 180);
     }
 
     function distributePreviewCounts(total, memberCount) {
