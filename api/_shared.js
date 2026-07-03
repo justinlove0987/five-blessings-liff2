@@ -6,11 +6,11 @@ const TAIPEI_TIME_ZONE = 'Asia/Taipei';
 const taskPeriodMap = {
   morningPrayer: 'day',
   smallGroup: 'month',
-  sunday: 'month',
+  sunday: 'week',
   tithe: 'month'
 };
 
-const monthlyTwiceTaskTypes = new Set(['smallGroup', 'sunday']);
+const monthlyTwiceTaskTypes = new Set(['smallGroup']);
 
 let supabaseClient = null;
 
@@ -96,6 +96,8 @@ function getCurrentTaskPeriods(date = new Date()) {
         periodType,
         periodKey: isMonthlyTwiceTask(blessingType)
           ? getMonthlyTwicePeriodKey(today.year, today.month, 1)
+          : blessingType === 'sunday'
+            ? formatDateKey(getSaturdayDateParts(today))
           : getPeriodKey(periodType, today)
       }
     ])
@@ -241,7 +243,9 @@ function resolveTaskPeriod(blessingType, requestedPeriodKey, date = new Date()) 
     blessingType,
     visible: getVisibleTaskTypes(today).includes(blessingType),
     periodType,
-    periodKey: getPeriodKey(periodType, today)
+    periodKey: blessingType === 'sunday'
+      ? formatDateKey(getSaturdayDateParts(today))
+      : getPeriodKey(periodType, today)
   };
 
   if (requestedPeriodKey && requestedPeriodKey !== period.periodKey) {
@@ -255,6 +259,19 @@ function getSundayDateParts(today) {
   const date = getUtcDateFromParts(today);
   const dayOfWeek = date.getUTCDay();
   date.setUTCDate(date.getUTCDate() - dayOfWeek);
+
+  return {
+    year: date.getUTCFullYear(),
+    month: date.getUTCMonth() + 1,
+    day: date.getUTCDate()
+  };
+}
+
+function getSaturdayDateParts(today) {
+  const date = getUtcDateFromParts(today);
+  const dayOfWeek = date.getUTCDay();
+  const daysSinceSaturday = (dayOfWeek + 1) % 7;
+  date.setUTCDate(date.getUTCDate() - daysSinceSaturday);
 
   return {
     year: date.getUTCFullYear(),
@@ -369,6 +386,33 @@ function getWeekPeriodsInMonth(year, month, blessingType, todayParts) {
   return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
 }
 
+function getSaturdayWeekPeriodsInMonth(year, month, blessingType, todayParts) {
+  const monthEnd = { year, month, day: getDaysInMonth(year, month) };
+  const items = [];
+  let saturday = getSaturdayDateParts({ year, month, day: 1 });
+
+  while (saturday.month !== month) {
+    saturday = addDaysToDateParts(saturday, 7);
+  }
+
+  while (compareDateParts(saturday, monthEnd) <= 0) {
+    if (compareDateParts(saturday, todayParts) <= 0) {
+      const periodKey = formatDateKey(saturday);
+
+      items.push({
+        blessingType,
+        periodType: 'week',
+        periodKey,
+        sortKey: periodKey
+      });
+    }
+
+    saturday = addDaysToDateParts(saturday, 7);
+  }
+
+  return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+}
+
 function getTithePeriodInMonth(year, month, todayParts) {
   if (compareYearMonth(year, month, todayParts.year, todayParts.month) > 0) {
     return [];
@@ -401,6 +445,10 @@ function getHistoryPeriods(year, month, blessingType, todayParts = getTaipeiDate
     return getMonthlyTwicePeriods(year, month, blessingType, todayParts);
   }
 
+  if (blessingType === 'sunday') {
+    return getSaturdayWeekPeriodsInMonth(year, month, blessingType, todayParts);
+  }
+
   if (blessingType === 'tithe') {
     return getTithePeriodInMonth(year, month, todayParts);
   }
@@ -429,10 +477,14 @@ function getLeaderboardWeekPeriods(date = new Date()) {
     }
   }
 
-  ['smallGroup', 'sunday'].forEach(blessingType => {
-    getCurrentMonthlyTwicePeriods(blessingType, date).forEach(period => {
-      periods.push(period);
-    });
+  getCurrentMonthlyTwicePeriods('smallGroup', date).forEach(period => {
+    periods.push(period);
+  });
+
+  periods.push({
+    blessingType: 'sunday',
+    periodType: 'week',
+    periodKey: formatDateKey(getSaturdayDateParts(today))
   });
 
   return periods;
@@ -652,6 +704,16 @@ function buildHistoryDateLabel(blessingType, periodKey) {
     }
   }
 
+  if (blessingType === 'sunday') {
+    const [year, month, day] = periodKey.split('-').map(Number);
+    const start = { year, month, day };
+    const end = addDaysToDateParts(start, 6);
+    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+    const startWeekday = weekdays[getUtcDateFromParts(start).getUTCDay()];
+    const endWeekday = weekdays[getUtcDateFromParts(end).getUTCDay()];
+    return `${start.month}/${start.day}（${startWeekday}） - ${end.month}/${end.day}（${endWeekday}）`;
+  }
+
   const [year, month] = periodKey.split('-').map(Number);
   return `${month}月`;
 }
@@ -665,6 +727,10 @@ function buildHistoryTaskNote(blessingType, periodKey, currentPeriodKey) {
 
   if (isMonthlyTwiceTask(blessingType)) {
     return isCurrent ? '本月可完成' : '本月完成兩次';
+  }
+
+  if (blessingType === 'sunday') {
+    return isCurrent ? '本週完成一次' : '每週完成一次';
   }
 
   return isCurrent ? '本月完成一次' : '每月完成一次';

@@ -18,8 +18,6 @@ const TASK_WEIGHTS = {
   sunday: 5,
   tithe: 20
 };
-const MAX_MONTHLY_COMPLETION_POINTS_PER_MEMBER = 60;
-const MAX_MONTHLY_COMPLETION_COUNT_PER_MEMBER = 25;
 const MAX_COMPLETION_SCORE = 900;
 const MAX_PARTICIPATION_SCORE = 100;
 
@@ -106,20 +104,34 @@ async function buildMonthlyWinner(supabase, year, month, today) {
   };
 }
 
-function calculateTeamScore({ memberCount, weightedTotal, userCompletionCounts }) {
+function calculateTeamScore({
+  memberCount,
+  weightedTotal,
+  userCompletionCounts,
+  maxWeightedTotalPerMember,
+  maxCompletionCountPerMember
+}) {
   if (!Number.isFinite(memberCount) || memberCount <= 0) {
     return 0;
   }
 
+  if (!Number.isFinite(maxWeightedTotalPerMember) || maxWeightedTotalPerMember <= 0) {
+    return 0;
+  }
+
+  if (!Number.isFinite(maxCompletionCountPerMember) || maxCompletionCountPerMember <= 0) {
+    return 0;
+  }
+
   const cappedWeightedTotal = Math.max(0, Number(weightedTotal) || 0);
-  const teamMaxWeightedTotal = memberCount * MAX_MONTHLY_COMPLETION_POINTS_PER_MEMBER;
+  const teamMaxWeightedTotal = memberCount * maxWeightedTotalPerMember;
   const completionRate = Math.min(cappedWeightedTotal / teamMaxWeightedTotal, 1);
   const completionScore = completionRate * MAX_COMPLETION_SCORE;
   const counts = Array.from(userCompletionCounts || []);
   const normalizedCounts = Array.from({ length: memberCount }, (_, index) => counts[index] || 0);
   const participationTotal = normalizedCounts.reduce((sum, count) => {
-    const cappedCount = Math.min(Math.max(Number(count) || 0, 0), MAX_MONTHLY_COMPLETION_COUNT_PER_MEMBER);
-    const participationValue = Math.min((cappedCount / MAX_MONTHLY_COMPLETION_COUNT_PER_MEMBER) ** 0.7, 1);
+    const cappedCount = Math.min(Math.max(Number(count) || 0, 0), maxCompletionCountPerMember);
+    const participationValue = Math.min((cappedCount / maxCompletionCountPerMember) ** 0.7, 1);
     return sum + participationValue;
   }, 0);
   const participationScore = (participationTotal / memberCount) * MAX_PARTICIPATION_SCORE;
@@ -173,6 +185,10 @@ async function buildLeaderboard(supabase, periods) {
 
   const periodKeys = [...new Set(periods.map(period => period.periodKey))];
   const blessingTypes = [...new Set(periods.map(period => period.blessingType))];
+  const maxWeightedTotalPerMember = periods.reduce((sum, period) => {
+    return sum + (TASK_WEIGHTS[period.blessingType] || 0);
+  }, 0);
+  const maxCompletionCountPerMember = periods.length;
 
   if (periodKeys.length > 0 && blessingTypes.length > 0 && userTeamMap.size > 0) {
     const { data: checkins, error: checkinsError } = await supabase
@@ -217,7 +233,9 @@ async function buildLeaderboard(supabase, periods) {
       const score = calculateTeamScore({
         memberCount: stats.memberCount,
         weightedTotal: stats.weightedTotal,
-        userCompletionCounts: stats.userCompletionCounts.values()
+        userCompletionCounts: stats.userCompletionCounts.values(),
+        maxWeightedTotalPerMember,
+        maxCompletionCountPerMember
       });
 
       return {
