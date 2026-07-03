@@ -738,7 +738,7 @@
 
             <div class="winner-stats">
               <div class="winner-stat">
-                <span class="winner-stat-line">平均每人 <strong id="winnerAverage">--</strong> 次</span>
+                <span class="winner-stat-line">分數 <strong id="winnerAverage">--</strong></span>
               </div>
               <div class="winner-stat">
                 <span class="winner-stat-line"><span id="winnerMembers">-- 人</span><span id="winnerTotal">總次數 --</span></span>
@@ -940,7 +940,7 @@
 
             <div class="winner-stats">
               <div class="winner-stat">
-                <span class="winner-stat-line">平均每人 <strong id="winnerAverage">${winner ? formatAverage(winner.average) : '--'}</strong> 次</span>
+                <span class="winner-stat-line">分數 <strong id="winnerAverage">${winner ? formatScore(winner) : '--'}</strong></span>
               </div>
               <div class="winner-stat">
                 <span class="winner-stat-line"><span id="winnerMembers">${winner ? Number(winner.memberCount || 0) : '--'} 人</span><span id="winnerTotal">總次數 ${winner ? Number(winner.total || 0) : '--'}</span></span>
@@ -1013,7 +1013,7 @@
             ${renderTrophyImage()}
           </div>
           <div class="tied-team-name">${escapeHtml(team.teamName || '未命名戰隊')}</div>
-          <div class="tied-team-average">平均每人 <strong>${formatAverage(team.average)}</strong> 次</div>
+          <div class="tied-team-average">分數 <strong>${formatScore(team)}</strong></div>
           <div class="tied-team-pill">${Number(team.memberCount || 0)} 人 / 總次數 ${Number(team.total || 0)}</div>
         </article>
       `;
@@ -1043,8 +1043,8 @@
             <div class="rank-meta">${Number(row.memberCount || 0)} 人 ｜ 總次數 ${Number(row.total || 0)}</div>
           </div>
           <div class="rank-score">
-            <strong>${formatAverage(row.average)}</strong>
-            <span>平均/人</span>
+            <strong>${formatScore(row)}</strong>
+            <span>分數</span>
           </div>
         </article>
       `;
@@ -1071,30 +1071,52 @@
 
     function buildPreviewData() {
       const baseRows = [
-        ['五重戰隊 A', 2, 70],
-        ['五重戰隊 B', 4, 140],
-        ['五重戰隊 C', 3, 105],
-        ['五重戰隊 D', 5, 175],
-        ['五重戰隊 E', 5, 130],
-        ['五重戰隊 F', 4, 92],
-        ['五重戰隊 G', 6, 132],
-        ['五重戰隊 H', 3, 60],
-        ['五重戰隊 I', 5, 90],
-        ['五重戰隊 J', 4, 68]
+        ['五重戰隊 A', 2, 70, 142],
+        ['五重戰隊 B', 4, 140, 310],
+        ['五重戰隊 C', 3, 105, 250],
+        ['五重戰隊 D', 5, 175, 410],
+        ['五重戰隊 E', 5, 130, 320],
+        ['五重戰隊 F', 4, 92, 210],
+        ['五重戰隊 G', 6, 132, 360],
+        ['五重戰隊 H', 3, 60, 160],
+        ['五重戰隊 I', 5, 90, 230],
+        ['五重戰隊 J', 4, 68, 150]
       ];
       const rows = baseRows
-        .map(([teamName, memberCount, total], index) => ({
-          teamId: `preview-${index}`,
-          teamName,
-          memberCount,
-          total,
-          average: Number((total / memberCount).toFixed(1))
-        }))
+        .map(([teamName, memberCount, total, weightedTotal], index) => {
+          const userCompletionCounts = distributePreviewCounts(total, memberCount);
+          const score = calculatePreviewTeamScore({
+            memberCount,
+            weightedTotal,
+            userCompletionCounts
+          });
+
+          return {
+            teamId: `preview-${index}`,
+            teamName,
+            memberCount,
+            total,
+            weightedTotal,
+            score,
+            displayScore: Math.round(score),
+            average: Number((total / memberCount).toFixed(1))
+          };
+        })
         .filter(row => row.memberCount >= 3 && row.memberCount <= 6 && row.total > 0)
-        .sort((a, b) => b.average - a.average)
+        .sort((a, b) => {
+          if (b.score !== a.score) {
+            return b.score - a.score;
+          }
+
+          if (b.weightedTotal !== a.weightedTotal) {
+            return b.weightedTotal - a.weightedTotal;
+          }
+
+          return b.total - a.total;
+        })
         .map((row, index, sortedRows) => {
           const previous = sortedRows[index - 1];
-          const rank = previous && previous.average === row.average
+          const rank = previous && previous.displayScore === row.displayScore
             ? previous.rank
             : index + 1;
 
@@ -1112,7 +1134,7 @@
         leaderboard: rows,
         winner: {
           ...rows[0],
-          tiedTeams: rows.filter(row => row.average === rows[0].average)
+          tiedTeams: rows.filter(row => row.displayScore === rows[0].displayScore)
         }
       };
     }
@@ -1169,6 +1191,60 @@
       }
 
       return number.toFixed(1);
+    }
+
+    function formatScore(row) {
+      if (!row) {
+        return '--';
+      }
+
+      if (Number.isFinite(Number(row.displayScore))) {
+        return String(Number(row.displayScore));
+      }
+
+      return String(Math.round(Number(row.score || 0)));
+    }
+
+    function distributePreviewCounts(total, memberCount) {
+      const safeMemberCount = Math.max(0, Number(memberCount) || 0);
+      const counts = Array.from({ length: safeMemberCount }, () => 0);
+      let remaining = Math.max(0, Number(total) || 0);
+      let index = 0;
+
+      while (remaining > 0 && counts.length > 0) {
+        counts[index % counts.length] += 1;
+        remaining -= 1;
+        index += 1;
+      }
+
+      return counts;
+    }
+
+    function calculatePreviewTeamScore({ memberCount, weightedTotal, userCompletionCounts }) {
+      const maxCompletionPointsPerMember = 60;
+      const maxCompletionCountPerMember = 25;
+      const safeMemberCount = Number(memberCount) || 0;
+
+      if (safeMemberCount <= 0) {
+        return 0;
+      }
+
+      const completionRate = Math.min(
+        Math.max(Number(weightedTotal) || 0, 0) / (safeMemberCount * maxCompletionPointsPerMember),
+        1
+      );
+      const completionScore = completionRate * 900;
+      const normalizedCounts = Array.from(
+        { length: safeMemberCount },
+        (_, index) => (userCompletionCounts || [])[index] || 0
+      );
+      const participationTotal = normalizedCounts.reduce((sum, count) => {
+        const cappedCount = Math.min(Math.max(Number(count) || 0, 0), maxCompletionCountPerMember);
+        return sum + Math.min((cappedCount / maxCompletionCountPerMember) ** 0.7, 1);
+      }, 0);
+      const participationScore = (participationTotal / safeMemberCount) * 100;
+
+      return Math.min(completionScore + participationScore, 1000);
     }
 
     function showToast(message, type) {

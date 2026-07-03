@@ -12,6 +12,16 @@ const {
 
 const MIN_LEADERBOARD_MEMBERS = 3;
 const MAX_LEADERBOARD_MEMBERS = 6;
+const TASK_WEIGHTS = {
+  morningPrayer: 1,
+  smallGroup: 5,
+  sunday: 5,
+  tithe: 20
+};
+const MAX_MONTHLY_COMPLETION_POINTS_PER_MEMBER = 60;
+const MAX_MONTHLY_COMPLETION_COUNT_PER_MEMBER = 25;
+const MAX_COMPLETION_SCORE = 900;
+const MAX_PARTICIPATION_SCORE = 100;
 
 module.exports = async function handler(req, res) {
   try {
@@ -86,14 +96,35 @@ async function buildMonthlyWinner(supabase, year, month, today) {
     return null;
   }
 
-  const topAverage = rows[0].average;
+  const topDisplayScore = rows[0].displayScore;
 
   return {
     year,
     month,
-    tiedTeams: rows.filter(row => row.average === topAverage),
+    tiedTeams: rows.filter(row => row.displayScore === topDisplayScore),
     ...rows[0]
   };
+}
+
+function calculateTeamScore({ memberCount, weightedTotal, userCompletionCounts }) {
+  if (!Number.isFinite(memberCount) || memberCount <= 0) {
+    return 0;
+  }
+
+  const cappedWeightedTotal = Math.max(0, Number(weightedTotal) || 0);
+  const teamMaxWeightedTotal = memberCount * MAX_MONTHLY_COMPLETION_POINTS_PER_MEMBER;
+  const completionRate = Math.min(cappedWeightedTotal / teamMaxWeightedTotal, 1);
+  const completionScore = completionRate * MAX_COMPLETION_SCORE;
+  const counts = Array.from(userCompletionCounts || []);
+  const normalizedCounts = Array.from({ length: memberCount }, (_, index) => counts[index] || 0);
+  const participationTotal = normalizedCounts.reduce((sum, count) => {
+    const cappedCount = Math.min(Math.max(Number(count) || 0, 0), MAX_MONTHLY_COMPLETION_COUNT_PER_MEMBER);
+    const participationValue = Math.min((cappedCount / MAX_MONTHLY_COMPLETION_COUNT_PER_MEMBER) ** 0.7, 1);
+    return sum + participationValue;
+  }, 0);
+  const participationScore = (participationTotal / memberCount) * MAX_PARTICIPATION_SCORE;
+
+  return Math.min(completionScore + participationScore, 1000);
 }
 
 async function buildLeaderboard(supabase, periods) {
@@ -122,7 +153,9 @@ async function buildLeaderboard(supabase, periods) {
       teamName: team.name || '未命名戰隊',
       memberCount: 0,
       total: 0,
-      average: 0
+      weightedTotal: 0,
+      average: 0,
+      userCompletionCounts: new Map()
     }
   ]));
   const userTeamMap = new Map();
@@ -133,7 +166,9 @@ async function buildLeaderboard(supabase, periods) {
     }
 
     userTeamMap.set(member.id, member.team_id);
-    teamStats.get(member.team_id).memberCount += 1;
+    const stats = teamStats.get(member.team_id);
+    stats.memberCount += 1;
+    stats.userCompletionCounts.set(member.id, 0);
   });
 
   const periodKeys = [...new Set(periods.map(period => period.periodKey))];
@@ -164,6 +199,11 @@ async function buildLeaderboard(supabase, periods) {
       }
 
       stats.total += 1;
+      stats.weightedTotal += TASK_WEIGHTS[checkin.blessing_type] || 0;
+      stats.userCompletionCounts.set(
+        checkin.user_id,
+        (stats.userCompletionCounts.get(checkin.user_id) || 0) + 1
+      );
     });
   }
 
@@ -173,13 +213,27 @@ async function buildLeaderboard(supabase, periods) {
       && stats.memberCount <= MAX_LEADERBOARD_MEMBERS
       && stats.total > 0
     ))
-    .map(stats => ({
-      ...stats,
-      average: Number((stats.total / stats.memberCount).toFixed(1))
-    }))
+    .map(stats => {
+      const score = calculateTeamScore({
+        memberCount: stats.memberCount,
+        weightedTotal: stats.weightedTotal,
+        userCompletionCounts: stats.userCompletionCounts.values()
+      });
+
+      return {
+        ...stats,
+        score,
+        displayScore: Math.round(score),
+        average: Number((stats.total / stats.memberCount).toFixed(1))
+      };
+    })
     .sort((a, b) => {
-      if (b.average !== a.average) {
-        return b.average - a.average;
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+
+      if (b.weightedTotal !== a.weightedTotal) {
+        return b.weightedTotal - a.weightedTotal;
       }
 
       if (b.total !== a.total) {
@@ -195,7 +249,7 @@ async function buildLeaderboard(supabase, periods) {
 
   return sortedRows.map((stats, index) => {
     const previous = sortedRows[index - 1];
-    const rank = previous && previous.average === stats.average
+    const rank = previous && previous.displayScore === stats.displayScore
       ? previous.rank
       : index + 1;
 
@@ -207,7 +261,12 @@ async function buildLeaderboard(supabase, periods) {
       teamName: stats.teamName,
       memberCount: stats.memberCount,
       total: stats.total,
-      average: stats.average
+      weightedTotal: stats.weightedTotal,
+      average: stats.average,
+      score: stats.score,
+      displayScore: stats.displayScore
     };
   });
 }
+
+module.exports.calculateTeamScore = calculateTeamScore;
