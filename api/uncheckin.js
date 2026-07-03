@@ -1,8 +1,8 @@
 const {
-  getCurrentTaskPeriods,
   getSupabaseClient,
   getTaskPeriod,
   parseBody,
+  resolveTaskPeriod,
   sendError,
   sendJson,
   verifyLineIdToken
@@ -20,6 +20,7 @@ module.exports = async function handler(req, res) {
     const body = parseBody(req.body);
     const idToken = body.idToken;
     const blessingType = body.blessingType;
+    const requestedPeriodKey = body.periodKey;
     const periodType = getTaskPeriod(blessingType);
 
     if (!idToken) {
@@ -38,10 +39,9 @@ module.exports = async function handler(req, res) {
 
     const lineProfile = await verifyLineIdToken(idToken);
     const supabase = getSupabaseClient();
-    const periods = getCurrentTaskPeriods();
-    const taskPeriod = periods[blessingType];
+    const taskPeriod = resolveTaskPeriod(blessingType, requestedPeriodKey);
 
-    if (!taskPeriod.visible) {
+    if (!taskPeriod || taskPeriod.visible === false) {
       return sendJson(res, 400, {
         success: false,
         error: 'Task is not available today'

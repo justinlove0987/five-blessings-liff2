@@ -7,7 +7,9 @@ const {
   getTaipeiDateParts,
   getVisibleTaskTypes,
   HISTORY_EARLIEST,
+  isMonthlyTwiceTask,
   parseBody,
+  selectCurrentMonthlyTwicePeriod,
   sendError,
   sendJson,
   verifyLineIdToken
@@ -45,10 +47,6 @@ module.exports = async function handler(req, res) {
     const lineProfile = await verifyLineIdToken(idToken);
     const todayParts = getTaipeiDateParts(new Date());
     const periods = getHistoryPeriods(year, month, blessingType, todayParts);
-    const currentPeriods = getCurrentTaskPeriods();
-    const currentPeriodKey = currentPeriods[blessingType]
-      ? currentPeriods[blessingType].periodKey
-      : null;
     const currentVisible = getVisibleTaskTypes(todayParts).includes(blessingType);
     const periodKeys = periods.map(period => period.periodKey);
 
@@ -69,6 +67,13 @@ module.exports = async function handler(req, res) {
 
       rows = data || [];
     }
+
+    const completedPeriodKeys = new Set(rows.map(row => row.period_key));
+    const currentPeriods = getCurrentTaskPeriods();
+    const currentPeriod = isMonthlyTwiceTask(blessingType)
+      ? selectCurrentMonthlyTwicePeriod(blessingType, completedPeriodKeys)
+      : currentPeriods[blessingType];
+    const currentPeriodKey = currentPeriod ? currentPeriod.periodKey : null;
 
     const items = periods.map(period => {
       const row = rows.find(item => item.period_key === period.periodKey);

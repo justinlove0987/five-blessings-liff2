@@ -1,7 +1,13 @@
 const {
+  buildHistoryDateLabel,
+  buildHistoryTaskNote,
   getCurrentTaskPeriods,
   getSupabaseClient,
+  getTaipeiDateParts,
+  getMonthlyTwicePeriods,
+  isMonthlyTwiceTask,
   parseBody,
+  selectCurrentMonthlyTwicePeriod,
   sendError,
   sendJson,
   verifyLineIdToken
@@ -28,11 +34,19 @@ module.exports = async function handler(req, res) {
 
     const lineProfile = await verifyLineIdToken(idToken);
     const supabase = getSupabaseClient();
+    const todayParts = getTaipeiDateParts(new Date());
     const periods = getCurrentTaskPeriods();
     const visiblePeriods = Object.fromEntries(
       Object.entries(periods).filter(([, period]) => period.visible)
     );
-    const periodKeys = Object.values(visiblePeriods).map(period => period.periodKey);
+    const queryPeriods = Object.entries(visiblePeriods).flatMap(([blessingType, period]) => {
+      if (isMonthlyTwiceTask(blessingType)) {
+        return getMonthlyTwicePeriods(todayParts.year, todayParts.month, blessingType, todayParts);
+      }
+
+      return [period];
+    });
+    const periodKeys = [...new Set(queryPeriods.map(period => period.periodKey))];
 
     const { data, error } = await supabase
       .from('checkins')
@@ -46,9 +60,18 @@ module.exports = async function handler(req, res) {
 
     const tasks = Object.fromEntries(
       Object.entries(visiblePeriods).map(([blessingType, period]) => {
+        const completedKeys = new Set((data || [])
+          .filter(item => item.blessing_type === blessingType)
+          .map(item => item.period_key));
+        const currentPeriod = isMonthlyTwiceTask(blessingType)
+          ? selectCurrentMonthlyTwicePeriod(blessingType, completedKeys)
+          : period;
+        if (!currentPeriod) {
+          return [blessingType, null];
+        }
         const row = (data || []).find(item => (
           item.blessing_type === blessingType
-          && item.period_key === period.periodKey
+          && item.period_key === currentPeriod.periodKey
         ));
 
         return [
@@ -56,8 +79,10 @@ module.exports = async function handler(req, res) {
           {
             completed: Boolean(row),
             completedAt: row ? row.checked_in_at : null,
-            periodType: period.periodType,
-            periodKey: period.periodKey
+            periodType: currentPeriod.periodType,
+            periodKey: currentPeriod.periodKey,
+            dateLabel: buildHistoryDateLabel(blessingType, currentPeriod.periodKey),
+            note: buildHistoryTaskNote(blessingType, currentPeriod.periodKey, currentPeriod.periodKey)
           }
         ];
       })

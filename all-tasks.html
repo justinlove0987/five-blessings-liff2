@@ -729,7 +729,7 @@
 
       if (item.canCheckin) {
         return `
-          <button class="checkin-button" type="button" data-type="${item.blessingType}">
+          <button class="checkin-button" type="button" data-type="${item.blessingType}" data-period-key="${item.periodKey}">
             <span class="button-label">打卡</span>
           </button>
         `;
@@ -747,6 +747,7 @@
 
       const type = button.dataset.type;
       const label = taskLabels[type] || '任務';
+      const periodKey = button.dataset.periodKey || '';
 
       if (!idToken) {
         showToast('尚未完成 LINE 登入，請重新開啟頁面。', 'error');
@@ -763,7 +764,8 @@
           },
           body: JSON.stringify({
             idToken,
-            blessingType: type
+            blessingType: type,
+            periodKey
           })
         });
 

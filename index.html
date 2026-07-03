@@ -1005,9 +1005,9 @@
             </div>
             <div class="task-main">
               <div class="task-copy">
-                <div class="task-date" data-date-label="week">--/-- - --/--</div>
+                <div class="task-date" data-date-label="monthly-twice">--月第1次</div>
                 <div class="task-name">小家</div>
-                <div class="task-note">本週完成一次</div>
+                <div class="task-note">本月可完成</div>
               </div>
               <button class="checkin-button is-loading" type="button" data-type="smallGroup" data-state="pending" disabled aria-label="載入中">
                 <span class="button-label"><span class="spinner" aria-hidden="true"></span></span>
@@ -1021,9 +1021,9 @@
             </div>
             <div class="task-main">
               <div class="task-copy">
-                <div class="task-date" data-date-label="week">--/-- - --/--</div>
+                <div class="task-date" data-date-label="monthly-twice">--月第1次</div>
                 <div class="task-name">主日</div>
-                <div class="task-note">本週完成一次</div>
+                <div class="task-note">本月可完成</div>
               </div>
               <button class="checkin-button is-loading" type="button" data-type="sunday" data-state="pending" disabled aria-label="載入中">
                 <span class="button-label"><span class="spinner" aria-hidden="true"></span></span>
@@ -1221,6 +1221,7 @@
 
       const type = button.dataset.type;
       const label = taskLabels[type] || '任務';
+      const periodKey = button.dataset.periodKey || '';
 
       if (!idToken) {
         showToast('尚未完成 LINE 登入，請重新開啟頁面。', 'error');
@@ -1241,7 +1242,8 @@
           },
           body: JSON.stringify({
             idToken,
-            blessingType: type
+            blessingType: type,
+            periodKey
           })
         });
 
@@ -1256,7 +1258,7 @@
           throw new Error(data.error || 'Uncheckin failed');
         }
 
-        markTaskPending(type);
+        await loadTaskStatus();
         showToast(`「${label}」已取消打卡`, 'success');
       } catch (error) {
         console.error('Uncheckin failed', error);
@@ -1270,6 +1272,7 @@
 
       const type = button.dataset.type;
       const label = taskLabels[type] || '任務';
+      const periodKey = button.dataset.periodKey || '';
 
       if (!idToken) {
         showToast('尚未完成 LINE 登入，請重新開啟頁面。', 'error');
@@ -1286,7 +1289,8 @@
           },
           body: JSON.stringify({
             idToken,
-            blessingType: type
+            blessingType: type,
+            periodKey
           })
         });
 
@@ -1301,7 +1305,7 @@
           throw new Error(data.error || 'Checkin failed');
         }
 
-        markTaskDone(type);
+        await loadTaskStatus();
         showToast(`「${label}」打卡成功！`, 'success');
       } catch (error) {
         console.error('Checkin failed', error);
@@ -1341,14 +1345,11 @@
         }
 
         syncVisibleTaskCards(Object.keys(data.tasks));
+        setPendingButtonsLoading(false);
 
         Object.entries(data.tasks).forEach(([type, task]) => {
-          if (task && task.completed) {
-            markTaskDone(type);
-          }
+          applyTaskStatus(type, task);
         });
-
-        setPendingButtonsLoading(false);
       } catch (error) {
         console.error('Status API failed', error);
         setPendingButtonsUnavailable();
@@ -1367,6 +1368,38 @@
 
     function getTaskButton(type) {
       return document.querySelector(`.checkin-button[data-type="${type}"]`);
+    }
+
+    function applyTaskStatus(type, task) {
+      if (!task) return;
+
+      updateTaskMeta(type, task);
+
+      if (task.completed) {
+        markTaskDone(type);
+        return;
+      }
+
+      markTaskPending(type);
+    }
+
+    function updateTaskMeta(type, task) {
+      const card = document.querySelector(`[data-task-card="${type}"]`);
+      const button = getTaskButton(type);
+
+      if (!card || !button) return;
+
+      button.dataset.periodKey = task.periodKey || '';
+
+      const dateEl = card.querySelector('.task-date');
+      if (dateEl && task.dateLabel) {
+        dateEl.textContent = task.dateLabel;
+      }
+
+      const noteEl = card.querySelector('.task-note');
+      if (noteEl && task.note) {
+        noteEl.textContent = task.note;
+      }
     }
 
     function setPendingButtonsLoading(isLoading) {

@@ -1,8 +1,10 @@
 const {
-  getCurrentTaskPeriods,
   getSupabaseClient,
   getTaskPeriod,
+  isMonthlyTwiceTask,
   parseBody,
+  parseMonthlyTwicePeriodKey,
+  resolveTaskPeriod,
   sendError,
   sendJson,
   upsertLineUser,
@@ -21,6 +23,7 @@ module.exports = async function handler(req, res) {
     const body = parseBody(req.body);
     const idToken = body.idToken;
     const blessingType = body.blessingType;
+    const requestedPeriodKey = body.periodKey;
     const periodType = getTaskPeriod(blessingType);
 
     if (!idToken) {
@@ -40,19 +43,26 @@ module.exports = async function handler(req, res) {
     const lineProfile = await verifyLineIdToken(idToken);
     const supabase = getSupabaseClient();
     const user = await upsertLineUser(supabase, lineProfile);
-    const periods = getCurrentTaskPeriods();
-    const taskPeriod = periods[blessingType];
+    const taskPeriod = resolveTaskPeriod(blessingType, requestedPeriodKey);
 
-    if (!taskPeriod.visible) {
+    if (!taskPeriod || taskPeriod.visible === false) {
       return sendJson(res, 400, {
         success: false,
         error: 'Task is not available today'
       });
     }
 
-    const periodKey = periods[blessingType].periodKey;
+    const periodKey = taskPeriod.periodKey;
     const lineUserId = lineProfile.sub;
     const displayName = lineProfile.name || '';
+
+    if (isMonthlyTwiceTask(blessingType)) {
+      await ensureMonthlyTwiceSequence(supabase, {
+        lineUserId,
+        blessingType,
+        periodKey
+      });
+    }
 
     const existing = await findExistingCheckin(supabase, {
       lineUserId,
@@ -129,6 +139,33 @@ module.exports = async function handler(req, res) {
     return sendError(res, error);
   }
 };
+
+async function ensureMonthlyTwiceSequence(supabase, params) {
+  const parsed = parseMonthlyTwicePeriodKey(params.periodKey);
+
+  if (!parsed || parsed.occurrence !== 2) {
+    return;
+  }
+
+  const firstPeriodKey = `${parsed.year}-${String(parsed.month).padStart(2, '0')}#1`;
+  const { data, error } = await supabase
+    .from('checkins')
+    .select('id')
+    .eq('line_user_id', params.lineUserId)
+    .eq('blessing_type', params.blessingType)
+    .eq('period_key', firstPeriodKey)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    const error = new Error('First monthly check-in is required before second');
+    error.statusCode = 400;
+    throw error;
+  }
+}
 
 async function findExistingCheckin(supabase, params) {
   const { data, error } = await supabase
