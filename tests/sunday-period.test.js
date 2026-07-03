@@ -2,7 +2,8 @@ const assert = require('node:assert/strict');
 const {
   buildHistoryDateLabel,
   getCurrentTaskPeriods,
-  getHistoryPeriods
+  getHistoryPeriods,
+  getLeaderboardMonthPeriods
 } = require('../api/_shared');
 
 const julyThird = new Date('2026-07-03T04:00:00Z');
@@ -30,6 +31,20 @@ assert.deepEqual(
 
 assert.deepEqual(
   getHistoryPeriods(2026, 6, 'sunday', { year: 2026, month: 7, day: 3 }).map(period => period.periodKey),
+  ['2026-06-27', '2026-06-20', '2026-06-13', '2026-06-06']
+);
+
+assert.deepEqual(
+  getLeaderboardMonthPeriods(2026, 7, { year: 2026, month: 7, day: 3 })
+    .filter(period => period.blessingType === 'sunday')
+    .map(period => period.periodKey),
+  ['2026-07-25', '2026-07-18', '2026-07-11', '2026-07-04']
+);
+
+assert.deepEqual(
+  getLeaderboardMonthPeriods(2026, 6, { year: 2026, month: 7, day: 3 })
+    .filter(period => period.blessingType === 'sunday')
+    .map(period => period.periodKey),
   ['2026-06-27', '2026-06-20', '2026-06-13', '2026-06-06']
 );
 

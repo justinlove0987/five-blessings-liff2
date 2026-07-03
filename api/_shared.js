@@ -386,7 +386,7 @@ function getWeekPeriodsInMonth(year, month, blessingType, todayParts) {
   return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
 }
 
-function getSaturdayWeekPeriodsInMonth(year, month, blessingType, todayParts) {
+function getSaturdayWeekPeriodsInMonth(year, month, blessingType, todayParts, options = {}) {
   const monthEnd = { year, month, day: getDaysInMonth(year, month) };
   const items = [];
   let saturday = getSaturdayDateParts({ year, month, day: 1 });
@@ -396,7 +396,7 @@ function getSaturdayWeekPeriodsInMonth(year, month, blessingType, todayParts) {
   }
 
   while (compareDateParts(saturday, monthEnd) <= 0) {
-    if (compareDateParts(saturday, todayParts) <= 0) {
+    if (options.includeFuture || compareDateParts(saturday, todayParts) <= 0) {
       const periodKey = formatDateKey(saturday);
 
       items.push({
@@ -492,7 +492,15 @@ function getLeaderboardWeekPeriods(date = new Date()) {
 
 function getLeaderboardMonthPeriods(year, month, todayParts = getTaipeiDateParts(new Date())) {
   return ['morningPrayer', 'smallGroup', 'sunday', 'tithe']
-    .flatMap(blessingType => getHistoryPeriods(year, month, blessingType, todayParts));
+    .flatMap(blessingType => {
+      if (blessingType === 'sunday') {
+        return getSaturdayWeekPeriodsInMonth(year, month, blessingType, todayParts, {
+          includeFuture: true
+        });
+      }
+
+      return getHistoryPeriods(year, month, blessingType, todayParts);
+    });
 }
 
 async function upsertLineUser(supabase, lineProfile) {
