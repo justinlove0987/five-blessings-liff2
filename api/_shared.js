@@ -376,6 +376,28 @@ function getMorningPrayerPeriodsInMonth(year, month, todayParts) {
   return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
 }
 
+function getAllMorningPrayerPeriodsInMonth(year, month) {
+  const items = [];
+  const daysInMonth = getDaysInMonth(year, month);
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dateParts = { year, month, day };
+
+    if (!isMorningPrayerDay(dateParts)) {
+      continue;
+    }
+
+    items.push({
+      blessingType: 'morningPrayer',
+      periodType: 'day',
+      periodKey: formatDateKey(dateParts),
+      sortKey: formatDateKey(dateParts)
+    });
+  }
+
+  return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+}
+
 function getWeekPeriodsInMonth(year, month, blessingType, todayParts) {
   const monthStart = { year, month, day: 1 };
   const monthEnd = { year, month, day: getDaysInMonth(year, month) };
@@ -476,8 +498,20 @@ function getLeaderboardWeekPeriods(date = new Date()) {
 }
 
 function getLeaderboardMonthPeriods(year, month, todayParts = getTaipeiDateParts(new Date())) {
-  return ['morningPrayer', 'smallGroup', 'sunday', 'tithe']
-    .flatMap(blessingType => getHistoryPeriods(year, month, blessingType, todayParts));
+  if (compareYearMonth(year, month, HISTORY_EARLIEST.year, HISTORY_EARLIEST.month) < 0) {
+    return [];
+  }
+
+  if (compareYearMonth(year, month, todayParts.year, todayParts.month) > 0) {
+    return [];
+  }
+
+  return [
+    ...getAllMorningPrayerPeriodsInMonth(year, month),
+    ...getMonthlyOccurrencePeriods(year, month, 'smallGroup', todayParts),
+    ...getMonthlyOccurrencePeriods(year, month, 'sunday', todayParts),
+    ...getTithePeriodInMonth(year, month, todayParts)
+  ];
 }
 
 async function upsertLineUser(supabase, lineProfile) {
