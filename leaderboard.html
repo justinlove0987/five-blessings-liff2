@@ -787,6 +787,18 @@
       line-height: 1.25;
     }
 
+    .score-info-body .score-rule-heading {
+      margin: 22px 0 10px;
+      color: #25211c;
+      font-size: 18px;
+      font-weight: 950;
+      line-height: 1.25;
+    }
+
+    .score-info-body .score-rule-heading:first-child {
+      margin-top: 0;
+    }
+
     .score-info-body h3:first-child {
       margin-top: 0;
     }
@@ -1020,16 +1032,20 @@
   <div class="score-info-overlay" id="scoreInfoOverlay" hidden>
     <section class="score-info-modal" role="dialog" aria-modal="true" aria-labelledby="scoreInfoTitle">
       <div class="score-info-header">
-        <button class="score-info-close" id="scoreInfoClose" type="button" aria-label="關閉戰隊分數說明">
+        <button class="score-info-close" id="scoreInfoClose" type="button" aria-label="關閉戰隊規則">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
           </svg>
         </button>
-        <h2 class="score-info-title" id="scoreInfoTitle">戰隊分數說明</h2>
+        <h2 class="score-info-title" id="scoreInfoTitle">戰隊規則</h2>
         <span aria-hidden="true"></span>
       </div>
 
       <div class="score-info-body">
+        <h3 class="score-rule-heading">一、排行榜加入說明</h3>
+        <p>一個隊伍至少要有 <strong>3 人</strong>，最多 <strong>6 人</strong>，才會顯示在排行榜上。</p>
+
+        <h3 class="score-rule-heading">二、分數計算規則</h3>
         <p>戰隊最高 <strong>1000 分</strong>。</p>
         <div class="score-formula">戰隊積分 = 完成積分 + 參與積分</div>
 
