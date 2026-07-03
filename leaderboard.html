@@ -406,7 +406,7 @@
 
     .section-header {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 10px;
       padding: 0 2px;
     }
@@ -431,6 +431,8 @@
       place-items: center;
       width: 26px;
       height: 26px;
+      flex: 0 0 auto;
+      margin-left: auto;
       padding: 0;
       border: 1px solid rgba(255, 159, 28, 0.26);
       border-radius: 50%;
@@ -945,15 +947,15 @@
         <div class="section-header" id="rankingHeader" hidden>
           <div class="section-title-row">
             <h2 class="section-title">排行榜</h2>
-            <button class="info-button" id="scoreInfoButton" type="button" aria-label="查看戰隊分數說明">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
-                <path d="M12 10.5V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                <path d="M12 7.2h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-              </svg>
-            </button>
           </div>
           <span class="section-subtitle" id="rankingSubtitle">前 10 戰隊</span>
+          <button class="info-button" id="scoreInfoButton" type="button" aria-label="查看戰隊分數說明">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+              <path d="M12 10.5V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M12 7.2h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+            </svg>
+          </button>
         </div>
         <div class="loading-state" id="loadingState">
           <div class="loading-inner">
