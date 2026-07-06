@@ -1697,16 +1697,10 @@
       const keyboardOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
       const isKeyboardOpen = keyboardOffset > 80;
       const sheetOffset = keyboardOffset;
-      const wasKeyboardOpen = config.sheet.classList.contains('is-keyboard-open');
 
       config.sheet.classList.toggle('is-keyboard-open', isKeyboardOpen);
       if (isKeyboardOpen) {
         config.sheet.style.setProperty('--sheet-keyboard-offset', `${sheetOffset}px`);
-        return;
-      }
-
-      if (wasKeyboardOpen) {
-        closeTeamSheet(activeSheetKey);
         return;
       }
 
